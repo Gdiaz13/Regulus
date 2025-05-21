@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type {ICompanySearch} from '../Interfaces/ICompanySearch';
 
+const apiKey = import.meta.env.VITE_EXCHANGE_KEY;
 
 interface SearchResponse {
     data: ICompanySearch[];
@@ -8,7 +9,7 @@ interface SearchResponse {
 export const searchCompanies = async (query: string) => {
     try {
         const data = await axios.get<SearchResponse>(
-            `https://financialmodelingprep.com/stable/search-symbol?query=${query}&apikey=${import.meta.env.ExchangeKey}`
+            `https://financialmodelingprep.com/stable/search-symbol?query=${query}&apikey=${apiKey}`
         );
         return data;
     } 
