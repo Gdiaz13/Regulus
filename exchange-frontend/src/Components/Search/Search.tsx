@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent, type JSX, type SyntheticEvent } from 'react'
+import React, {type ChangeEvent, type JSX, type SyntheticEvent } from 'react'
 
 interface Props {
   onClick: (e: SyntheticEvent) => void;
@@ -10,13 +10,13 @@ const Search: React.FC<Props> = ({onClick, search, handleChange}: Props): JSX.El
 
   return (
     <div>
-        <input
-          value={search}
-          onChange={(e) => handleChange(e)}
-          name="company-search"
-          id="company-search"
-        />
-        <button onClick={(e) => onClick(e)} /> 
+      <input
+        value={search}
+        onChange={handleChange}
+        name="company-search"
+        id="company-search"
+      />
+      <button onClick={onClick}>Search</button>
     </div>
   )
 }
