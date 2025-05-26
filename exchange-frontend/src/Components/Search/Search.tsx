@@ -1,8 +1,12 @@
-import React, { type JSX } from 'react';
+import React, { type JSX, type SyntheticEvent } from 'react';
 import { useCompanySearch } from './useCompanySearch';
 import CardList from '../CardList/CardList';
 
-const Search: React.FC = (): JSX.Element => {
+interface SearchProps {
+  onPortfolioAdd: (event: SyntheticEvent) => void;
+}
+
+const Search: React.FC<SearchProps> = ({ onPortfolioAdd }): JSX.Element => {
   const {
     search,
     searchResult,
@@ -16,7 +20,7 @@ const Search: React.FC = (): JSX.Element => {
       <form onSubmit={onSearchSubmit}>
         <input value={search} onChange={handleSearchChange} />
       </form>
-      <CardList searchResults={searchResult} />
+      <CardList searchResults={searchResult} onPortfolioAdd={onPortfolioAdd} />
       {serverError && <div style={{ color: 'red' }}>{serverError}</div>}
     </>
   );

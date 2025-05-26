@@ -1,14 +1,16 @@
 import React, { type JSX } from 'react';
 import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
-import AddToPortfolio from '../Portfolio/AddToPortfolio/AddToPortfolio';
 import styles from './Card.module.css';
+import AddToPortfolio from '../Portfolio/AddToPortfolio/AddToPortfolio';
+
 
 interface Props {
     id: string; 
     searchResult: ICompanySearch;
+    onPortfolioAdd: (event: React.SyntheticEvent) => void;
 };
 
-const Card: React.FC<Props> = ({ id, searchResult }: Props): JSX.Element => {
+const Card: React.FC<Props> = ({ id, searchResult, onPortfolioAdd}: Props): JSX.Element => {
     return (
         <div className={styles.card}>
             <img 
@@ -21,7 +23,7 @@ const Card: React.FC<Props> = ({ id, searchResult }: Props): JSX.Element => {
             <p className={styles.info}>
                 {searchResult.exchangeFullName} - {searchResult.exchange}
             </p>
-            <AddToPortfolio symbol={searchResult.symbol}/>
+            <AddToPortfolio symbol={searchResult.symbol} onPortfolioAdd={onPortfolioAdd}/>
         </div>
     );
 };

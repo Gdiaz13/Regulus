@@ -4,9 +4,10 @@ import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
 
 interface Props {
   searchResults: ICompanySearch[];
+  onPortfolioAdd: (e: React.SyntheticEvent) => void;
 }
-
-const CardList: React.FC<Props> = ({ searchResults }: Props): JSX.Element => {
+const CardList: React.FC<Props> = ({ searchResults, onPortfolioAdd }: Props): JSX.Element => {
+  
     return (
     <div> 
         {searchResults.length === 0 ? (
@@ -17,10 +18,12 @@ const CardList: React.FC<Props> = ({ searchResults }: Props): JSX.Element => {
               id={searchResult.symbol} 
               key={crypto.randomUUID()}
               searchResult={searchResult}
+              onPortfolioAdd={onPortfolioAdd}
             />
           ))
         )}
     </div>
 )};
+
 
 export default CardList;
