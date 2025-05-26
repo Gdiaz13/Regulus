@@ -1,13 +1,12 @@
-import React, { type JSX, type SyntheticEvent } from 'react';
+import React, { type JSX } from 'react';
 import Card  from "../Card/Card";
 import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
 
 interface Props {
   searchResults: ICompanySearch[];
-  onPortFolioCreate: (event: SyntheticEvent) => void;
 }
 
-const CardList: React.FC<Props> = ({ searchResults, onPortFolioCreate }: Props): JSX.Element => {
+const CardList: React.FC<Props> = ({ searchResults }: Props): JSX.Element => {
     return (
     <div> 
         {searchResults.length === 0 ? (
@@ -18,7 +17,6 @@ const CardList: React.FC<Props> = ({ searchResults, onPortFolioCreate }: Props):
               id={searchResult.symbol} 
               key={crypto.randomUUID()}
               searchResult={searchResult}
-              onPortFolioCreate={onPortFolioCreate}
             />
           ))
         )}

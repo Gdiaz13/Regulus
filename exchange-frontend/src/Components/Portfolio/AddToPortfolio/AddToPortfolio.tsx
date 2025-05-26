@@ -1,15 +1,21 @@
 import React, { type SyntheticEvent } from 'react'
 
 interface Props {
-    onPortFolioCreate: (event: SyntheticEvent) => void;
     symbol: string;
 }
 
-const AddToPortfolio = ({onPortFolioCreate, symbol}: Props) => {
-  return <form onSubmit={onPortFolioCreate}>
-    <input readOnly={true} hidden={true} value={symbol} />
-    <button type="submit">Add to Portfolio</button>
-  </form>;
-}
+const AddToPortfolio = ({ symbol }: Props) => {
+  const onPortfolioCreate = (e: SyntheticEvent) => {
+    e.preventDefault();
+    console.log('Following item wad added to portfolio:', symbol);
+  };
+
+  return (
+    <form onSubmit={onPortfolioCreate}>
+      <input readOnly={true} hidden={true} value={symbol} />
+      <button type="submit">Add to Portfolio</button>
+    </form>
+  );
+};
 
 export default AddToPortfolio
