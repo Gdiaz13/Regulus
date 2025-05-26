@@ -8,15 +8,20 @@ function App() {
     search,
     searchResult,
     serverError,
-    handleChange,
-    onClick,
+    handleSearchChange,
+    onSearchSubmit,
   } = useCompanySearch();
+
+  const onPortFolioCreate = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    console.log('Portfolio created for:', e);
+  };
 
   return (
     <>
       <div className="App">
-        <Search onClick={onClick} search={search} handleChange={handleChange}/>
-        <CardList searchResults={searchResult} /> 
+        <Search onSearchSubmit={onSearchSubmit} search={search} handleSearchChange={handleSearchChange}/>
+        <CardList searchResults={searchResult} onPortFolioCreate={onPortFolioCreate}/> 
         {serverError && <div style={{color: 'red'}}>{serverError}</div>}
       </div>
     </>
