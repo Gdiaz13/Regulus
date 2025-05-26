@@ -4,16 +4,17 @@ import PortfolioCard from '../PortfolioCard/PortfolioCard';
 
 interface Props {
     portfolioValues: string[];
+    onPortfolioDelete: (e: React.SyntheticEvent) => void;
 }
 
-const PortfolioList = ({portfolioValues}: Props) => {
+const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
 
   return (
     <>
         <h3>My Portfolio</h3>
         <ul>
             {portfolioValues.map((portfolioValue) => {
-                return <PortfolioCard portfolioValue={portfolioValue}/>;
+                return <PortfolioCard portfolioValue={portfolioValue} onPortfolioDelete={onPortfolioDelete}/>;
                
             })}
         </ul>

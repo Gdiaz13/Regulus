@@ -15,10 +15,18 @@ function App() {
     setPortfolioValues(updatedPortfolio);
   };
 
+  const onPortfolioDelete = (e: any) => {
+    e.preventDefault();
+    const removed= portfolioValues.filter((value)=> {
+      return value !== e.target[0].value;
+    });
+    setPortfolioValues(removed);
+  }
+
   return (
     <>
       <div className="App">
-        <PortfolioList portfolioValues={portfolioValues}/>
+        <PortfolioList portfolioValues={portfolioValues} onPortfolioDelete={onPortfolioDelete}/>
         <Search onPortfolioAdd={onPortfolioAdd} />
       </div>
     </>
