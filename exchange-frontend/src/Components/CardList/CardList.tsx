@@ -3,21 +3,20 @@ import Card  from "../Card/Card";
 import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
 
 interface Props {
-  companies?: ICompanySearch[];
+  searchResults: ICompanySearch[];
 }
 
-const CardList: React.FC<Props> = ({ companies = [] }: Props): JSX.Element => {
+const CardList: React.FC<Props> = ({ searchResults = [] }: Props): JSX.Element => {
     return (
     <div> 
-        {companies.length === 0 ? (
+        {searchResults.length === 0 ? (
           <p>No results found.</p>
         ) : (
-          companies.map((company) => (
+          searchResults.map((searchResult) => (
             <Card 
-              key={company.symbol}
-              companyName={company.name}
-              ticker={company.symbol}
-              price={100} // Placeholder, update if you have price info
+              id={searchResult.symbol} 
+              key={crypto.randomUUID()}
+              searchResult={searchResult}
             />
           ))
         )}

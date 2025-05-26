@@ -16,7 +16,7 @@ function App() {
     <>
       <div className="App">
         <Search onClick={onClick} search={search} handleChange={handleChange}/>
-        <CardList companies={searchResult} /> 
+        <CardList searchResults={searchResult} /> 
         {serverError && <div style={{color: 'red'}}>{serverError}</div>}
       </div>
     </>

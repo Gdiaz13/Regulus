@@ -1,29 +1,24 @@
 import React, { type JSX } from 'react';
 import "./Card.css"
+import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
 
 interface Props {
-    companyName: string;
-    ticker: string;
-    price: number;
+    id: string; 
+    searchResult: ICompanySearch;
 };
 
-const Card: React.FC<Props> = ({ 
-    companyName,
-    ticker,
-    price 
-    }: Props) : JSX.Element => {
+const Card: React.FC<Props> = ({id, searchResult}: Props) : JSX.Element => {
     return (
         <div className ="card">
             <img 
-                src="https://www.royalmint.com/globalassets/bullion/images/products/bars/trm-cast-bars/trmcb500gio.jpg"
-                alt="Image"
+                alt="Company Logo"
             />
             <div className="details">
-                <h2>{companyName} ({ticker})</h2>
-                <p>${price}</p>
+                <h2>{searchResult.name} ({searchResult.symbol})</h2>
+                <p>${searchResult.currency}</p>
             </div>
             <p className = "info">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatibus.
+                {searchResult.exchangeFullName} - {searchResult.exchange}
             </p>
         </div>
     )
