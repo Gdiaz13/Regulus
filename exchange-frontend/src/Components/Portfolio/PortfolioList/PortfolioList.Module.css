@@ -1,6 +1,51 @@
 .portfolioList {
-  padding: 16px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.5rem 2rem;
+  margin: 1.25rem 0;
+  transition: transform 0.3s, opacity 0.3s, box-shadow 0.2s, transform 0.2s;
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 15;
+  width: 350px;
+  max-width: 90vw;
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.portfolioList.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.portfolioList:hover {
+  box-shadow: 0 4px 16px rgba(139,92,246,0.12);
+  transform: scale(1.01);
+}
+
+.dark .portfolioList {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+/* Hidden tab styles */
+.portfolioTab {
+  position: fixed;
+  top: 2rem;
+  right: 0;
+  z-index: 16;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 0.5rem 0 0 0.5rem;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.2s, color 0.2s, right 0.3s;
 }

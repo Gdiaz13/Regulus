@@ -1,5 +1,6 @@
 import React from 'react'
 import DeletePortfolio from '../DeletePortfolio/DeletePortfolio';
+import styles from './PortfolioCard.module.css';
 
 interface Props {
     portfolioValue: string;
@@ -8,10 +9,10 @@ interface Props {
 
 const PortfolioCard = ({portfolioValue , onPortfolioDelete}: Props) => {
   return (
-  <>
-    <h4>{portfolioValue}</h4>
-    <DeletePortfolio onPortfolioDelete={onPortfolioDelete} portfolioValue={portfolioValue}/>
-  </>
+    <div className={styles.portfolioCard}>
+      <h4 className={styles.portfolioTitle}>{portfolioValue}</h4>
+      <DeletePortfolio onPortfolioDelete={onPortfolioDelete} portfolioValue={portfolioValue}/>
+    </div>
   )
 }
 

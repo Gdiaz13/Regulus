@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './DeletePortfolio.module.css';
 
 interface Props {
     onPortfolioDelete: (e: React.SyntheticEvent) => void;
@@ -8,9 +9,9 @@ interface Props {
 const DeletePortfolio = ({onPortfolioDelete, portfolioValue}: Props) => {
   return (
   <div>
-    <form onSubmit={onPortfolioDelete}>
+    <form className={styles.deletePortfolioForm} onSubmit={onPortfolioDelete}>
         <input hidden={true} value={portfolioValue} />
-        <button type="submit">Delete Portfolio</button>
+        <button className={styles.deleteButton} type="submit">Delete Portfolio</button>
     </form>
   </div>
     );

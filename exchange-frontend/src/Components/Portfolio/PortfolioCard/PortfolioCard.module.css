@@ -1,0 +1,32 @@
+
+.portfolioCard {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.25rem 1.5rem;
+  margin: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.portfolioCard:hover {
+  box-shadow: 0 4px 16px rgba(139,92,246,0.12);
+  transform: scale(1.02);
+}
+
+.portfolioTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+
+.dark .portfolioCard {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}

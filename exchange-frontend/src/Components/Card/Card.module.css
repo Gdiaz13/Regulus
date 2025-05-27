@@ -1,4 +1,4 @@
-.card{
+.card {
     width: 350px;
     height: 400px;
     display: flex;
@@ -7,10 +7,18 @@
     align-items: center;
     text-align: center;
     padding: 50px;
-    border-radius: 10px;
+    border-radius: 0.5rem;
     overflow: hidden;
-    /* background: linear-gradient(180deg, #F5F5F5 0%, #FFFFFF 100%); */
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.12), rgba(50, 50, 93, 0.25) 0px 8px 16px -2px, rgba(0, 0, 0, 0.3) 0px 4px 8px -3px;
+    transform: scale(1.01);
 }
 
 .card img {
@@ -18,17 +26,23 @@
     height: 180px;
     border-radius: 50%;
     margin: 5px;
-  }
-  
-  .card .details {
+}
+
+.card .details {
     margin: 10px;
-  }
-  
-  .card .details h2 {
+}
+
+.card .details h2 {
     font-weight: 600;
-  }
-  
-  .card .details p {
+}
+
+.card .details p {
     text-transform: uppercase;
     font-weight: 300;
-  }
+}
+
+.dark .card {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+}

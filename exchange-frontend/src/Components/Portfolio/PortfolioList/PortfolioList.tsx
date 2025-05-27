@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PortfolioCard from '../PortfolioCard/PortfolioCard';
-// import styles from './PortfolioList.module.css';
+import styles from './PortfolioList.module.css';
 
 interface Props {
     portfolioValues: string[];
@@ -8,16 +8,34 @@ interface Props {
 }
 
 const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
+  const [open, setOpen] = useState(false);
+  const isEmpty = portfolioValues.length === 0;
 
   return (
     <>
+      {!isEmpty && (
+        <button
+          className={styles.portfolioTab}
+          onClick={() => setOpen((prev) => !prev)}
+          aria-label={open ? 'Hide Portfolio' : 'Show Portfolio'}
+        >
+          {open ? '→' : 'My Portfolio'}
+        </button>
+      )}
+      <div className={
+        isEmpty
+          ? styles.portfolioList
+          : open
+            ? `${styles.portfolioList} ${styles.open}`
+            : styles.portfolioList
+      } style={{ display: isEmpty ? 'none' : undefined }}>
         <h3>My Portfolio</h3>
         <ul>
-            {portfolioValues.map((portfolioValue) => {
-                return <PortfolioCard portfolioValue={portfolioValue} onPortfolioDelete={onPortfolioDelete}/>;
-               
-            })}
+          {portfolioValues.map((portfolioValue) => (
+            <PortfolioCard portfolioValue={portfolioValue} onPortfolioDelete={onPortfolioDelete} key={portfolioValue}/>
+          ))}
         </ul>
+      </div>
     </>
   );
 };

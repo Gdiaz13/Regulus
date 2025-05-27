@@ -1,0 +1,28 @@
+.cardListContainer {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  margin: 2rem 0;
+}
+
+@media (min-width: 700px) {
+  .cardListContainer {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
+/* Optional: add a little padding for the container */
+.cardListContainer {
+  padding: 1rem 0;
+}
+
+/* Themed background if needed */
+.dark .cardListContainer {
+  background: transparent;
+}

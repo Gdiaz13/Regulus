@@ -1,4 +1,5 @@
 import React, { type SyntheticEvent } from 'react'
+import styles from './AddToPortfolio.module.css';
 
 interface Props {
     symbol: string;
@@ -7,11 +8,17 @@ interface Props {
 }
 
 const AddToPortfolio = ({ symbol, onPortfolioAdd }: Props) => {
- 
   return (
-    <form onSubmit={onPortfolioAdd}>
-      <input readOnly={true} hidden={true} value={symbol} />
-      <button type="submit">Add to Portfolio</button>
+    <form className={styles.addToPortfolioForm} onSubmit={onPortfolioAdd}>
+      <input
+        className={styles.addToPortfolioInput}
+        readOnly={true}
+        hidden={true}
+        value={symbol}
+      />
+      <button className={styles.addToPortfolioButton} type="submit">
+        Add to Portfolio
+      </button>
     </form>
   );
 };
