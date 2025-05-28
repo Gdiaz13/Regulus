@@ -10,7 +10,7 @@ const DeletePortfolio = ({onPortfolioDelete, portfolioValue}: Props) => {
   return (
   <div>
     <form className={styles.deletePortfolioForm} onSubmit={onPortfolioDelete}>
-        <input hidden={true} value={portfolioValue} />
+        <input hidden={true} value={portfolioValue} readOnly/>
         <button className={styles.deleteButton} type="submit">Delete Portfolio</button>
     </form>
   </div>

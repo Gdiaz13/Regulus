@@ -3,7 +3,7 @@ import './App.css';
 import Search from './Components/Search/Search';
 import PortfolioList from './Components/Portfolio/PortfolioList/PortfolioList';
 import { ThemeToggle } from './Components/Theme/ThemeToggle';
-import { StarBackground } from './Components/Background/StarBackground';
+import { StarBackground } from './Components/Backgrounds/StarBackground';
 
 function App() {
   const [portfolioValues, setPortfolioValues] = React.useState<string[]>([]);

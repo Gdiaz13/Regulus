@@ -10,10 +10,8 @@ interface Props {
 const CardList: React.FC<Props> = ({ searchResults, onPortfolioAdd }: Props): JSX.Element => {
     return (
     <div className={styles.cardListContainer}> 
-        {searchResults.length === 0 ? (
-          <p>No results found.</p>
-        ) : (
-          searchResults.map((searchResult) => (
+        {searchResults.length !== 0 ? (
+           searchResults.map((searchResult) => (
             <Card 
               id={searchResult.symbol} 
               key={crypto.randomUUID()}
@@ -21,6 +19,8 @@ const CardList: React.FC<Props> = ({ searchResults, onPortfolioAdd }: Props): JS
               onPortfolioAdd={onPortfolioAdd}
             />
           ))
+        ) : (
+          <p></p>
         )}
     </div>
 )};
