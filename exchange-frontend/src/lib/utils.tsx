@@ -1,6 +1,5 @@
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { useEffect } from 'react';
 
 
 interface CnFunction {
