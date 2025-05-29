@@ -72,12 +72,12 @@
 
     @layer base {
         :root {
-            --background: 220 100% 98%; /* Soft blue-white, like Regulus' light */
-            --foreground: 230 60% 12%; /* Deep blue for text */
-            --card: 0 0% 100%; /* Pure white cards */
-            --primary: 220 100% 65%; /* Regulus blue */
+            --background: 220 100% 65%; /* Regulus blue (same as button) */
+            --foreground: 0 0% 0%; /* Black text for light mode */
+            --card: 220 100% 70%; /* Slightly lighter Regulus blue for cards */
+            --primary: 220 100% 65%; /* Regulus blue (matches background and buttons) */
             --primary-foreground: 60 100% 98%; /* Star yellow/white for contrast */
-            --border: 220 30% 90%; /* Subtle blue border */
+            --border: 220 30% 30%; /* Subtle blue border */
             --accent: 48 100% 50%; /* Regulus gold accent */
         }
         .dark {
