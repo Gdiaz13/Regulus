@@ -5,5 +5,4 @@ export interface IMeteor {
     y: number;
     delay: number;
     animationDuration: number;
-    angle: number; // Angle in degrees for meteor direction
 }

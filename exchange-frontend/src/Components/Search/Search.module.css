@@ -78,3 +78,50 @@
   background: #a78bfa;
   color: #22223b;
 }
+
+.section {
+  background: hsl(var(--card));
+  width: 100%;
+}
+
+.container {
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 2.5rem;
+  gap: 1rem;
+  background: hsl(var(--card));
+  border-radius: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .form {
+    flex-direction: row;
+    gap: 0;
+  }
+}
+
+.input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+
+.input::placeholder {
+  color: hsl(var(--foreground));
+  opacity: 0.7;
+}

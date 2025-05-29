@@ -1,4 +1,5 @@
 import { type IStar } from "../../Interfaces/IStar";
+import styles from "./Stars.module.css";
 
 export const generateStars = (): IStar[] => {
     const numberOfStars = Math.floor(
@@ -23,7 +24,7 @@ export const Stars = ({ stars }: { stars: IStar[] }) => (
         {stars.map((star) => (
             <div
                 key={star.id}
-                className="star animate-pulse-subtle"
+                className={`${styles.star} ${styles.starsPulseSubtle}`}
                 style={{
                     width: star.size + "px",
                     height: star.size + "px",

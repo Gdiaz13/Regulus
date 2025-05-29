@@ -1,33 +1,31 @@
-import React, { type JSX, type SyntheticEvent } from 'react';
-import { useCompanySearch } from './useCompanySearch';
-import CardList from '../CardList/CardList';
+import React, { type JSX, type SyntheticEvent, type ChangeEvent } from 'react';
 import styles from './Search.module.css';
 
-interface SearchProps {
-  onPortfolioAdd: (event: SyntheticEvent) => void;
+interface Props {
+  onSearchSubmit: (e: SyntheticEvent) => void;
+  search: string | undefined;
+  handleSearchChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Search: React.FC<SearchProps> = ({ onPortfolioAdd }): JSX.Element => {
-  const {
-    search,
-    searchResult,
-    serverError,
-    handleSearchChange,
-    onSearchSubmit,
-  } = useCompanySearch();
-
+const Search: React.FC<Props> = ({
+  onSearchSubmit,
+  search,
+  handleSearchChange,
+}: Props): JSX.Element => {
   return (
-    <div className={styles.searchContainer}>
-      <form onSubmit={onSearchSubmit}>
-        <input
-          className={styles.searchInput}
-          value={search}
-          onChange={handleSearchChange}
-        />
-      </form>
-      <CardList searchResults={searchResult} onPortfolioAdd={onPortfolioAdd} />
-      {serverError && <div style={{ color: 'red' }}>{serverError}</div>}
-    </div>
+    <section className={styles.section}>
+      <div className={styles.container}>
+        <form className={styles.form} onSubmit={onSearchSubmit}>
+          <input
+            className={styles.input}
+            id="search-input"
+            placeholder="Search companies"
+            value={search}
+            onChange={handleSearchChange}
+          ></input>
+        </form>
+      </div>
+    </section>
   );
 };
 

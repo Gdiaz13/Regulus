@@ -1,29 +1,36 @@
-import React, { type JSX } from 'react';
-import Card  from "../Card/Card";
+import React, { type SyntheticEvent } from "react";
+import Card from "../Card/Card";
 import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
 import styles from './CardList.module.css';
 
+
 interface Props {
   searchResults: ICompanySearch[];
-  onPortfolioAdd: (e: React.SyntheticEvent) => void;
+  onPortfolioAdd: (e: SyntheticEvent) => void;
 }
-const CardList: React.FC<Props> = ({ searchResults, onPortfolioAdd }: Props): JSX.Element => {
-    return (
-    <div className={styles.cardListContainer}> 
-        {searchResults.length !== 0 ? (
-           searchResults.map((searchResult) => (
-            <Card 
-              id={searchResult.symbol} 
-              key={crypto.randomUUID()}
-              searchResult={searchResult}
-              onPortfolioAdd={onPortfolioAdd}
-            />
-          ))
-        ) : (
-          <p></p>
-        )}
-    </div>
-)};
 
+const CardList: React.FC<Props> = ({
+  searchResults,
+  onPortfolioAdd,
+}: Props): React.ReactElement => {
+  return (
+    <div className={styles.cardListContainer}>
+    {searchResults.length > 0 ? (
+      searchResults.map((result) => {
+        return (
+          <Card
+            id={result.symbol}
+            key={crypto.randomUUID()}
+            searchResult={result}
+            onPortfolioAdd={onPortfolioAdd}
+          />
+        );
+      })
+    ) : (
+      <p className={styles.noResults}>No results!</p>
+    )}
+      </div>
+  );
+};
 
 export default CardList;

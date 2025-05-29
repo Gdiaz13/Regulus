@@ -171,4 +171,9 @@
         text-align: center;
       }
 
+      .dark, .dark * {
+        color: #fff !important;
+        text-shadow: 0 0 8px #fff, 0 0 16px #fff2;
+      }
+
 

@@ -1,24 +1,20 @@
 .card {
-    width: 350px;
-    height: 400px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: center;
-    text-align: center;
-    padding: 50px;
-    border-radius: 0.5rem;
-    overflow: hidden;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1.5rem;
     background: hsl(var(--card));
-    color: hsl(var(--foreground));
-    border: 1px solid hsl(var(--border));
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
-    transition: box-shadow 0.2s, transform 0.2s;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px 0 rgba(30, 41, 59, 0.04);
 }
 
-.card:hover {
-    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.12), rgba(50, 50, 93, 0.25) 0px 8px 16px -2px, rgba(0, 0, 0, 0.3) 0px 4px 8px -3px;
-    transform: scale(1.01);
+@media (min-width: 768px) {
+  .card {
+    flex-direction: row;
+  }
 }
 
 .card img {
@@ -39,6 +35,27 @@
 .card .details p {
     text-transform: uppercase;
     font-weight: 300;
+}
+
+.title {
+  font-weight: bold;
+  text-align: center;
+  color: hsl(var(--primary));
+}
+
+@media (min-width: 768px) {
+  .title {
+    text-align: left;
+  }
+}
+
+.currency {
+  color: hsl(var(--foreground));
+}
+
+.info {
+  font-weight: bold;
+  color: hsl(var(--foreground));
 }
 
 .dark .card {
