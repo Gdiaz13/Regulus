@@ -1,5 +1,5 @@
-
 import styles from "./Navbar.module.css";
+import { ThemeToggle } from "../Theme/ThemeToggle";
 
 interface Props {}
 
@@ -8,7 +8,7 @@ const Navbar = (props: Props) => {
     <nav className={styles.container}>
       <div className={styles.navbarFlex}>
         <div className={styles.logoGroup}>
-          <img  alt="" />
+          <img alt="" />
           <div className={styles.menu}>
             <a href="" className={styles.link}>
               Dashboard
@@ -20,6 +20,7 @@ const Navbar = (props: Props) => {
           <a href="" className={styles.signup}>
             Signup
           </a>
+          <ThemeToggle />
         </div>
       </div>
     </nav>

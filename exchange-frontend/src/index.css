@@ -209,4 +209,10 @@
         text-shadow: 0 0 8px #fff, 0 0 16px #fff2;
       }
 
+      /* Regulus color theme for light mode */
+      :root, :root * {
+        color: hsl(var(--foreground));
+        text-shadow: none;
+      }
+
 

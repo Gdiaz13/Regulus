@@ -57,7 +57,6 @@ function App() {
       search={search}
       handleSearchChange={handleSearchChange}
     />
-    <ThemeToggle />
     <PortfolioList
       portfolioValues={portfolioValues}
       onPortfolioDelete={onPortfolioDelete}
