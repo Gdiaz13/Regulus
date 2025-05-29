@@ -1,6 +1,5 @@
 .heroSection {
   width: 100%;
-  background: hsl(var(--background));
 }
 
 .heroContainer {
@@ -37,7 +36,6 @@
   font-size: 3rem;
   font-weight: bold;
   text-align: center;
-  color: hsl(var(--primary));
 }
 @media (min-width: 1024px) {
   .heroTitle {
@@ -50,7 +48,6 @@
 .heroDesc {
   font-size: 1.5rem;
   text-align: center;
-  color: hsl(var(--foreground));
 }
 @media (min-width: 1024px) {
   .heroDesc {
@@ -73,8 +70,6 @@
   padding: 1.25rem 2.5rem;
   font-size: 1.5rem;
   font-weight: bold;
-  color: hsl(var(--background));
-  background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary-foreground)) 80%);
   border-radius: 0.5rem;
   transition: opacity 0.2s;
   text-decoration: none;

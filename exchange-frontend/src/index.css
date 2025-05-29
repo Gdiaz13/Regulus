@@ -72,26 +72,22 @@
 
     @layer base {
         :root {
-            --background: 210 40% 98%;
-            --foreground: 222 47% 11%;
-
-            --card: 0 0% 100%;
-
-            --primary: 250 47% 60%;
-            --primary-foreground: 210 40% 98%;
-
-            --border: 214 32% 91%;
+            --background: 220 100% 98%; /* Soft blue-white, like Regulus' light */
+            --foreground: 230 60% 12%; /* Deep blue for text */
+            --card: 0 0% 100%; /* Pure white cards */
+            --primary: 220 100% 65%; /* Regulus blue */
+            --primary-foreground: 60 100% 98%; /* Star yellow/white for contrast */
+            --border: 220 30% 90%; /* Subtle blue border */
+            --accent: 48 100% 50%; /* Regulus gold accent */
         }
         .dark {
-            --background: 222 47% 4%;
-            --foreground: 213 31% 91%;
-
-            --card: 222 47% 8%;
-
-            --primary: 250 65% 65%;
-            --primary-foreground: 213 31% 91%;
-
+            --background: 222 47% 4%; /* Deep space blue */
+            --foreground: 213 31% 91%; /* Soft white text */
+            --card: 222 47% 8%; /* Slightly lighter than bg */
+            --primary: 220 100% 65%; /* Regulus blue */
+            --primary-foreground: 60 100% 98%; /* Star yellow/white */
             --border: 217 33% 20%;
+            --accent: 48 100% 50%;
         }
         * {
             @apply border-border;
@@ -171,6 +167,43 @@
         text-align: center;
       }
 
+      /* Regulus accent for links and buttons */
+      a, .accent {
+        color: hsl(var(--primary));
+        transition: color 0.2s;
+      }
+      a:hover, .accent:hover {
+        color: hsl(var(--accent));
+        text-shadow: 0 0 8px hsl(var(--accent)), 0 0 16px hsl(var(--accent) / 0.2);
+      }
+      
+      /* Card backgrounds */
+      .card, .cardListContainer, .form, .container, .navbar, .portfolioCard {
+        background: hsl(var(--card));
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px 0 rgba(30, 41, 59, 0.04);
+      }
+      
+      .dark .card, .dark .cardListContainer, .dark .form, .dark .container, .dark .navbar, .dark .portfolioCard {
+        background: hsl(var(--card));
+        box-shadow: 0 2px 16px 0 rgba(30, 41, 59, 0.12);
+      }
+      
+      /* Regulus star accent for buttons */
+      button, .cosmic-button, .heroButton, .signup {
+        background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)) 80%);
+        color: hsl(var(--primary-foreground));
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      }
+      button:hover, .cosmic-button:hover, .heroButton:hover, .signup:hover {
+        background: linear-gradient(90deg, hsl(var(--accent)), hsl(var(--primary)) 80%);
+        color: hsl(var(--background));
+        box-shadow: 0 0 16px 2px hsl(var(--accent) / 0.3);
+      }
+      /* Text glows white in dark mode */
       .dark, .dark * {
         color: #fff !important;
         text-shadow: 0 0 8px #fff, 0 0 16px #fff2;

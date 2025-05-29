@@ -1,6 +1,4 @@
 .portfolioList {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -29,20 +27,11 @@
   transform: scale(1.01);
 }
 
-.dark .portfolioList {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-}
-
-/* Hidden tab styles */
 .portfolioTab {
   position: fixed;
   top: 2rem;
   right: 0;
   z-index: 16;
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
   border-radius: 0.5rem 0 0 0.5rem;
   padding: 0.75rem 1.25rem;
   cursor: pointer;

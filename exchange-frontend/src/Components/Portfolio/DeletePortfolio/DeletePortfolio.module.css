@@ -19,19 +19,7 @@
 
 .deleteButton:hover,
 .deleteButton:focus {
-  background: #ef4444; /* Tailwind red-500 for delete action */
   color: #fff;
   box-shadow: 0 2px 8px rgba(239,68,68,0.15);
   transform: scale(1.04);
-}
-
-.dark .deleteButton {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-}
-
-.dark .deleteButton:hover,
-.dark .deleteButton:focus {
-  background: #b91c1c; /* Tailwind red-700 for dark mode */
-  color: #fff;
 }

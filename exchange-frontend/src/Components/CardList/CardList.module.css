@@ -8,7 +8,6 @@
   width: 100%;
   margin: 2rem 0;
   padding: 1rem 0;
-  background: hsl(var(--background));
 }
 
 @media (min-width: 700px) {
@@ -24,21 +23,10 @@
   padding: 1rem 0;
 }
 
-/* Themed background if needed */
-.dark .cardListContainer {
-  background: transparent;
-}
-
-.dark .cardListContainer,
-.dark .cardListContainer * {
-  color: #fff !important;
-  text-shadow: 0 0 8px #fff, 0 0 16px #fff2;
-}
 
 .noResults {
   margin: 1.5rem 0;
   font-size: 1.25rem;
   font-weight: 600;
   text-align: center;
-  color: hsl(var(--primary));
 }

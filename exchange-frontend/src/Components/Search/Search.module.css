@@ -5,9 +5,6 @@
   top: 2rem;
   left: 2rem;
   z-index: 10;
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
   border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 1.25rem 1.5rem;
@@ -25,8 +22,6 @@
   padding: 0.5rem 1rem;
   border: 1px solid hsl(var(--border));
   border-radius: 0.375rem;
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
   font-size: 1rem;
   margin-bottom: 0.75rem;
   transition: border-color 0.2s;
@@ -41,46 +36,12 @@
   padding: 0.5rem 1.25rem;
   border: none;
   border-radius: 0.375rem;
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 
-.searchButton:hover,
-.searchButton:focus {
-  background: #7c3aed;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(124,58,237,0.15);
-  transform: scale(1.04);
-}
-
-.dark .searchContainer {
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-}
-
-.dark .searchInput {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-}
-
-.dark .searchButton {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-}
-
-.dark .searchButton:hover,
-.dark .searchButton:focus {
-  background: #a78bfa;
-  color: #22223b;
-}
-
 .section {
-  background: hsl(var(--card));
   width: 100%;
 }
 
@@ -101,7 +62,6 @@
   width: 100%;
   padding: 2.5rem;
   gap: 1rem;
-  background: hsl(var(--card));
   border-radius: 0.75rem;
 }
 
@@ -117,11 +77,8 @@
   padding: 0.75rem;
   border: 2px solid hsl(var(--border));
   border-radius: 0.5rem;
-  color: hsl(var(--foreground));
-  background: hsl(var(--background));
 }
 
 .input::placeholder {
-  color: hsl(var(--foreground));
   opacity: 0.7;
 }

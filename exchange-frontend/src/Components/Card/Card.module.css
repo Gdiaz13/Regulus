@@ -5,10 +5,8 @@
     justify-content: space-between;
     width: 100%;
     padding: 1.5rem;
-    background: hsl(var(--card));
     border-radius: 0.75rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px 0 rgba(30, 41, 59, 0.04);
 }
 
 @media (min-width: 768px) {
@@ -40,7 +38,6 @@
 .title {
   font-weight: bold;
   text-align: center;
-  color: hsl(var(--primary));
 }
 
 @media (min-width: 768px) {
@@ -49,17 +46,6 @@
   }
 }
 
-.currency {
-  color: hsl(var(--foreground));
-}
-
 .info {
   font-weight: bold;
-  color: hsl(var(--foreground));
-}
-
-.dark .card {
-    background: hsl(var(--card));
-    color: hsl(var(--foreground));
-    border: 1px solid hsl(var(--border));
 }
