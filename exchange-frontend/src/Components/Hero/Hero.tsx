@@ -1,4 +1,5 @@
 import styles from "./Hero.module.css";
+import stars from  "./stars.jpg"
 
 interface Props {}
 
@@ -8,11 +9,11 @@ const Hero = (props: Props) => {
       <div className={styles.heroContainer}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>
-            Financial data with no news.
+            Illuminate your financial universe.
           </h1>
           <p className={styles.heroDesc}>
-            Search relevant financial documents without fear mongering and fake
-            news.
+            Discover data and insights with clarity—no noise, no hype, just the
+            brilliance of Regulus.
           </p>
           <div className={styles.heroButtonWrap}>
             <a
@@ -24,7 +25,8 @@ const Hero = (props: Props) => {
           </div>
         </div>
         <div className={styles.heroImageWrap}>
-          <img  alt="" />
+          {/* probably going to make this into a live chart later */}
+          <img src={stars}  alt="" />
         </div>
       </div>
     </section>

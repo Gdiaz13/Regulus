@@ -8,6 +8,7 @@ const Navbar = (props: Props) => {
     <nav className={styles.container}>
       <div className={styles.navbarFlex}>
         <div className={styles.logoGroup}>
+          {/* need to add logo here, might make some sort of animated logo with AI */}
           <img alt="" />
           <div className={styles.menu}>
             <a href="" className={styles.link}>

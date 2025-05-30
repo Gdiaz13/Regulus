@@ -12,7 +12,7 @@ const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
   const isEmpty = portfolioValues.length === 0;
 
   return (
-    <>
+    <section id="portfolio">
       {!isEmpty && (
         <button
           className={styles.portfolioTab}
@@ -36,7 +36,7 @@ const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
           ))}
         </ul>
       </div>
-    </>
+    </section>
   );
 };
 

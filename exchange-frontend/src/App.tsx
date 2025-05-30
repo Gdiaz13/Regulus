@@ -52,6 +52,7 @@ function App() {
     <>
     <StarBackground />
     <Navbar />
+    <Hero />
     <Search
       onSearchSubmit={onSearchSubmit}
       search={search}

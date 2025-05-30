@@ -2,7 +2,7 @@ import axios from 'axios';
 import type {ICompanySearch} from '../Interfaces/ICompanySearch';
 
 const apiKey = import.meta.env.VITE_EXCHANGE_KEY;
-
+// not a big fan of the stock APIS i am finding might switch to a crypto API later
 interface SearchResponse {
     data: ICompanySearch[];
 }

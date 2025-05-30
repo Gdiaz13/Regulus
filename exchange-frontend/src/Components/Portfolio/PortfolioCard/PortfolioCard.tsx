@@ -10,7 +10,7 @@ interface Props {
 const PortfolioCard = ({portfolioValue , onPortfolioDelete}: Props) => {
   return (
     <div className={styles.portfolioCard}>
-      <h4 className={styles.portfolioTitle}>{portfolioValue}</h4>
+      <p className={styles.portfolioTitle}>{portfolioValue}</p>
       <DeletePortfolio onPortfolioDelete={onPortfolioDelete} portfolioValue={portfolioValue}/>
     </div>
   )
