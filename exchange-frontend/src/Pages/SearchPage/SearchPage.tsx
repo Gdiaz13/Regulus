@@ -3,7 +3,6 @@ import { useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
 import { searchCompanies } from '../../API/Api';
 import { StarBackground } from '../../Components/Backgrounds/StarBackground';
-import Hero from '../../Components/Hero/Hero';
 import Search from '../../Components/Search/Search';
 import PortfolioList from '../../Components/Portfolio/PortfolioList/PortfolioList';
 import CardList from '../../Components/CardList/CardList';
@@ -50,7 +49,6 @@ const SearchPage = (props: Props) => {
   return (
     <>
     <StarBackground />
-    <Hero />
     <Search
       onSearchSubmit={onSearchSubmit}
       search={search}

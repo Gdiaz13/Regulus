@@ -1,5 +1,6 @@
 import styles from "./Hero.module.css";
 import stars from  "./stars.jpg"
+import { Link } from "react-router-dom";
 
 interface Props {}
 
@@ -16,12 +17,12 @@ const Hero = (props: Props) => {
             brilliance of Regulus.
           </p>
           <div className={styles.heroButtonWrap}>
-            <a
-              href=""
+            <Link
+              to = "/search"
               className={styles.heroButton}
             >
               Get Started
-            </a>
+            </Link>
           </div>
         </div>
         <div className={styles.heroImageWrap}>
