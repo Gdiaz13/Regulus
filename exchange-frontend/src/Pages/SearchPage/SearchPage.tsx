@@ -1,7 +1,7 @@
 
 import { useState, type ChangeEvent, type SyntheticEvent } from 'react';
 import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
-import { searchCompanies } from '../../API/Api';
+import getCompanies from '../../API/GET/getCompanies';
 import { StarBackground } from '../../Components/Backgrounds/StarBackground';
 import Search from '../../Components/Search/Search';
 import PortfolioList from '../../Components/Portfolio/PortfolioList/PortfolioList';
@@ -38,7 +38,7 @@ const SearchPage = (props: Props) => {
   
     const onSearchSubmit = async (e: SyntheticEvent) => {
       e.preventDefault();
-      const result = await searchCompanies(search);
+      const result = await getCompanies(search);
       //setServerError(result.data);
       if (typeof result === "string") {
         setServerError(result);

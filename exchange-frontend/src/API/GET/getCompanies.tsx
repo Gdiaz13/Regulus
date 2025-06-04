@@ -1,12 +1,12 @@
 import axios from 'axios';
-import type {ICompanySearch} from '../Interfaces/ICompanySearch';
+import type {ICompanySearch} from '../../Interfaces/ICompanySearch';
 
 const apiKey = import.meta.env.VITE_EXCHANGE_KEY;
 // not a big fan of the stock APIS i am finding might switch to a crypto API later
 interface SearchResponse {
     data: ICompanySearch[];
 }
-export const searchCompanies = async (query: string) => {
+const getCompanies = async (query: string) => {
     try {
         const data = await axios.get<SearchResponse>(
             `https://financialmodelingprep.com/stable/search-symbol?query=${query}&apikey=${apiKey}`
@@ -24,3 +24,5 @@ export const searchCompanies = async (query: string) => {
         }
     }
 };
+
+export default getCompanies;
