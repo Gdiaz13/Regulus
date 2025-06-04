@@ -4,9 +4,9 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 340px; /* Increased width */
-    min-width: 220px;
-    height: 420px; /* Increased height for more space */
+    max-width: 30px; /* Increased width */
+    min-width: 20px;
+    height: 40px; /* Increased height for more space */
     padding: 2.25rem; /* More padding */
     border-radius: 1.25rem;
     margin-bottom: 2rem;
@@ -64,7 +64,7 @@
   font-weight: bold;
 }
 
-/*
+
 .card::before {
     content: "";
     position: absolute;
@@ -78,10 +78,10 @@
 }
 
 .card:hover::before {
-    opacity: 1;
+    opacity: .4;
     box-shadow: 0 0 24px 6px hsl(var(--primary) / 0.5), 0 0 32px 12px hsl(var(--accent) / 0.3);
 }
-*/
+
 
 /* i want to animate this on hover. going to work on that later  */
 .card:hover {
@@ -89,4 +89,86 @@
     border-width: 4px;
     border-style: solid;
     border-color: transparent;
+}
+
+.cardTitleFull {
+  display: inline-block;
+}
+.cardTitleMedium {
+  display: none;
+}
+.cardTitleShort {
+  display: none;
+}
+.cardInfoFull {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .cardTitleFull {
+    display: none;
+  }
+  .cardTitleMedium {
+    display: inline-block;
+  }
+  .cardTitleShort {
+    display: none;
+  }
+  .cardInfoFull {
+    display: none;
+  }
+}
+@media (max-width: 770px) {
+  .cardTitleFull {
+    display: none;
+  }
+  .cardTitleMedium {
+    display: none;
+  }
+  .cardTitleShort {
+    display: inline-block;
+  }
+  .cardInfoFull {
+    display: none;
+  }
+  .cardTitleShortWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 0.25rem;
+  }
+  .cardTitleShortWrapper .cardTitleShortTicker {
+    display: block;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.25rem;
+    font-size: 1.2rem;
+  }
+  .cardTitleShortWrapper .addToPortfolioForm {
+    display: flex !important;
+    position: static;
+    margin: 0 auto;
+    left: unset;
+    bottom: unset;
+    transform: none;
+    width: auto;
+    max-width: 100%;
+    justify-content: center;
+  }
+}
+@media (min-width: 901px) {
+  .cardTitleFull {
+    display: inline-block;
+  }
+  .cardTitleMedium {
+    display: none;
+  }
+  .cardTitleShort {
+    display: none;
+  }
+  .cardInfoFull {
+    display: block;
+  }
 }

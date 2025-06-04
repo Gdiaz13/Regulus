@@ -2,41 +2,96 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.75rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 1rem 1.5rem;
-  margin: 1rem 0;
-  transition: box-shadow 0.2s, transform 0.2s;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0.5rem 1rem;
+  margin: 0 auto 0 auto;
+  position: absolute;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  z-index: 1;
+  min-width: 220px;
+  max-width: 90%;
+  transition: transform 0.2s, background 0.2s;
+  justify-content: center;
 }
 
 .addToPortfolioForm:hover {
-  box-shadow: 0 4px 16px rgba(139,92,246,0.12);
-  transform: scale(1.01);
+  transform: translateX(-50%) scale(1.01);
+  background: transparent;
 }
 
 .addToPortfolioInput {
   flex: 1;
   padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #181926;
+  color: #fff;
+  font-size: 1rem;
+  transition: background 0.2s;
 }
 
 .addToPortfolioInput:focus {
   outline: none;
-  border-color: hsl(var(--primary));
+   border-color: hsl(var(--primary));
 }
 
 .addToPortfolioButton {
   padding: 0.5rem 1.25rem;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: 0.80rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #6366f1 0%, #fbbf24 100%);
+  color: #232336;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.1s;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+
+/* Responsive text for Add to Portfolio button */
+@media (max-width: 900px) {
+  .addToPortfolioButton[data-label="full"] {
+    display: none;
+  }
+  .addToPortfolioButton[data-label="medium"] {
+    display: inline-block;
+  }
+  .addToPortfolioButton[data-label="short"] {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .addToPortfolioButton[data-label="full"] {
+    display: none;
+  }
+  .addToPortfolioButton[data-label="medium"] {
+    display: none;
+  }
+  .addToPortfolioButton[data-label="short"] {
+    display: inline-block;
+  }
+}
+@media (min-width: 901px) {
+  .addToPortfolioButton[data-label="full"] {
+    display: inline-block;
+  }
+  .addToPortfolioButton[data-label="medium"] {
+    display: none;
+  }
+  .addToPortfolioButton[data-label="short"] {
+    display: none;
+  }
 }
 
 .addToPortfolioButton:hover,
 .addToPortfolioButton:focus {
-  box-shadow: 0 2px 8px rgba(124,58,237,0.15);
   transform: scale(1.04);
+  background: linear-gradient(90deg, #4f46e5 0%, #f59e42 100%);
+  color: #fff;
 }
-

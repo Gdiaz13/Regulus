@@ -79,6 +79,7 @@
             --primary-foreground: 60 100% 98%; /* Star yellow/white for contrast */
             --border: 220 30% 30%; /* Subtle blue border */
             --accent: 48 100% 50%; /* Regulus gold accent */
+            --portfolio-card-bg: #ede9fe; /* lavender for light mode */
         }
         .dark {
             --background: 222 47% 4%; /* Deep space blue */
@@ -88,6 +89,7 @@
             --primary-foreground: 60 100% 98%; /* Star yellow/white */
             --border: 217 33% 20%;
             --accent: 48 100% 50%;
+            --portfolio-card-bg: #181926; /* black for dark mode */
         }
         * {
             @apply border-border;
@@ -213,6 +215,10 @@
       :root, :root * {
         color: hsl(var(--foreground));
         text-shadow: none;
+      }
+
+      .portfolioCard {
+        background: var(--portfolio-card-bg) !important;
       }
 
 

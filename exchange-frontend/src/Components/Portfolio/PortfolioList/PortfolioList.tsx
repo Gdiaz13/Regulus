@@ -28,8 +28,13 @@ const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
           : open
             ? `${styles.portfolioList} ${styles.open}`
             : styles.portfolioList
-      } style={{ display: isEmpty ? 'none' : undefined }}>
-        <h3>My Portfolio</h3>
+      } style={isEmpty ? { display: 'none' } : undefined}>
+        <h3 className={styles.portfolioTitle}>
+          <span className={styles.gradientText}>
+            <span className={styles.portfolioIcon}></span>
+            <span className={styles.portfolioText}>My Portfolio</span>
+          </span>
+        </h3>
         <ul>
           {portfolioValues.map((portfolioValue) => (
             <PortfolioCard portfolioValue={portfolioValue} onPortfolioDelete={onPortfolioDelete} key={portfolioValue}/>
