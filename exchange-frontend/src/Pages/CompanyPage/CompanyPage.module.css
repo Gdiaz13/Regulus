@@ -1,0 +1,115 @@
+/* Modern and sleek styles for CompanyPage */
+.companyContainer {
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 2.5rem 2rem;
+  border-radius: 1.5rem;
+  background: var(--portfolio-card-bg, #ede9fe);
+  box-shadow: 0 8px 32px 0 rgba(99,102,241,0.10), 0 1.5px 8px 0 rgba(251,191,36,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 2px solid #181926;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.companyHeader {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #6366f1 0%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.companyPrice {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #6366f1;
+  margin-bottom: 0.5rem;
+}
+
+.companyInfo {
+  font-size: 1.1rem;
+  color: #232336;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.companyDesc {
+  font-size: 1.05rem;
+  color: #232336;
+  margin: 1.2rem 0 0.5rem 0;
+  line-height: 1.6;
+  text-align: center;
+  font-weight: 400;
+  border: 3px solid transparent;
+  border-radius: 0.75rem;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 1px 6px 0 rgba(99,102,241,0.07);
+  position: relative;
+  z-index: 1;
+}
+
+.companyDesc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 0.75rem;
+  padding: 2px;
+  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background-size: 400% 400%;
+  animation: regulusDescBorderMove 18s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@keyframes regulusDescBorderMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.companyLogo {
+  width: 120px;
+  height: 120px;
+  border-radius: 1rem;
+  object-fit: contain;
+  box-shadow: 0 2px 12px 0 rgba(99,102,241,0.10);
+  background: #fff;
+  margin-top: 1rem;
+  border: 1.5px solid #e0e7ff;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 700px) {
+  .companyContainer {
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 1rem;
+  }
+  .companyHeader {
+    font-size: 1.3rem;
+  }
+  .companyPrice {
+    font-size: 1.1rem;
+  }
+  .companyLogo {
+    width: 80px;
+    height: 80px;
+    border-radius: 0.7rem;
+  }
+}
