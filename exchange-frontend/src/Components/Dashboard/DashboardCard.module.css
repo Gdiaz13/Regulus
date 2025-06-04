@@ -1,0 +1,124 @@
+.dashboardCard {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 180px;
+  max-width: 320px;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  position: relative;
+  z-index: 1;
+  border: 3px solid transparent;
+}
+
+.dashboardCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 1rem;
+  padding: 2px;
+  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background-size: 400% 400%;
+  animation: regulusDescBorderMove 18s ease-in-out infinite;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.dashboardCardInner {
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dashboardCardTitle {
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.dashboardCardValue {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+@keyframes regulusDescBorderMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.dashboardCards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 2rem;
+    align-items: flex-start;
+  }
+  
+  .dashboardCard {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 180px;
+    max-width: 320px;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 120px;
+    position: relative;
+    z-index: 1;
+    border: 3px solid transparent;
+  }
+  
+  .dashboardCard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 1rem;
+    padding: 2px;
+    background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+    background-size: 400% 400%;
+    animation: regulusDescBorderMove 18s ease-in-out infinite;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+  
+  .dashboardCardInner {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .dashboardCardTitle {
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .dashboardCardValue {
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+  
+  @media (max-width: 1024px) {
+    .dashboardCards {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .dashboardCard {
+      max-width: 100%;
+      min-width: 0;
+    }
+  }

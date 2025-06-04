@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import type { ICompanyProfile } from '../../Interfaces/ICompanyProfile';
 import { getCompanyProfile } from '../../API/GET/getCompanyProfile';
-import styles from './CompanyPage.module.css';
+import Sidebar from '../../Components/Sidebar/Sidebar';
+import Dashboard from '../../Components/Dashboard/Dashboard';
+import DashboardCard from '../../Components/Dashboard/DashboardCard';
 
 const CompanyPage = () => {
   let { ticker } = useParams();
@@ -22,21 +24,16 @@ const CompanyPage = () => {
     }, []);
 
   return (
-    <div className={styles.companyContainer}>
-      {company ? (
-        <div>
-          <img className={styles.companyLogo} src={company.image} alt={`${company.companyName} logo`} />
-          <h1 className={styles.companyHeader}>{company.companyName} ({company.symbol})</h1>
-          <p className={styles.companyPrice}>Price: ${company.price}</p>
-          <p className={styles.companyInfo}>Exchange: {company.exchange}</p>
-          <p className={styles.companyInfo}>Industry: {company.industry}</p>
-          <p className={styles.companyDesc}>Description: {company.description}</p>
-        </div>
-      ) : (
-        <p>Loading company information...</p>
-      )}
+    <div>
+      <Sidebar />
+      <Dashboard>
+        {company && (
+          <DashboardCard title='Company Name' value={company.companyName} />
+        )}
+      </Dashboard>
+     
     </div>
-  )
-}
+  );
+};
 
 export default CompanyPage;

@@ -1,11 +1,8 @@
-/* Modern and sleek styles for CompanyPage */
 .companyContainer {
   max-width: 600px;
   margin: 3rem auto;
   padding: 2.5rem 2rem;
   border-radius: 1.5rem;
-  background: var(--portfolio-card-bg, #ede9fe);
-  box-shadow: 0 8px 32px 0 rgba(99,102,241,0.10), 0 1.5px 8px 0 rgba(251,191,36,0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -13,7 +10,6 @@
   position: relative;
   backdrop-filter: blur(8px) saturate(120%);
   -webkit-backdrop-filter: blur(8px) saturate(120%);
-  border: 2px solid #181926;
   transition: box-shadow 0.2s, background 0.2s;
 }
 
@@ -24,7 +20,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
+  text-emphasis-color: transparent;
   text-align: center;
   margin-bottom: 0.5rem;
   letter-spacing: 0.02em;
@@ -33,13 +29,11 @@
 .companyPrice {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #6366f1;
   margin-bottom: 0.5rem;
 }
 
 .companyInfo {
   font-size: 1.1rem;
-  color: #232336;
   margin-bottom: 0.5rem;
   font-weight: 500;
   text-align: center;
@@ -47,7 +41,6 @@
 
 .companyDesc {
   font-size: 1.05rem;
-  color: #232336;
   margin: 1.2rem 0 0.5rem 0;
   line-height: 1.6;
   text-align: center;
@@ -70,8 +63,7 @@
   background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
   background-size: 400% 400%;
   animation: regulusDescBorderMove 18s ease-in-out infinite;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
 }
 
@@ -86,8 +78,6 @@
   height: 120px;
   border-radius: 1rem;
   object-fit: contain;
-  box-shadow: 0 2px 12px 0 rgba(99,102,241,0.10);
-  background: #fff;
   margin-top: 1rem;
   border: 1.5px solid #e0e7ff;
   display: block;
@@ -112,4 +102,20 @@
     height: 80px;
     border-radius: 0.7rem;
   }
+}
+
+.companyPageRoot {
+  width: 100%;
+  position: relative;
+  display: flex;
+  overflow-x: hidden;
+}
+
+.companyPageContent {
+  width: 100%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
