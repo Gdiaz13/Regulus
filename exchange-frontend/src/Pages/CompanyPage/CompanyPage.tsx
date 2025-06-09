@@ -26,7 +26,7 @@ const CompanyPage = () => {
   return (
     <div>
       <Sidebar />
-      <Dashboard>
+      <Dashboard ticker={ticker!}>
         {company && (
           <DashboardCard title='Company Name' value={company.companyName} />
         )}
