@@ -1,0 +1,82 @@
+.ratioListWrapper {
+  background: hsl(var(--background));
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px 0 rgba(30,41,59,0.08);
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.5rem;
+  height: 100%;
+}
+
+.ratioList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0.75rem;
+  background: none;
+  border-top: 1px solid rgba(99,102,241,0.10);
+}
+
+.ratioListItem {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(99,102,241,0.10);
+  transition: background 0.2s;
+}
+
+.ratioListItem:last-child {
+  border-bottom: none;
+}
+
+.ratioListRow {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+.ratioListLabelWrap {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.ratioListLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground, #fff);
+  margin-bottom: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ratioListSubLabel {
+  font-size: 0.92rem;
+  color: #a5b4fc;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ratioListValue {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground, #fff);
+  white-space: nowrap;
+  justify-content: flex-end;
+  min-width: 120px;
+}
+
+@media (max-width: 700px) {
+  .ratioListWrapper {
+    padding: 0.7rem 0.3rem;
+    border-radius: 0.7rem;
+  }
+  .ratioListLabel, .ratioListValue {
+    font-size: 0.95rem;
+  }
+}
