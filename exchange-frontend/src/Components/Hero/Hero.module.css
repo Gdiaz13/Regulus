@@ -13,6 +13,7 @@
 @media (min-width: 1024px) {
   .heroContainer {
     flex-direction: row;
+    justify-content: flex-end;
   }
 }
 
@@ -83,14 +84,30 @@
   margin-bottom: 6rem;
   margin-left: auto;
   margin-right: auto;
-  width: 100%;
-  max-width: 28rem;
-  padding-left: 2.5rem;
-  padding-right: 2.5rem;
+  width: 80vw;
+  max-width: 22rem;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 @media (min-width: 1024px) {
   .heroImageWrap {
     margin-bottom: 0;
-    width: 50%;
+    margin-top: 0;
+    width: 60vw;
+    height: 60vw;
+    max-width: 48rem;
+    max-height: 48rem;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    float: right;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

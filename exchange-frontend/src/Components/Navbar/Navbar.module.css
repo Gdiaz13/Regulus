@@ -3,6 +3,7 @@
   margin-left: auto;
   margin-right: auto;
   padding: 1.5rem;
+  font-weight: bold;
 }
 
 .navbarFlex {
@@ -17,10 +18,7 @@
   gap: 5rem;
 }
 
-.menu {
-  display: none;
-  font-weight: bold;
-}
+
 
 @media (min-width: 1024px) {
   .menu {

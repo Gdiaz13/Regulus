@@ -1,6 +1,7 @@
 import styles from "./Hero.module.css";
 import stars from  "./stars.jpg"
 import { Link } from "react-router-dom";
+import Spline from "@splinetool/react-spline";
 
 interface Props {}
 
@@ -26,8 +27,7 @@ const Hero = (props: Props) => {
           </div>
         </div>
         <div className={styles.heroImageWrap}>
-          {/* probably going to make this into a live chart later */}
-          <img src={stars}  alt="" />
+          <Spline scene="https://prod.spline.design/NOJJe08001V5hvjW/scene.splinecode" />
         </div>
       </div>
     </section>

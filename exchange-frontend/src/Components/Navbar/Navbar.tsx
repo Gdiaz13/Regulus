@@ -21,7 +21,9 @@ const Navbar = (props: Props) => {
           </div>
         </div>
         <div className={styles.actions}>
-          <div className={styles.login}>Login</div>
+        <Link to ="/login" className={styles.link}>
+            Login
+            </Link>
           <a href="" className={styles.signup}>
             Signup
           </a>
