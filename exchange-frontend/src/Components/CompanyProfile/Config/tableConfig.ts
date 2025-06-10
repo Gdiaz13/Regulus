@@ -1,9 +1,6 @@
-import React from 'react'
-import type { ICompanyKeyMetrics } from '../../Interfaces/ICompanyKeyMetrics'
+import type { ICompanyKeyMetrics } from "../../../Interfaces/ICompanyKeyMetrics";
 
-interface Props {}
-
-const tableConfig = [
+export const companyProfileTableConfig = [
   {
     Label: "Symbol",
     render: (company: ICompanyKeyMetrics) => company.symbol,
@@ -220,10 +217,3 @@ const tableConfig = [
     subTitle: "Current assets minus total liabilities over the trailing twelve months.",
   },
 ];
-const CompanyProfile = (props: Props) => {
-  return (
-    <div>CompanyProfile</div>
-  )
-}
-
-export default CompanyProfile
