@@ -1,11 +1,12 @@
 import React from 'react';
+import styles from './Table.module.css';
 
-export function renderTableRows(data: any[], configs: any[]) {
-  return data.map((company) => (
+export function renderTableRows(data: any, config: any) {
+  return data.map((company: any) => (
     <tr key={company.cik} className="tableRow">
-      {configs.map((val: any) => (
-        <td className="tableCell" key={val.Label}>
-          {val.render(company)}
+      {config.map((val: any) => (
+        <td className={styles.tableCell} key={val.Label}>
+          <div className={styles.animatedBorderInner}>{val.render(company)}</div>
         </td>
       ))}
     </tr>

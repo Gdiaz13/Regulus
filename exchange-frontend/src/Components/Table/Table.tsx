@@ -1,38 +1,26 @@
-import React from 'react'
-import { IncomeStatementTest } from '../../TestData/API-Response-Test/IncomeStatementTest'
+import React from 'react';
 import { renderTableRows } from './renderTableRows';
 import { renderTableHeaders } from './renderTableHeaders';
 import styles from './Table.module.css';
 
-type Props = {}
+type Props = {
+  config: any;
+  data: any;
+}
 
-const data = IncomeStatementTest;
-type Company = (typeof data)[0];
-
-const configs = [
-    {
-        Label: "Year",
-        render: (company: Company) => company.acceptedDate
-    },
-    {
-        Label: "Cost of Revenue",
-        render: (company: Company) => company.costOfRevenue
-    }
-]
-
-const Table = (props: Props) => {
+const Table = ({ config, data }: Props) => {
   return (
-    <div className={styles.tableWrapper}> 
+    <div className={styles.tableWrapper}>
       <table className={styles.table}>
-        <thead className={styles.tableHead}> 
-          <tr>{renderTableHeaders(configs)}</tr>
+        <thead >
+          {renderTableHeaders(config)}
         </thead>
         <tbody>
-          {renderTableRows(data, configs)}
+          {renderTableRows(data, config)}
         </tbody>
-      </table> 
+      </table>
     </div>
-  )
+  );
 };
 
-export default Table
+export default Table;

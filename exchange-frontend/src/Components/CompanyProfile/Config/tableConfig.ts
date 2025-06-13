@@ -1,6 +1,6 @@
 import type { ICompanyKeyMetrics } from "../../../Interfaces/ICompanyKeyMetrics";
 
-export const companyProfileTableConfig = [
+export const tableConfig = [
   {
     Label: "Symbol",
     render: (company: ICompanyKeyMetrics) => company.symbol,

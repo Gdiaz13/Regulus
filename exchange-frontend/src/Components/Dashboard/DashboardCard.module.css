@@ -17,12 +17,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   border-radius: 1rem;
   padding: 2px;
   background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
   background-size: 400% 400%;
   animation: regulusDescBorderMove 18s ease-in-out infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
   pointer-events: none;
   box-sizing: border-box;
 }
@@ -77,20 +79,7 @@
     border: 3px solid transparent;
   }
   
-  .dashboardCard::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: 1rem;
-    padding: 2px;
-    background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
-    background-size: 400% 400%;
-    animation: regulusDescBorderMove 18s ease-in-out infinite;
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-  }
-  
+
   .dashboardCardInner {
     flex: 1;
     padding: 1.5rem;

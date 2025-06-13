@@ -3,7 +3,7 @@ import type { ICompanyKeyMetrics } from "../../Interfaces/ICompanyKeyMetrics";
 
 // Going to make a single API call for a lot of this get requests, going to make it polymphic so that it can be used for multiple requests 
 
-export const getIncomeStatement = async (symbol: string) => {
+export const getKeyMetrics = async (symbol: string) => {
     try {
         const data = await axios.get<ICompanyKeyMetrics>(
             `https://financialmodelingprep.com/stable/key-metrics-ttm?symbol=${symbol}&apikey=${import.meta.env.VITE_EXCHANGE_KEY}`

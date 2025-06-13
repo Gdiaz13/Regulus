@@ -1,5 +1,5 @@
 .tableWrapper {
-  border-radius: 1rem;
+  border-radius: 0;
   background: hsl(var(--background));
   box-shadow: 0 4px 24px 0 rgba(30,41,59,0.08);
   padding: 2rem 1.5rem;
@@ -9,46 +9,64 @@
 
 .table {
   width: 100%;
-  border-collapse: separate;
+  border-collapse: collapse;
   border-spacing: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--foreground, #fff);
   font-family: inherit;
   font-size: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
-.tableHead {
-  background: none;
-}
-
-.tableHeader {
-  padding: 1rem 1.5rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-align: left;
-  text-transform: uppercase;
-  color: #a5b4fc;
-  letter-spacing: 0.08em;
-  border-bottom: 2px solid #6366f1;
-  background: none;
-}
-
-.tableRow {
-  border-bottom: 1px solid rgba(99,102,241,0.12);
-  transition: background 0.2s;
-}
-
-.tableRow:hover {
-  background: rgba(99,102,241,0.07);
+.table::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 2px;
+  padding: 2px;
+  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background-size: 400% 400%;
+  animation: regulusDescBorderMove 18s ease-in-out infinite;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  box-sizing: border-box;
 }
 
 .tableCell {
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--foreground, #fff);
-  background: none;
-  white-space: nowrap;
+  height: 2.5rem;
+  min-height: 2.5rem;
+  vertical-align: middle;
+  padding: 0.25rem 0.5rem;
+  border-right: 2px solid #6366f1;
+  border-bottom: 2px solid #fbbf24;
+
+}
+
+.tableCell:last-child {
+  border-right: none;
+ 
+}
+
+.tableRow:nth-child(even) {
+  background: rgba(99,102,241,0.06);
+}
+
+.tableRow:hover {
+  background: rgba(99,102,241,0.13);
+}
+
+.tableRow:last-child .tableCell {
+  border-bottom: none;
+}
+
+@keyframes regulusDescBorderMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 @media (max-width: 700px) {
