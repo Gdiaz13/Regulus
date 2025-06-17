@@ -1,4 +1,4 @@
-import type { ICompanyIncomeStatement } from '../../../Interfaces/ICompanyIncomeStatement';
+import type { ICompanyIncomeStatement } from '../../../Interfaces/APIResponses/ICompanyIncomeStatement';
 
 export const incomeStatementConfig = [
   {

@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ICompanyKeyMetrics } from "../../Interfaces/ICompanyKeyMetrics";
+import type { ICompanyKeyMetrics } from "../../Interfaces/APIResponses/ICompanyKeyMetrics";
 
 // Going to make a single API call for a lot of this get requests, going to make it polymphic so that it can be used for multiple requests 
 

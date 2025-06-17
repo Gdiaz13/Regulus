@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type SyntheticEvent } from 'react';
-import type { ICompanySearch } from '../../../Interfaces/ICompanySearch';
+import type { ICompanySearch } from '../../../Interfaces/APIResponses/ICompanySearch';
 import getCompanies from '../../../API/GET/getCompanies';
 
 export function useSearchLogic() {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import type { ICompanyKeyMetrics } from '../../Interfaces/ICompanyKeyMetrics'
+import { useEffect, useState } from 'react'
+import type { ICompanyKeyMetrics } from '../../Interfaces/APIResponses/ICompanyKeyMetrics'
 import { tableConfig } from './Config/tableConfig'
 import { useOutletContext } from 'react-router-dom';
 import { getKeyMetrics } from '../../API/GET/getKeyMetrics';

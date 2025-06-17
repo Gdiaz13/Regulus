@@ -3,8 +3,8 @@ import { Stars } from "../Animations/Stars";
 import { Meteors } from "../Animations/Meteors";
 import { generateStars } from "../Animations/Stars";
 import { generateMeteors } from "../Animations/Meteors";
-import { type IStar } from "../../Interfaces/IStar";
-import { type IMeteor } from "../../Interfaces/IMeteor";
+import { type IStar } from "../../Interfaces/Animations/IStar";
+import { type IMeteor } from "../../Interfaces/Animations/IMeteor";
 
 export const StarBackground = () => {
   const [stars, setStars] = useState<IStar[]>([]);

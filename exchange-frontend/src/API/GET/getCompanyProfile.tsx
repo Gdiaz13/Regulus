@@ -1,4 +1,4 @@
-import { type ICompanyProfile } from "../../Interfaces/ICompanyProfile"
+import { type ICompanyProfile } from "../../Interfaces/APIResponses/ICompanyProfile"
 import axios from "axios"
 
 export const getCompanyProfile = async  (query: string) => {

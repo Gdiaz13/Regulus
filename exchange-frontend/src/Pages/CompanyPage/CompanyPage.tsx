@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
-import type { ICompanyProfile } from '../../Interfaces/ICompanyProfile';
+import type { ICompanyProfile } from '../../Interfaces/APIResponses/ICompanyProfile';
 import { getCompanyProfile } from '../../API/GET/getCompanyProfile';
 import Sidebar from '../../Components/Sidebar/Sidebar';
 import Dashboard from '../../Components/Dashboard/Dashboard';

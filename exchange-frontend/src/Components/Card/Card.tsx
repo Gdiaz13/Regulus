@@ -1,7 +1,7 @@
 import React, { type SyntheticEvent } from "react";
 import type { JSX } from "react";
 import styles from './Card.module.css';
-import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
+import type { ICompanySearch } from '../../Interfaces/APIResponses/ICompanySearch';
 import AddToPortfolio from '../Portfolio/AddToPortfolio/AddToPortfolio';
 import { Link } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-import type { ICompanyKeyMetrics } from "../../../Interfaces/ICompanyKeyMetrics";
+import type { ICompanyKeyMetrics } from "../../../Interfaces/APIResponses/ICompanyKeyMetrics";
 
 export const tableConfig = [
   {

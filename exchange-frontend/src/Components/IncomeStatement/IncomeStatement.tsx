@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { incomeStatementConfig } from './Config/IncomeStatementConfig'
 import { useOutletContext } from 'react-router'
-import type { ICompanyIncomeStatement } from '../../Interfaces/ICompanyIncomeStatement';
+import type { ICompanyIncomeStatement } from '../../Interfaces/APIResponses/ICompanyIncomeStatement';
 import { getIncomeStatement } from '../../API/GET/getIncomeStatement';
 import Table from '../Table/Table';
 

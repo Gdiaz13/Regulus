@@ -1,6 +1,6 @@
 import React, { type SyntheticEvent } from "react";
 import Card from "../Card/Card";
-import type { ICompanySearch } from '../../Interfaces/ICompanySearch';
+import type { ICompanySearch } from '../../Interfaces/APIResponses/ICompanySearch';
 import styles from './CardList.module.css';
 
 
