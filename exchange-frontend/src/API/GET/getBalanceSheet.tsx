@@ -1,19 +1,21 @@
-import { type ICompanyIncomeStatement } from "../../Interfaces/APIResponses/ICompanyIncomeStatement";
+import type { ICompanyBalanceSheet } from "../../Interfaces/APIResponses/ICompanyBalanceSheet";
 import axios from "axios";
 
-export const getIncomeStatement = async (ticker: string) => {
+
+export const getBalanceSheet = async (ticker: string) => {
     try {
-        const data = await axios.get<ICompanyIncomeStatement>(
-            `https://financialmodelingprep.com/stable/income-statement?symbol=${ticker}&apikey=${import.meta.env.VITE_EXCHANGE_KEY}`
+        const data = await axios.get<ICompanyBalanceSheet>(
+            `https://financialmodelingprep.com/stable/balance-sheet-statement?symbol=${ticker}&apikey=${import.meta.env.VITE_EXCHANGE_KEY}`
         );
         return data;
+      
     } catch (error: any) {
         if (error.isAxiosError) {
-            console.log('Error message: ', error.message);
-            return error.message;
+            console.error('Balance sheet API error:', error.message);
+            return { error: 'Balance sheet API error: ' + error.message };
         } else {
-            console.log('Unexpected error: ', error.message); 
-            return error.message;
+            console.error('Unexpected balance sheet error:', error.message);
+            return { error: 'Unexpected balance sheet error: ' + error.message };
         }
     }
 };
