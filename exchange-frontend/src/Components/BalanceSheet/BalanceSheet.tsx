@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { ICompanyBalanceSheet } from '../../Interfaces/APIResponses/ICompanyBalanceSheet';
 import { getBalanceSheet } from '../../API/GET/getBalanceSheet';
 import { balanceSheetConfig } from './Config/balanceSheetConfig';
 import RatioList from '../RatioList/RatioList';
 
-type Props = {}
 
-const BalanceSheet = (props: Props) => {
+
+const BalanceSheet = () => {
   const ticker = useOutletContext<string>();
-  const [balanceSheet, setBalanceSheet] = React.useState<ICompanyBalanceSheet | any>();
+  const [balanceSheet, setBalanceSheet] = useState<ICompanyBalanceSheet | any>();
 
   useEffect(() => {
     const getData = async () => {

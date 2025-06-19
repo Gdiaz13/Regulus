@@ -1,4 +1,3 @@
-import React from 'react';
 import styles from './Table.module.css';
 
 export function renderTableRows(data: any, config: any) {

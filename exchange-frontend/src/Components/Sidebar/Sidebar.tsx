@@ -1,4 +1,3 @@
-
 import styles from './Sidebar.module.css'
 import { Link } from 'react-router-dom'
 import { FcHome } from "react-icons/fc";
@@ -6,10 +5,7 @@ import { FcMoneyTransfer } from "react-icons/fc";
 import { FaScaleBalanced } from "react-icons/fa6";
 
 
-
-type Props = {}
-
-const Sidebar = (props: Props) => {
+const Sidebar = () => {
   return (
     <nav className={styles.sidebar}>
       <div className={styles.sidebarContent}>

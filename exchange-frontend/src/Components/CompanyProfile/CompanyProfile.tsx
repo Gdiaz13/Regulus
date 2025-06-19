@@ -5,10 +5,7 @@ import { useOutletContext } from 'react-router-dom';
 import { getKeyMetrics } from '../../API/GET/getKeyMetrics';
 import RatioList from '../RatioList/RatioList';
 
-interface Props {}
-
-
-const CompanyProfile = (props: Props) => {
+const CompanyProfile = () => {
   const ticker = useOutletContext<string>();
   const [companyData, setCompanyData] = useState<ICompanyKeyMetrics>();
 

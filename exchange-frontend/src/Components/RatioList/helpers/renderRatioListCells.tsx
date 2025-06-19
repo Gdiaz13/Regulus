@@ -1,4 +1,3 @@
-import React from 'react';
 import styles from '../RatioList.module.css';
 
 export function renderRatioListCells(configs: any[], data: any) {

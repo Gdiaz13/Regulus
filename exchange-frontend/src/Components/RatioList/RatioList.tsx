@@ -1,5 +1,3 @@
-import React from 'react'
-
 import styles from './RatioList.module.css'
 import { renderRatioListCells } from './helpers/renderRatioListCells'
 
