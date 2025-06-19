@@ -51,6 +51,24 @@
  
 }
 
+.tableHeader {
+  height: 3rem;
+  min-height: 3rem;
+  vertical-align: middle;
+  padding: 0.5rem 0.75rem;
+  border-right: 2px solid #6366f1;
+  border-bottom: 2px solid #fbbf24;
+  background: rgba(99,102,241,0.1);
+  font-weight: 600;
+  text-align: left;
+  color: var(--foreground, #fff);
+  position: relative;
+}
+
+.tableHeader:last-child {
+  border-right: none;
+}
+
 .tableRow:nth-child(even) {
   background: rgba(99,102,241,0.06);
 }

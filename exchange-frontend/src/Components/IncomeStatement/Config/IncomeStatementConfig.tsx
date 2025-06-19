@@ -2,122 +2,139 @@ import type { ICompanyIncomeStatement } from '../../../Interfaces/APIResponses/I
 
 export const incomeStatementConfig = [
   {
-    Label: 'Date',
+    label: 'Date',
     render: (data: ICompanyIncomeStatement) => data.date,
     subTitle: 'The reporting period for this income statement.'
   },
   {
-    Label: 'Symbol',
+    label: 'Symbol',
     render: (data: ICompanyIncomeStatement) => data.symbol,
     subTitle: 'The stock ticker symbol for the company.'
   },
   {
-    Label: 'Revenue',
+    label: 'Revenue',
     render: (data: ICompanyIncomeStatement) => data.revenue,
-    subTitle: 'Total income from sales of goods and services.'
+    subTitle: 'Total income from sales of goods and services.',
+    isCurrency: true
   },
   {
-    Label: 'Cost of Revenue',
+    label: 'Cost of Revenue',
     render: (data: ICompanyIncomeStatement) => data.costOfRevenue,
-    subTitle: 'Direct costs attributable to the production of goods sold.'
+    subTitle: 'Direct costs attributable to the production of goods sold.',
+    isCurrency: true
   },
   {
-    Label: 'Gross Profit',
+    label: 'Gross Profit',
     render: (data: ICompanyIncomeStatement) => data.grossProfit,
-    subTitle: 'Revenue minus cost of revenue.'
+    subTitle: 'Revenue minus cost of revenue.',
+    isCurrency: true
   },
   {
-    Label: 'Research and Development Expenses',
+    label: 'Research and Development Expenses',
     render: (data: ICompanyIncomeStatement) => data.researchAndDevelopmentExpenses,
-    subTitle: 'Expenses for research and development activities.'
+    subTitle: 'Expenses for research and development activities.',
+    isCurrency: true
   },
   {
-    Label: 'General and Administrative Expenses',
+    label: 'General and Administrative Expenses',
     render: (data: ICompanyIncomeStatement) => data.generalAndAdministrativeExpenses,
-    subTitle: 'Expenses for general and administrative activities.'
+    subTitle: 'Expenses for general and administrative activities.',
+    isCurrency: true
   },
   {
-    Label: 'Selling and Marketing Expenses',
+    label: 'Selling and Marketing Expenses',
     render: (data: ICompanyIncomeStatement) => data.sellingAndMarketingExpenses,
-    subTitle: 'Expenses for selling and marketing activities.'
+    subTitle: 'Expenses for selling and marketing activities.',
+    isCurrency: true
   },
   {
-    Label: 'Other Expenses',
+    label: 'Other Expenses',
     render: (data: ICompanyIncomeStatement) => data.otherExpenses,
-    subTitle: 'Other miscellaneous expenses.'
-  },
-  {
-    Label: 'Operating Expenses',
+    subTitle: 'Other miscellaneous expenses.',
+    isCurrency: true
+  },  {
+    label: 'Operating Expenses',
     render: (data: ICompanyIncomeStatement) => data.operatingExpenses,
-    subTitle: 'Expenses related to normal business operations.'
+    subTitle: 'Expenses related to normal business operations.',
+    isCurrency: true
   },
   {
-    Label: 'Cost and Expenses',
+    label: 'Cost and Expenses',
     render: (data: ICompanyIncomeStatement) => data.costAndExpenses,
-    subTitle: 'Total costs and expenses.'
+    subTitle: 'Total costs and expenses.',
+    isCurrency: true
   },
   {
-    Label: 'Interest Income',
+    label: 'Interest Income',
     render: (data: ICompanyIncomeStatement) => data.interestIncome,
-    subTitle: 'Income from interest.'
+    subTitle: 'Income from interest.',
+    isCurrency: true
   },
   {
-    Label: 'Interest Expense',
+    label: 'Interest Expense',
     render: (data: ICompanyIncomeStatement) => data.interestExpense,
-    subTitle: 'Cost incurred by an entity for borrowed funds.'
+    subTitle: 'Cost incurred by an entity for borrowed funds.',
+    isCurrency: true
   },
   {
-    Label: 'Depreciation and Amortization',
+    label: 'Depreciation and Amortization',
     render: (data: ICompanyIncomeStatement) => data.depreciationAndAmortization,
-    subTitle: 'Non-cash expenses for depreciation and amortization.'
+    subTitle: 'Non-cash expenses for depreciation and amortization.',
+    isCurrency: true
   },
   {
-    Label: 'EBITDA',
+    label: 'EBITDA',
     render: (data: ICompanyIncomeStatement) => data.ebitda,
-    subTitle: 'Earnings before interest, taxes, depreciation, and amortization.'
+    subTitle: 'Earnings before interest, taxes, depreciation, and amortization.',
+    isCurrency: true
   },
   {
-    Label: 'Operating Income',
+    label: 'Operating Income',
     render: (data: ICompanyIncomeStatement) => data.operatingIncome,
-    subTitle: 'Profit from business operations after operating expenses.'
+    subTitle: 'Profit from business operations after operating expenses.',
+    isCurrency: true
   },
   {
-    Label: 'Total Other Income Expenses Net',
+    label: 'Total Other Income Expenses Net',
     render: (data: ICompanyIncomeStatement) => data.totalOtherIncomeExpensesNet,
-    subTitle: 'Net total of other income and expenses.'
+    subTitle: 'Net total of other income and expenses.',
+    isCurrency: true
   },
   {
-    Label: 'Income Before Tax',
+    label: 'Income Before Tax',
     render: (data: ICompanyIncomeStatement) => data.incomeBeforeTax,
-    subTitle: 'Income before income tax expense.'
+    subTitle: 'Income before income tax expense.',
+    isCurrency: true
   },
   {
-    Label: 'Income Tax Expense',
+    label: 'Income Tax Expense',
     render: (data: ICompanyIncomeStatement) => data.incomeTaxExpense,
-    subTitle: 'Total tax expense for the period.'
+    subTitle: 'Total tax expense for the period.',
+    isCurrency: true
   },
   {
-    Label: 'Net Income',
+    label: 'Net Income',
     render: (data: ICompanyIncomeStatement) => data.netIncome,
-    subTitle: 'Total profit after all expenses, taxes, and costs.'
+    subTitle: 'Total profit after all expenses, taxes, and costs.',
+    isCurrency: true
   },
   {
-    Label: 'EPS',
+    label: 'EPS',
     render: (data: ICompanyIncomeStatement) => data.eps,
     subTitle: 'Earnings per share.'
   },
   {
-    Label: 'EPS Diluted',
+    label: 'EPS Diluted',
     render: (data: ICompanyIncomeStatement) => data.epsDiluted,
     subTitle: 'Diluted earnings per share.'
   },
   {
-    Label: 'Weighted Average Shares Outstanding',
+    label: 'Weighted Average Shares Outstanding',
     render: (data: ICompanyIncomeStatement) => data.weightedAverageShsOut,
     subTitle: 'Average number of shares outstanding during the period.'
   },
   {
-    Label: 'Weighted Average Shares (Diluted)',
+    label: 'Weighted Average Shares (Diluted)',
     render: (data: ICompanyIncomeStatement) => data.weightedAverageShsOutDil,
     subTitle: 'Average number of diluted shares outstanding during the period.'
   },

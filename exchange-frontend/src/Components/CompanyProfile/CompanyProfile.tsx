@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ICompanyKeyMetrics } from '../../Interfaces/APIResponses/ICompanyKeyMetrics'
-import { tableConfig } from './Config/tableConfig'
+import { tableConfig } from './Config/CompanyProfileConfig'
 import { useOutletContext } from 'react-router-dom';
 import { getKeyMetrics } from '../../API/GET/getKeyMetrics';
 import RatioList from '../RatioList/RatioList';

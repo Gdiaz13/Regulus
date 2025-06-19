@@ -20,12 +20,22 @@
 
 .ratioListItem {
   padding: 1rem 0;
-  border-bottom: 1px solid rgba(99,102,241,0.10);
+  border: 2px solid #6366f1;
+  border-bottom: 2px solid #fbbf24;
   transition: background 0.2s;
+  background: rgba(99,102,241,0.06);
+  margin-bottom: 0;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  position: relative;
 }
 
 .ratioListItem:last-child {
-  border-bottom: none;
+  border-bottom: 2px solid #fbbf24;
+}
+
+.ratioListItem:hover {
+  background: rgba(99,102,241,0.13);
 }
 
 .ratioListRow {

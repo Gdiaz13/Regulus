@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSearchLogic } from './helpers/useSearchLogic';
-import type { ICompanySearch } from '../../Interfaces/APIResponses/ICompanySearch';
 import styles from './Search.module.css';
 import PortfolioList from '../../Components/Portfolio/PortfolioList/PortfolioList';
 import CardList from '../../Components/CardList/CardList';

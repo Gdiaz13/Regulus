@@ -9,15 +9,22 @@ type Props = {}
 
 const BalanceSheet = (props: Props) => {
   const ticker = useOutletContext<string>();
-  const [balanceSheet, setBalanceSheet] = React.useState<ICompanyBalanceSheet>();
+  const [balanceSheet, setBalanceSheet] = React.useState<ICompanyBalanceSheet | any>();
 
   useEffect(() => {
     const getData = async () => {
-        const value = await getBalanceSheet(ticker!);
-        setBalanceSheet(value?.data[0]);
-        console.log('Balance Sheet Data:', value?.data[0]);
+      const value = await getBalanceSheet(ticker!);
+      if (Array.isArray(value) && value.length > 0) {
+        setBalanceSheet(value[0]);
+        console.log('Balance Sheet Data:', value[0]);
+      } else {
+        setBalanceSheet(null);
+        if (value && typeof value === 'object' && 'error' in value) {
+          console.error('Balance Sheet Error:', value.error);
+        }
+      }
     };
-        getData();
+    getData();
   }, [])
 
 
@@ -26,7 +33,7 @@ const BalanceSheet = (props: Props) => {
      <RatioList config={balanceSheetConfig} data={balanceSheet} />
     ) : (
       <h1> Company Balance Sheet Not Found</h1>
-   )};
+   )}
   </>
 }
 

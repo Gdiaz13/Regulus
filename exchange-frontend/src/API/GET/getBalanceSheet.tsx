@@ -4,10 +4,10 @@ import axios from "axios";
 
 export const getBalanceSheet = async (ticker: string) => {
     try {
-        const data = await axios.get<ICompanyBalanceSheet>(
+        const response = await axios.get<ICompanyBalanceSheet[]>(
             `https://financialmodelingprep.com/stable/balance-sheet-statement?symbol=${ticker}&apikey=${import.meta.env.VITE_EXCHANGE_KEY}`
         );
-        return data;
+        return response.data;
       
     } catch (error: any) {
         if (error.isAxiosError) {
