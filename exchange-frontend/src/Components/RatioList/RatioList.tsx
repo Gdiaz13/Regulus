@@ -6,8 +6,6 @@ type Props = {
   data: any;
 }
 
-
-
 const RatioList = ({config, data}: Props) => {
   return (
     <div className={styles.ratioListWrapper}>

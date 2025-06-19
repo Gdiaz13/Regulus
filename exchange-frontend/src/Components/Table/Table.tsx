@@ -1,6 +1,5 @@
-import React from 'react';
-import { renderTableRows } from './renderTableRows';
-import { renderTableHeaders } from './renderTableHeaders';
+import { renderTableRows } from './helpers/renderTableRows';
+import { renderTableHeaders } from './helpers/renderTableHeaders';
 import styles from './Table.module.css';
 
 type Props = {
