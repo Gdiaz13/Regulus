@@ -1,4 +1,4 @@
-import styles from './Table.module.css';
+import styles from '../Table.module.css';
 
 export function renderTableRows(data: any, config: any) {
   return data.map((company: any, companyIdx: number) => (

@@ -1,4 +1,4 @@
-import { type IStar } from "../../Interfaces/Animations/IStar";
+import { type IStar } from "../../../Interfaces/Animations/IStar";
 import styles from "./Stars.module.css";
 
 export const generateStars = (): IStar[] => {

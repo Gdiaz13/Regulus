@@ -1,4 +1,4 @@
-import styles from './Table.module.css';
+import styles from '../Table.module.css';
 
 export function renderTableHeaders(config: any[]) {
   return (

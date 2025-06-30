@@ -1,4 +1,4 @@
-import { type IMeteor } from "../../Interfaces/Animations/IMeteor";
+import { type IMeteor } from "../../../Interfaces/Animations/IMeteor";
 import styles from "./Meteors.module.css";
 
 export const generateMeteors = (): IMeteor[] => {
