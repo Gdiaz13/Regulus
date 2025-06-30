@@ -1,5 +1,4 @@
 import styles from "./Hero.module.css";
-import stars from  "./stars.jpg"
 import { Link } from "react-router-dom";
 import Spline from "@splinetool/react-spline";
 
