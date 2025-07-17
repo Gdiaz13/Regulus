@@ -57,11 +57,15 @@
 }
 
 .dashboardCards {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
-    align-items: flex-start;
+    place-items: center;
+    width: 100%;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .dashboardCard {
@@ -86,6 +90,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
+    text-align: center;
   }
   
   .dashboardCardTitle {
@@ -103,8 +109,9 @@
   
   @media (max-width: 1024px) {
     .dashboardCards {
-      flex-direction: column;
+      grid-template-columns: 1fr;
       gap: 1.5rem;
+      max-width: 98vw;
     }
     .dashboardCard {
       max-width: 100%;

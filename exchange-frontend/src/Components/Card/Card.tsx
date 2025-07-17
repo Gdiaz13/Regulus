@@ -20,7 +20,7 @@ const Card: React.FC<Props> = ({
     <div className={styles.card} key={id} id={id}>
       {/* Full: Name (Ticker) */}
       <Link
-        to={`/company/${searchResult.symbol}`}
+        to={`/company/${searchResult.symbol}/company-profile`}
         className={`${styles.title} ${styles.cardTitleFull}`}
         data-label="full"
       >

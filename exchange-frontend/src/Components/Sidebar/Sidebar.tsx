@@ -21,6 +21,11 @@ const Sidebar = () => {
             <h6 className={styles.linkLabel}>Income Statement</h6>
           </Link>
 
+          <Link to ="cashflow-statement" className={styles.link}>
+            <FcMoneyTransfer />
+            <h6 className={styles.linkLabel}>Cash Flow Statement</h6>
+          </Link>
+
           <Link to ="balance-sheet" className={styles.link}>
             <FaScaleBalanced />
             <h6 className={styles.linkLabel}>Balance Sheet</h6>

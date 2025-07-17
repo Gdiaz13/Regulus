@@ -9,7 +9,7 @@ interface SearchResponse {
 const getCompanies = async (query: string) => {
     try {
         const data = await axios.get<SearchResponse>(
-            `https://financialmodelingprep.com/stable/search-symbol?query=${query}&apikey=${apiKey}`
+            `https://financialmodelingprep.com/stable/search-name?query=${query}&apikey=${apiKey}`
         );
         return data;
     } 

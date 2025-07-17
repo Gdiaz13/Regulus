@@ -12,7 +12,7 @@ const PortfolioCard = ({portfolioValue , onPortfolioDelete}: Props) => {
   return (
     <div className={styles.portfolioCard}>
       <Link 
-        to={`/company/${portfolioValue}`} 
+        to={`/company/${portfolioValue}/company-profile`} 
         className={styles.portfolioTitle}
       >
         {portfolioValue}

@@ -5,6 +5,7 @@ import { getCompanyProfile } from '../../API/GET/getCompanyProfile';
 import Sidebar from '../../Components/Sidebar/Sidebar';
 import Dashboard from '../../Components/Dashboard/Dashboard';
 import DashboardCard from '../../Components/Dashboard/DashboardCard';
+import { formatCurrency } from '../../lib/formatters';
 
 const CompanyPage = () => {
   let { ticker } = useParams();
@@ -25,13 +26,23 @@ const CompanyPage = () => {
 
   return (
     <div>
-      <Sidebar />
-      <Dashboard ticker={ticker!}>
-        {company && (
-          <DashboardCard title='Company Name' value={company.companyName} />
-        )}
-      </Dashboard>
-     
+      {company && (
+        <div>
+          <Sidebar />
+          <Dashboard ticker={ticker!}>
+            <DashboardCard title='Company Name' value={company.companyName} />
+            <DashboardCard title='Company Symbol' value={company.symbol} />
+            <DashboardCard title='Price' value={formatCurrency(company.price)} />
+            <DashboardCard title='Market Cap' value={formatCurrency(company.marketCap)} />
+            <DashboardCard title='Change Percentage' value={`${company.changePercentage}%`} />
+            <DashboardCard title='Industry' value={company.industry} />
+            <DashboardCard title='CEO' value={company.ceo} />
+            
+            
+           
+          </Dashboard>
+        </div>
+      )}
     </div>
   );
 };
