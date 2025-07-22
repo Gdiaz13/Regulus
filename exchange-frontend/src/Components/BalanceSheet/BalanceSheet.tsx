@@ -4,6 +4,7 @@ import type { ICompanyBalanceSheet } from '../../Interfaces/APIResponses/ICompan
 import { getBalanceSheet } from '../../API/GET/getBalanceSheet';
 import { balanceSheetConfig } from './Config/balanceSheetConfig';
 import RatioList from '../RatioList/RatioList';
+import Spinner from '../Spinner/Spinner';
 
 
 
@@ -32,7 +33,7 @@ const BalanceSheet = () => {
    {balanceSheet ? (
      <RatioList config={balanceSheetConfig} data={balanceSheet} />
     ) : (
-      <h1> Company Balance Sheet Not Found</h1>
+      <Spinner />
    )}
   </>
 }

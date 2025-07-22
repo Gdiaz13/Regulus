@@ -4,31 +4,43 @@ import { tableConfig } from './Config/CompanyProfileConfig'
 import { useOutletContext } from 'react-router-dom';
 import { getKeyMetrics } from '../../API/GET/getKeyMetrics';
 import RatioList from '../RatioList/RatioList';
+import Spinner from '../Spinner/Spinner';
 
 const CompanyProfile = () => {
   const ticker = useOutletContext<string>();
-  const [companyData, setCompanyData] = useState<ICompanyKeyMetrics>();
+  const [companyData, setCompanyData] = useState<ICompanyKeyMetrics | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(()=> {
+  useEffect(() => {
     const getCompanyKeyMetrics = async () => {
-      const value = await getKeyMetrics(ticker);
-      setCompanyData(value?.data[0]);
+      try {
+        const value = await getKeyMetrics(ticker);
+        if (value?.data && value.data.length > 0) {
+          setCompanyData(value.data[0]);
+          setError(null);
+        } else {
+          setCompanyData(null);
+          setError('No data found for this ticker.');
+        }
+      } catch (err) {
+        setCompanyData(null);
+        setError('Error fetching data.');
+      }
     };
     getCompanyKeyMetrics();
-  }, []); // the [] dependency array ensures this effect runs only once when the component mounts
-  
+  }, [ticker]);
+
   return (
     <>
-    { companyData ? (
-      <>
-      <RatioList data={companyData} config={tableConfig} />
-      </>
-    ) : (
-      <div>Loading...</div> 
-    )}
+      {companyData ? (
+        <RatioList data={companyData} config={tableConfig} />
+      ) : error ? (
+        <div style={{textAlign: 'center', color: '#FFD700', marginTop: '2rem'}}>{error}</div>
+      ) : (
+        <Spinner />
+      )}
     </>
-  )
-  
-}
+  );
+};
 
-export default CompanyProfile
+export default CompanyProfile;
