@@ -1,29 +1,48 @@
-import Spline from "@splinetool/react-spline";
-import { Link } from "react-router-dom";
-import styles from "./Hero.module.css";
+import Spline from '@splinetool/react-spline';
+import { Link } from 'react-router-dom';
+import styles from './Hero.module.css';
 
-const Hero = () => {
+const Hero = () => (
+  <section className={styles.heroSection}>
+    <div className={styles.heroContainer}>
+      <HeroContent />
+      <HeroScene />
+    </div>
+  </section>
+);
+
+function HeroContent() {
   return (
-    <section className={styles.heroSection}>
-      <div className={styles.heroContainer}>
-        <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>Illuminate your financial universe.</h1>
-          <p className={styles.heroDesc}>
-            Discover data and insights with clarity - no noise, no hype, just the
-            brilliance of Regulus.
-          </p>
-          <div className={styles.heroButtonWrap}>
-            <Link to="/search" className={styles.heroButton}>
-              Get Started
-            </Link>
-          </div>
-        </div>
-        <div className={styles.heroImageWrap}>
-          <Spline scene="https://prod.spline.design/NOJJe08001V5hvjW/scene.splinecode" />
-        </div>
-      </div>
-    </section>
+    <div className={styles.heroContent}>
+      <h1 className={styles.heroTitle}>Illuminate your financial universe.</h1>
+      <HeroDescription />
+      <HeroButton />
+    </div>
   );
-};
+}
+
+function HeroDescription() {
+  return (
+    <p className={styles.heroDesc}>
+      Discover data and insights with clarity - no noise, no hype, just the brilliance of Regulus.
+    </p>
+  );
+}
+
+function HeroButton() {
+  return (
+    <div className={styles.heroButtonWrap}>
+      <Link to="/search" className={styles.heroButton}>Get Started</Link>
+    </div>
+  );
+}
+
+function HeroScene() {
+  return (
+    <div className={styles.heroImageWrap}>
+      <Spline scene="https://prod.spline.design/NOJJe08001V5hvjW/scene.splinecode" />
+    </div>
+  );
+}
 
 export default Hero;

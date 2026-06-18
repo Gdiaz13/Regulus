@@ -1,46 +1,51 @@
-import {Moon, Sun} from 'lucide-react';
-import {useState, useEffect} from 'react';
-import {cn} from '../../lib/utils';
+import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { cn } from '../../lib/utils';
+
+type ThemeName = 'dark' | 'light';
 
 export const ThemeToggle = () => {
-    const [isDarkMode, setIsDarkMode] = useState(false);
-
-    useEffect(() => {
-        const storedTheme = localStorage.getItem('theme');
-        if (storedTheme  === "dark") {
-            document.documentElement.classList.add('dark');
-            setIsDarkMode(true);
-        } else {
-            localStorage.setItem('theme', 'light');
-            setIsDarkMode(false);
-        }
-    }, []);
-
-    const toggleTheme = () => {
-        if (isDarkMode) {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-            setIsDarkMode(false);
-        } else {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-            setIsDarkMode(true);
-        }
-    };
-
-    return (
-    <button 
-    onClick={toggleTheme}
-    className={cn(
-        "p-2 rounded-full transition-colors duration-300 focus:outline-hidden",
-    )}
-    > 
-        {isDarkMode ? (
-            <Sun className="h-6 w-6 text-yellow-300"/> 
-        ) : (
-            <Moon className="h-6 w-6 text-blue-900"/>
-        )} 
+  const { isDarkMode, toggleTheme } = useThemeMode();
+  return (
+    <button onClick={toggleTheme} className={buttonClass()}>
+      {themeIcon(isDarkMode)}
     </button>
-    );
+  );
+};
+
+function useThemeMode() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  useEffect(() => setTheme(readStoredTheme(), setIsDarkMode), []);
+  const toggleTheme = () => setTheme(nextTheme(isDarkMode), setIsDarkMode);
+  return { isDarkMode, toggleTheme };
 }
 
+function setTheme(theme: ThemeName, setIsDarkMode: (value: boolean) => void) {
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  localStorage.setItem('theme', theme);
+  setIsDarkMode(theme === 'dark');
+}
+
+function readStoredTheme(): ThemeName {
+  return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+}
+
+function nextTheme(isDarkMode: boolean): ThemeName {
+  return isDarkMode ? 'light' : 'dark';
+}
+
+function buttonClass() {
+  return cn('p-2 rounded-full transition-colors duration-300 focus:outline-hidden');
+}
+
+function themeIcon(isDarkMode: boolean) {
+  return isDarkMode ? sunIcon() : moonIcon();
+}
+
+function sunIcon() {
+  return <Sun className="h-6 w-6 text-yellow-300" />;
+}
+
+function moonIcon() {
+  return <Moon className="h-6 w-6 text-blue-900" />;
+}

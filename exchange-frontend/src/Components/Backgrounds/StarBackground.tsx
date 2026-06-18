@@ -5,33 +5,10 @@ import { Stars } from "../Animations/Stars/Stars";
 import { generateStars } from "../Animations/Stars/generateStars";
 import { type IStar } from "../../Interfaces/Animations/IStar";
 import { type IMeteor } from "../../Interfaces/Animations/IMeteor";
+import type { Dispatch, SetStateAction } from "react";
 
 export const StarBackground = () => {
-  const [stars, setStars] = useState<IStar[]>([]);
-  const [meteors, setMeteors] = useState<IMeteor[]>([]);
-
-  useEffect(() => {
-    setStars(generateStars());
-    setMeteors(generateMeteors());
-
-    const handleResize = () => {
-      setStars(generateStars());
-      setMeteors(generateMeteors());
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Regenerate meteors after their animation duration
-    // const meteorInterval = setInterval(() => {
-    //   setMeteors(generateMeteors());
-    // }, 4000); 
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    //   clearInterval(meteorInterval);
-    };
-  }, []);
-
+  const { stars, meteors } = useStarBackground();
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       <Stars stars={stars} />
@@ -39,3 +16,25 @@ export const StarBackground = () => {
     </div>
   );
 };
+
+function useStarBackground() {
+  const [stars, setStars] = useState<IStar[]>([]);
+  const [meteors, setMeteors] = useState<IMeteor[]>([]);
+  useEffect(() => bindSkyResize(setStars, setMeteors), []);
+  return { stars, meteors };
+}
+
+function bindSkyResize(setStars: StarSetter, setMeteors: MeteorSetter) {
+  refreshSky(setStars, setMeteors);
+  const handleResize = () => refreshSky(setStars, setMeteors);
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}
+
+function refreshSky(setStars: StarSetter, setMeteors: MeteorSetter) {
+  setStars(generateStars());
+  setMeteors(generateMeteors());
+}
+
+type StarSetter = Dispatch<SetStateAction<IStar[]>>;
+type MeteorSetter = Dispatch<SetStateAction<IMeteor[]>>;

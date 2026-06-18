@@ -10,47 +10,66 @@ interface Props {
 
 const PortfolioList = ({ portfolioValues, onPortfolioDelete }: Props) => {
   const [open, setOpen] = useState(false);
-  const isEmpty = portfolioValues.length === 0;
-
+  if (portfolioValues.length === 0) {
+    return <section id="portfolio" />;
+  }
   return (
     <section id="portfolio">
-      {!isEmpty && (
-        <button
-          className={styles.portfolioTab}
-          onClick={() => setOpen((prev) => !prev)}
-          aria-label={open ? 'Hide Portfolio' : 'Show Portfolio'}
-        >
-          {open ? 'Close' : 'My Portfolio'}
-        </button>
-      )}
-      <div
-        className={
-          isEmpty
-            ? styles.portfolioList
-            : open
-              ? `${styles.portfolioList} ${styles.open}`
-              : styles.portfolioList
-        }
-        style={isEmpty ? { display: 'none' } : undefined}
-      >
-        <h3 className={styles.portfolioTitle}>
-          <span className={styles.gradientText}>
-            <span className={styles.portfolioIcon}></span>
-            <span className={styles.portfolioText}>My Portfolio</span>
-          </span>
-        </h3>
-        <ul>
-          {portfolioValues.map((portfolioValue) => (
-            <PortfolioCard
-              portfolioValue={portfolioValue}
-              onPortfolioDelete={onPortfolioDelete}
-              key={portfolioValue.id}
-            />
-          ))}
-        </ul>
-      </div>
+      <PortfolioToggle open={open} onToggle={() => setOpen((value) => !value)} />
+      <PortfolioPanel open={open} values={portfolioValues} onDelete={onPortfolioDelete} />
     </section>
   );
+};
+
+function PortfolioToggle({ open, onToggle }: ToggleProps) {
+  return (
+    <button className={styles.portfolioTab} onClick={onToggle} aria-label={toggleLabel(open)}>
+      {open ? 'Close' : 'My Portfolio'}
+    </button>
+  );
+}
+
+function PortfolioPanel({ open, values, onDelete }: PanelProps) {
+  return (
+    <div className={portfolioClass(open)}>
+      <PortfolioTitle />
+      <ul>{values.map((value) => renderPortfolioCard(value, onDelete))}</ul>
+    </div>
+  );
+}
+
+function PortfolioTitle() {
+  return (
+    <h3 className={styles.portfolioTitle}>
+      <span className={styles.gradientText}>
+        <span className={styles.portfolioIcon}></span>
+        <span className={styles.portfolioText}>My Portfolio</span>
+      </span>
+    </h3>
+  );
+}
+
+function renderPortfolioCard(value: IPortfolioStock, onDelete: (id: number) => void) {
+  return <PortfolioCard portfolioValue={value} onPortfolioDelete={onDelete} key={value.id} />;
+}
+
+function portfolioClass(open: boolean) {
+  return open ? `${styles.portfolioList} ${styles.open}` : styles.portfolioList;
+}
+
+function toggleLabel(open: boolean) {
+  return open ? 'Hide Portfolio' : 'Show Portfolio';
+}
+
+type ToggleProps = {
+  open: boolean;
+  onToggle: () => void;
+};
+
+type PanelProps = {
+  open: boolean;
+  values: IPortfolioStock[];
+  onDelete: (id: number) => void;
 };
 
 export default PortfolioList;

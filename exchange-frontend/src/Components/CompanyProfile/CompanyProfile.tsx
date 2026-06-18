@@ -1,58 +1,21 @@
-import { useEffect, useState } from 'react';
-import type { CSSProperties } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import type { LoadStatus } from '../../API/types';
 import { getKeyMetrics } from '../../API/GET/getKeyMetrics';
-import type { ICompanyKeyMetrics } from '../../Interfaces/APIResponses/ICompanyKeyMetrics';
+import ResourceStatus from '../AsyncResource/ResourceStatus';
 import RatioList from '../RatioList/RatioList';
-import Spinner from '../Spinner/Spinner';
+import { useTickerFirstResource } from '../../hooks/useTickerResource';
 import { tableConfig } from './Config/CompanyProfileConfig';
 
-const messageStyle = {
-  color: '#FFD700',
-  marginTop: '2rem',
-  textAlign: 'center',
-} satisfies CSSProperties;
+const emptyMessage = 'No key metrics found for this ticker.';
 
 const CompanyProfile = () => {
   const ticker = useOutletContext<string>();
-  const [companyData, setCompanyData] = useState<ICompanyKeyMetrics | null>(null);
-  const [status, setStatus] = useState<LoadStatus>('loading');
-  const [message, setMessage] = useState<string | null>(null);
+  const state = useTickerFirstResource(ticker, getKeyMetrics, emptyMessage);
 
-  useEffect(() => {
-    const getCompanyKeyMetrics = async () => {
-      setStatus('loading');
-      setMessage(null);
-
-      const value = await getKeyMetrics(ticker);
-
-      if (value.ok && value.data.length > 0) {
-        setCompanyData(value.data[0]);
-        setStatus('success');
-      } else if (value.ok) {
-        setCompanyData(null);
-        setStatus('empty');
-        setMessage('No key metrics found for this ticker.');
-      } else {
-        setCompanyData(null);
-        setStatus('error');
-        setMessage(value.message);
-      }
-    };
-
-    getCompanyKeyMetrics();
-  }, [ticker]);
-
-  if (status === 'loading') {
-    return <Spinner />;
+  if (!state.data) {
+    return <ResourceStatus status={state.status} message={state.message} />;
   }
 
-  if (!companyData) {
-    return <div style={messageStyle}>{message}</div>;
-  }
-
-  return <RatioList data={companyData} config={tableConfig} />;
+  return <RatioList data={state.data} config={tableConfig} />;
 };
 
 export default CompanyProfile;

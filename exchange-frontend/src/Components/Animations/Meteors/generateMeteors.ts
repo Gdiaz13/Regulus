@@ -5,15 +5,19 @@ export const generateMeteors = (): IMeteor[] => {
   const newMeteors: IMeteor[] = [];
 
   for (let i = 0; i < numberOfMeteors; i++) {
-    newMeteors.push({
-      id: i,
-      size: Math.random() * 2 + 1,
-      x: Math.random() * 50,
-      y: Math.random() * 50,
-      delay: Math.random() * 15,
-      animationDuration: Math.random() * 3 + 3,
-    });
+    newMeteors.push(createMeteor(i));
   }
 
   return newMeteors;
 };
+
+function createMeteor(id: number): IMeteor {
+  return {
+    id,
+    size: Math.random() * 2 + 1,
+    x: Math.random() * 50,
+    y: Math.random() * 50,
+    delay: Math.random() * 15,
+    animationDuration: Math.random() * 3 + 3,
+  };
+}

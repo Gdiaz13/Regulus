@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useParams } from 'react-router-dom';
-import type { LoadStatus } from '../../API/types';
 import { getCompanyProfile } from '../../API/GET/getCompanyProfile';
+import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import Dashboard from '../../Components/Dashboard/Dashboard';
 import DashboardCard from '../../Components/Dashboard/DashboardCard';
 import Sidebar from '../../Components/Sidebar/Sidebar';
-import Spinner from '../../Components/Spinner/Spinner';
 import type { ICompanyProfile } from '../../Interfaces/APIResponses/ICompanyProfile';
+import { useTickerFirstResource } from '../../hooks/useTickerResource';
 import { formatCurrency } from '../../lib/formatters';
 
 const messageStyle = {
@@ -16,64 +15,52 @@ const messageStyle = {
   textAlign: 'center',
 } satisfies CSSProperties;
 
+type DashboardCardValue = {
+  title: string;
+  value: string | number;
+};
+
 const CompanyPage = () => {
   const { ticker = '' } = useParams();
-  const [company, setCompany] = useState<ICompanyProfile | null>(null);
-  const [status, setStatus] = useState<LoadStatus>('loading');
-  const [message, setMessage] = useState<string | null>(null);
+  const emptyMessage = profileEmptyMessage(ticker);
+  const state = useTickerFirstResource(ticker, getCompanyProfile, emptyMessage);
 
-  useEffect(() => {
-    const getProfileInfo = async () => {
-      if (!ticker) {
-        setStatus('error');
-        setMessage('Missing company ticker.');
-        return;
-      }
-
-      setStatus('loading');
-      setMessage(null);
-
-      const result = await getCompanyProfile(ticker);
-
-      if (result.ok && result.data.length > 0) {
-        setCompany(result.data[0]);
-        setStatus('success');
-      } else if (result.ok) {
-        setCompany(null);
-        setStatus('empty');
-        setMessage(`No company profile found for ${ticker.toUpperCase()}.`);
-      } else {
-        setCompany(null);
-        setStatus('error');
-        setMessage(result.message);
-      }
-    };
-
-    getProfileInfo();
-  }, [ticker]);
-
-  if (status === 'loading') {
-    return <Spinner />;
+  if (!state.data) {
+    return <ResourceStatus status={state.status} message={state.message} style={messageStyle} />;
   }
 
-  if (!company) {
-    return <div style={messageStyle}>{message}</div>;
-  }
+  return <CompanyDashboard ticker={ticker} company={state.data} />;
+};
 
+function CompanyDashboard(props: { ticker: string; company: ICompanyProfile }) {
   return (
     <div>
       <Sidebar />
-      <Dashboard ticker={ticker}>
-        <DashboardCard title="Company Name" value={company.companyName} />
-        <DashboardCard title="Company Symbol" value={company.symbol} />
-        <DashboardCard title="Price" value={formatCurrency(company.price)} />
-        <DashboardCard title="Market Cap" value={formatCurrency(company.marketCap)} />
-        <DashboardCard title="Change Percentage" value={`${company.changePercentage}%`} />
-        <DashboardCard title="Industry" value={company.industry} />
-        <DashboardCard title="CEO" value={company.ceo} />
-      </Dashboard>
+      <Dashboard ticker={props.ticker}>{renderDashboardCards(props.company)}</Dashboard>
     </div>
   );
-};
+}
+
+function renderDashboardCards(company: ICompanyProfile) {
+  return companyCards(company).map((card) => (
+    <DashboardCard key={card.title} title={card.title} value={card.value} />
+  ));
+}
+
+function companyCards(company: ICompanyProfile): DashboardCardValue[] {
+  return [
+    { title: 'Company Name', value: company.companyName },
+    { title: 'Company Symbol', value: company.symbol },
+    { title: 'Price', value: formatCurrency(company.price) },
+    { title: 'Market Cap', value: formatCurrency(company.marketCap) },
+    { title: 'Change Percentage', value: `${company.changePercentage}%` },
+    { title: 'Industry', value: company.industry },
+    { title: 'CEO', value: company.ceo },
+  ];
+}
+
+function profileEmptyMessage(ticker: string) {
+  return `No company profile found for ${ticker.toUpperCase()}.`;
+}
 
 export default CompanyPage;

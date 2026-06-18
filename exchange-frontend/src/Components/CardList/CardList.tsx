@@ -1,10 +1,8 @@
-import React from "react";
-import Card from "../Card/Card";
+import Card from '../Card/Card';
+import type { LoadStatus } from '../../API/types';
 import type { ICompanySearch } from '../../Interfaces/APIResponses/ICompanySearch';
+import Spinner from '../Spinner/Spinner';
 import styles from './CardList.module.css';
-import Spinner from "../Spinner/Spinner";
-import type { LoadStatus } from "../../API/types";
-
 
 interface Props {
   searchResults: ICompanySearch[];
@@ -13,46 +11,51 @@ interface Props {
   onPortfolioAdd: (company: ICompanySearch) => void;
 }
 
-const CardList: React.FC<Props> = ({
-  searchResults,
-  searchStatus,
-  message,
-  onPortfolioAdd,
-}: Props): React.ReactElement => {
-  if (searchStatus === 'idle') {
-    return (
-      <div className={styles.noResults}>
-        Search for a company to start building your watchlist.
-      </div>
-    );
+const CardList = (props: Props) => {
+  if (props.searchStatus === 'idle') {
+    return <CardListMessage message="Search for a company to start building your watchlist." />;
   }
-
-  if (searchStatus === 'loading') {
-    return (
-      <div className={styles.cardListContainer}>
-        <Spinner />
-      </div>
-    );
+  if (props.searchStatus === 'loading') {
+    return <CardListLoading />;
   }
-
-  if (searchStatus === 'error' || searchStatus === 'empty') {
-    return <div className={styles.noResults}>{message}</div>;
+  if (props.searchStatus === 'error' || props.searchStatus === 'empty') {
+    return <CardListMessage message={props.message ?? 'No companies found.'} />;
   }
+  return <SearchCards {...props} />;
+};
 
+function CardListLoading() {
   return (
     <div className={styles.cardListContainer}>
-      {searchResults.map((result) => {
-        return (
-          <Card
-            id={result.symbol}
-            key={result.symbol}
-            searchResult={result}
-            onPortfolioAdd={onPortfolioAdd}
-          />
-        );
-      })}
+      <Spinner />
     </div>
   );
-};
+}
+
+function SearchCards({ searchResults, onPortfolioAdd }: Props) {
+  return (
+    <div className={styles.cardListContainer}>
+      {searchResults.map((result) => renderCompanyCard(result, onPortfolioAdd))}
+    </div>
+  );
+}
+
+function renderCompanyCard(
+  result: ICompanySearch,
+  onPortfolioAdd: (company: ICompanySearch) => void,
+) {
+  return (
+    <Card
+      id={result.symbol}
+      key={result.symbol}
+      searchResult={result}
+      onPortfolioAdd={onPortfolioAdd}
+    />
+  );
+}
+
+function CardListMessage({ message }: { message: string }) {
+  return <div className={styles.noResults}>{message}</div>;
+}
 
 export default CardList;
