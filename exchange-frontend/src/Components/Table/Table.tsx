@@ -1,13 +1,14 @@
 import { renderTableRows } from './helpers/renderTableRows';
 import { renderTableHeaders } from './helpers/renderTableHeaders';
 import styles from './Table.module.css';
+import type { DataConfig } from './types';
 
-type Props = {
-  config: any;
-  data: any;
+type Props<T> = {
+  config: DataConfig<T>[];
+  data: T[];
 }
 
-const Table = ({ config, data }: Props) => {
+const Table = <T,>({ config, data }: Props<T>) => {
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.table}>

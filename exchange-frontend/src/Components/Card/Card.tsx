@@ -1,4 +1,4 @@
-import React, { type SyntheticEvent } from "react";
+import React from "react";
 import type { JSX } from "react";
 import styles from './Card.module.css';
 import type { ICompanySearch } from '../../Interfaces/APIResponses/ICompanySearch';
@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 interface Props {
   id: string;
   searchResult: ICompanySearch;
-  onPortfolioAdd: (e: SyntheticEvent) => void;
+  onPortfolioAdd: (company: ICompanySearch) => void;
 }
 
 const Card: React.FC<Props> = ({
@@ -28,7 +28,7 @@ const Card: React.FC<Props> = ({
       </Link>
       {/* Medium: Name only */}
       <Link
-        to={`/company/${searchResult.symbol}`}
+        to={`/company/${searchResult.symbol}/company-profile`}
         className={`${styles.title} ${styles.cardTitleMedium}`}
         data-label="medium"
       >
@@ -36,7 +36,7 @@ const Card: React.FC<Props> = ({
       </Link>
       {/* Small: Ticker only */}
       <Link
-        to={`/company/${searchResult.symbol}`}
+        to={`/company/${searchResult.symbol}/company-profile`}
         className={`${styles.title} ${styles.cardTitleShort}`}
         data-label="short"
       >
@@ -46,7 +46,7 @@ const Card: React.FC<Props> = ({
       <p className={`${styles.currency} ${styles.cardInfoFull}`} data-label="full">{searchResult.currency}</p>
       <p className={`${styles.info} ${styles.cardInfoFull}`} data-label="full">{searchResult.exchangeFullName} - {searchResult.exchange}</p>
       <AddToPortfolio
-        onPortfolioAdd={onPortfolioAdd}
+        onPortfolioAdd={() => onPortfolioAdd(searchResult)}
         symbol={searchResult.symbol}
       />
     </div>

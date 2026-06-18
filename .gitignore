@@ -1,3 +1,12 @@
 exchange-frontend/.env
 
 .fake
+
+# Build outputs and generated files
+api/bin/
+api/obj/
+exchange-frontend/dist/
+exchange-frontend/node_modules/
+exchange-frontend/*.tsbuildinfo
+exchange-frontend/node_modules/.tmp/
+exchange-frontend/.npm-cache/

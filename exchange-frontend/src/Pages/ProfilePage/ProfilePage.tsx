@@ -1,11 +1,5 @@
-import React from 'react'
+const ProfilePage = () => {
+  return <div>ProfilePage</div>;
+};
 
-interface Props {}
-
-const ProfilePage = (props: Props) => {
-  return (
-    <div>ProfilePage</div>
-  )
-}
-
-export default ProfilePage
+export default ProfilePage;

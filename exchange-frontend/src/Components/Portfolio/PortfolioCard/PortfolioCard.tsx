@@ -1,25 +1,28 @@
-import React from 'react'
+import { Link } from 'react-router-dom';
+import type { IPortfolioStock } from '../../../Interfaces/APIResponses/IPortfolioStock';
 import DeletePortfolio from '../DeletePortfolio/DeletePortfolio';
 import styles from './PortfolioCard.module.css';
-import { Link } from 'react-router-dom';
 
 interface Props {
-    portfolioValue: string;
-    onPortfolioDelete: (e: React.SyntheticEvent) => void;
+  portfolioValue: IPortfolioStock;
+  onPortfolioDelete: (id: number) => void;
 }
 
-const PortfolioCard = ({portfolioValue , onPortfolioDelete}: Props) => {
+const PortfolioCard = ({ portfolioValue, onPortfolioDelete }: Props) => {
   return (
     <div className={styles.portfolioCard}>
-      <Link 
-        to={`/company/${portfolioValue}/company-profile`} 
+      <Link
+        to={`/company/${portfolioValue.symbol}/company-profile`}
         className={styles.portfolioTitle}
       >
-        {portfolioValue}
+        {portfolioValue.symbol}
       </Link>
-      <DeletePortfolio onPortfolioDelete={onPortfolioDelete} portfolioValue={portfolioValue}/>
+      <DeletePortfolio
+        onPortfolioDelete={() => onPortfolioDelete(portfolioValue.id)}
+        portfolioValue={portfolioValue.symbol}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default PortfolioCard
+export default PortfolioCard;

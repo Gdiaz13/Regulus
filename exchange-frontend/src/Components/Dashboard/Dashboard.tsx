@@ -1,10 +1,9 @@
-import React from 'react'
+import type { ReactNode } from 'react'
 import styles from './Dashboard.module.css';
-import DashboardCard from './DashboardCard';
 import { Outlet } from 'react-router-dom';
 
 interface Props {
-    children: React.ReactNode;
+    children: ReactNode;
     ticker: string;
 }
 

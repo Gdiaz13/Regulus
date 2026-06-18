@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import { useState } from 'react';
+import type { IPortfolioStock } from '../../../Interfaces/APIResponses/IPortfolioStock';
 import PortfolioCard from '../PortfolioCard/PortfolioCard';
 import styles from './PortfolioList.module.css';
 
 interface Props {
-    portfolioValues: string[];
-    onPortfolioDelete: (e: React.SyntheticEvent) => void;
+  portfolioValues: IPortfolioStock[];
+  onPortfolioDelete: (id: number) => void;
 }
 
-const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
+const PortfolioList = ({ portfolioValues, onPortfolioDelete }: Props) => {
   const [open, setOpen] = useState(false);
   const isEmpty = portfolioValues.length === 0;
 
@@ -19,16 +20,19 @@ const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
           onClick={() => setOpen((prev) => !prev)}
           aria-label={open ? 'Hide Portfolio' : 'Show Portfolio'}
         >
-          {open ? '→' : 'My Portfolio'}
+          {open ? 'Close' : 'My Portfolio'}
         </button>
       )}
-      <div className={
-        isEmpty
-          ? styles.portfolioList
-          : open
-            ? `${styles.portfolioList} ${styles.open}`
-            : styles.portfolioList
-      } style={isEmpty ? { display: 'none' } : undefined}>
+      <div
+        className={
+          isEmpty
+            ? styles.portfolioList
+            : open
+              ? `${styles.portfolioList} ${styles.open}`
+              : styles.portfolioList
+        }
+        style={isEmpty ? { display: 'none' } : undefined}
+      >
         <h3 className={styles.portfolioTitle}>
           <span className={styles.gradientText}>
             <span className={styles.portfolioIcon}></span>
@@ -37,7 +41,11 @@ const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
         </h3>
         <ul>
           {portfolioValues.map((portfolioValue) => (
-            <PortfolioCard portfolioValue={portfolioValue} onPortfolioDelete={onPortfolioDelete} key={portfolioValue}/>
+            <PortfolioCard
+              portfolioValue={portfolioValue}
+              onPortfolioDelete={onPortfolioDelete}
+              key={portfolioValue.id}
+            />
           ))}
         </ul>
       </div>
@@ -45,4 +53,4 @@ const PortfolioList = ({portfolioValues, onPortfolioDelete}: Props) => {
   );
 };
 
-export default PortfolioList
+export default PortfolioList;

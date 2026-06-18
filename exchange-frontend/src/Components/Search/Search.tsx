@@ -13,7 +13,9 @@ const Search: React.FC = () => {
     onPortfolioAdd,
     onPortfolioDelete,
     searchResult,
-    serverError,
+    searchStatus,
+    searchMessage,
+    portfolioError,
   } = useSearchLogic();
 
   return (
@@ -35,11 +37,13 @@ const Search: React.FC = () => {
         portfolioValues={portfolioValues}
         onPortfolioDelete={onPortfolioDelete}
       />
+      {portfolioError && <div className={styles.message}>{portfolioError}</div>}
       <CardList
         searchResults={searchResult}
+        searchStatus={searchStatus}
+        message={searchMessage}
         onPortfolioAdd={onPortfolioAdd}
       />
-      {serverError && <div>Unable to connect to API</div>}
     </>
   );
 };

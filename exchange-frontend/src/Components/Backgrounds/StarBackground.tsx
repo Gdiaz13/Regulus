@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Stars , generateStars } from "../Animations/Stars/Stars";
-import { Meteors, generateMeteors } from "../Animations/Meteors/Meteors";
+import { Meteors } from "../Animations/Meteors/Meteors";
+import { generateMeteors } from "../Animations/Meteors/generateMeteors";
+import { Stars } from "../Animations/Stars/Stars";
+import { generateStars } from "../Animations/Stars/generateStars";
 import { type IStar } from "../../Interfaces/Animations/IStar";
 import { type IMeteor } from "../../Interfaces/Animations/IMeteor";
 

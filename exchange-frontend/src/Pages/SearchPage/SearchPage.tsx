@@ -1,9 +1,7 @@
 import { StarBackground } from '../../Components/Backgrounds/StarBackground';
 import Search from '../../Components/Search/Search';
 
-interface Props {}
-
-const SearchPage = (props: Props) => {
+const SearchPage = () => {
   return (
     <>
       <StarBackground />

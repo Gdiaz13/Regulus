@@ -1,12 +1,13 @@
 import styles from '../Table.module.css';
+import { formatConfigValue, type DataConfig } from '../types';
 
-export function renderTableRows(data: any, config: any) {
-  return data.map((company: any, companyIdx: number) => (
-    <tr key={`${'company'}-${companyIdx}`} className="tableRow">
-      {config.map((val: any) => (
+export function renderTableRows<T>(data: T[], config: DataConfig<T>[]) {
+  return data.map((row, rowIndex) => (
+    <tr key={`row-${rowIndex}`} className="tableRow">
+      {config.map((val) => (
         <td className={styles.tableCell} key={val.label}>
           <div className={styles.animatedBorderInner}>
-            {val.isCurrency ? `$${val.render(company)?.toLocaleString() || 'N/A'}` : val.render(company)}
+            {formatConfigValue(val.render(row), val.isCurrency)}
           </div>
         </td>
       ))}

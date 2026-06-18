@@ -1,4 +1,6 @@
-export const IncomeStatementTest = [
+import type { ICompanyIncomeStatement } from "../../Interfaces/APIResponses/ICompanyIncomeStatement";
+
+export const IncomeStatementTest: ICompanyIncomeStatement[] = [
   {
     date: "2024-09-28",
     symbol: "AAPL",

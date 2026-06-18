@@ -1,40 +1,103 @@
-import { useState, type ChangeEvent, type SyntheticEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { ICompanySearch } from '../../../Interfaces/APIResponses/ICompanySearch';
 import getCompanies from '../../../API/GET/getCompanies';
+import type { IPortfolioStock } from '../../../Interfaces/APIResponses/IPortfolioStock';
+import {
+  addPortfolioStock,
+  deletePortfolioStock,
+  getPortfolioStocks,
+} from '../../../API/portfolioClient';
+import type { LoadStatus } from '../../../API/types';
 
 export function useSearchLogic() {
   const [search, setSearch] = useState<string>('');
-  const [portfolioValues, setPortfolioValues] = useState<string[]>([]);
+  const [portfolioValues, setPortfolioValues] = useState<IPortfolioStock[]>([]);
   const [searchResult, setSearchResult] = useState<ICompanySearch[]>([]);
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [searchStatus, setSearchStatus] = useState<LoadStatus>('idle');
+  const [searchMessage, setSearchMessage] = useState<string | null>(null);
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPortfolio = async () => {
+      const result = await getPortfolioStocks();
+
+      if (result.ok) {
+        setPortfolioValues(result.data);
+        setPortfolioError(null);
+      } else {
+        setPortfolioError(result.message);
+      }
+    };
+
+    loadPortfolio();
+  }, []);
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 
-  const onPortfolioAdd = (e: any) => {
-    e.preventDefault();
-    const exists = portfolioValues.find((value) => value === e.target[0].value);
-    if (exists) return;
-    const updatedPortfolio = [...portfolioValues, e.target[0].value];
-    setPortfolioValues(updatedPortfolio);
-  };
+  const onPortfolioAdd = async (company: ICompanySearch) => {
+    const normalizedSymbol = company.symbol.toUpperCase();
+    const exists = portfolioValues.some(
+      (value) => value.symbol.toUpperCase() === normalizedSymbol,
+    );
 
-  const onPortfolioDelete = (e: any) => {
-    e.preventDefault();
-    const removed = portfolioValues.filter((value) => {
-      return value !== e.target[0].value;
+    if (exists) {
+      setPortfolioError(`${normalizedSymbol} is already in your portfolio.`);
+      return;
+    }
+
+    const result = await addPortfolioStock({
+      symbol: normalizedSymbol,
+      companyName: company.name,
     });
-    setPortfolioValues(removed);
+
+    if (result.ok) {
+      setPortfolioValues((current) => [...current, result.data]);
+      setPortfolioError(null);
+    } else {
+      setPortfolioError(result.message);
+    }
   };
 
-  const onSearchSubmit = async (e: SyntheticEvent) => {
+  const onPortfolioDelete = async (id: number) => {
+    const result = await deletePortfolioStock(id);
+
+    if (result.ok) {
+      setPortfolioValues((current) => current.filter((value) => value.id !== id));
+      setPortfolioError(null);
+    } else {
+      setPortfolioError(result.message);
+    }
+  };
+
+  const onSearchSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await getCompanies(search);
-    if (typeof result === 'string') {
-      setServerError(result);
-    } else if (Array.isArray(result.data)) {
+    const query = search.trim();
+
+    if (!query) {
+      setSearchResult([]);
+      setSearchStatus('idle');
+      setSearchMessage(null);
+      return;
+    }
+
+    setSearchStatus('loading');
+    setSearchMessage(null);
+
+    const result = await getCompanies(query);
+
+    if (result.ok && result.data.length > 0) {
       setSearchResult(result.data);
+      setSearchStatus('success');
+    } else if (result.ok) {
+      setSearchResult([]);
+      setSearchStatus('empty');
+      setSearchMessage(`No companies found for "${query}".`);
+    } else {
+      setSearchResult([]);
+      setSearchStatus('error');
+      setSearchMessage(result.message);
     }
   };
 
@@ -46,6 +109,8 @@ export function useSearchLogic() {
     onPortfolioAdd,
     onPortfolioDelete,
     searchResult,
-    serverError,
+    searchStatus,
+    searchMessage,
+    portfolioError,
   };
 }

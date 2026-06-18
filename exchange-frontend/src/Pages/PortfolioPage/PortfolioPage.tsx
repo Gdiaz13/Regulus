@@ -1,11 +1,5 @@
-import React from 'react'
+const PortfolioPage = () => {
+  return <div>PortfolioPage</div>;
+};
 
-interface Props {}
-
-const PortfolioPage = (props: Props) => {
-  return (
-    <div>PortfolioPage</div>
-  )
-}
-
-export default PortfolioPage
+export default PortfolioPage;

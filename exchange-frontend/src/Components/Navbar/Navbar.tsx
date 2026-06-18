@@ -1,32 +1,20 @@
-import styles from "./Navbar.module.css";
-import { ThemeToggle } from "../Theme/ThemeToggle";
 import { Link } from "react-router-dom";
+import { ThemeToggle } from "../Theme/ThemeToggle";
+import styles from "./Navbar.module.css";
 
-interface Props {}
-
-const Navbar = (props: Props) => {
+const Navbar = () => {
   return (
     <nav className={styles.container}>
       <div className={styles.navbarFlex}>
         <div className={styles.logoGroup}>
-          {/* need to add logo here, might make some sort of animated logo with AI */}
-          <Link to="/">
-            Regulus     
-          <img alt="" />
-          </Link>
+          <Link to="/">Regulus</Link>
           <div className={styles.menu}>
-            <Link to ="/search" className={styles.link}>
+            <Link to="/search" className={styles.link}>
               Search
             </Link>
           </div>
         </div>
         <div className={styles.actions}>
-        <Link to ="/login" className={styles.link}>
-            Login
-            </Link>
-          <a href="" className={styles.signup}>
-            Signup
-          </a>
           <ThemeToggle />
         </div>
       </div>
