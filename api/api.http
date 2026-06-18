@@ -4,3 +4,8 @@ GET {{api_HostAddress}}/api/stocks
 Accept: application/json
 
 ###
+
+GET {{api_HostAddress}}/api/market-data/search-name?query=AAPL
+Accept: application/json
+
+###

@@ -4,12 +4,6 @@ React/Vite frontend for the Regulus Exchange app.
 
 ## Setup
 
-Create `.env` in this folder:
-
-```ini
-VITE_EXCHANGE_KEY=your_fmp_key
-```
-
 Install dependencies:
 
 ```powershell
@@ -26,6 +20,7 @@ npm.cmd run preview
 ```
 
 The Vite dev server proxies `/api` requests to the .NET API at `http://localhost:5052`.
+Configure the Financial Modeling Prep key on the API, not in the frontend.
 
 ## Notes
 

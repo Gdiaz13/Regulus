@@ -17,10 +17,17 @@ Regulus Exchange is a full-stack stock research and portfolio app. The frontend 
 
 ## Configuration
 
-Create `exchange-frontend/.env`:
+Store the Financial Modeling Prep key in API configuration. For local development, user secrets or an environment variable keep it out of source control:
 
-```ini
-VITE_EXCHANGE_KEY=your_fmp_key
+```powershell
+cd api
+dotnet user-secrets set "FinancialModelingPrep:ApiKey" "your_fmp_key"
+```
+
+PowerShell environment variable alternative:
+
+```powershell
+$env:FMP_API_KEY="your_fmp_key"
 ```
 
 Update `api/appsettings.json` if your SQL Server connection string is different from the local default.
@@ -42,7 +49,7 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-The frontend dev server proxies `/api` calls to `http://localhost:5052`.
+The frontend dev server proxies `/api` calls to `http://localhost:5052`. Market-data requests go through the API so the FMP key is not shipped to the browser.
 
 ## Main Routes
 

@@ -1,10 +1,12 @@
 using api.Data;
 using api.Endpoints;
+using api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 
 builder
     .Services
@@ -25,6 +27,12 @@ else
 }
 
 app.MapGet("/", () => "Exchange API running");
+app.MapMarketDataEndpoints();
 app.MapStockEndpoints();
 
 app.Run();
+
+static void ConfigureFmpClient(HttpClient client)
+{
+    client.BaseAddress = new Uri("https://financialmodelingprep.com/stable/");
+}

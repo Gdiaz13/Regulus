@@ -1,8 +1,4 @@
-import axios from "axios";
 import type { ApiResult } from "./types";
-
-const fmpApiKey = import.meta.env.VITE_EXCHANGE_KEY as string | undefined;
-const fmpBaseUrl = "https://financialmodelingprep.com/stable";
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
 
@@ -10,32 +6,59 @@ export async function requestFmp<T>(
   path: string,
   params: QueryParams,
 ): Promise<ApiResult<T>> {
-  if (!fmpApiKey) {
-    return apiFailure("Missing Financial Modeling Prep API key.");
-  }
-
-  return sendFmpRequest<T>(path, params);
+  return requestMarketData<T>(path, params);
 }
 
-async function sendFmpRequest<T>(path: string, params: QueryParams): Promise<ApiResult<T>> {
+async function requestMarketData<T>(path: string, params: QueryParams): Promise<ApiResult<T>> {
   try {
-    const response = await axios.get<T>(`${fmpBaseUrl}/${path}`, {
-      params: withApiKey(params),
-    });
-    return apiSuccess(response.data);
-  } catch (error) {
-    return apiFailure(getFmpErrorMessage(error));
+    const response = await fetch(marketDataUrl(path, params));
+    return readMarketData<T>(response);
+  } catch {
+    return apiFailure("Unable to connect to the market data API.");
   }
 }
 
-function withApiKey(params: QueryParams) {
-  return { ...params, apikey: fmpApiKey };
+async function readMarketData<T>(response: Response): Promise<ApiResult<T>> {
+  if (!response.ok) {
+    return apiFailure(await responseMessage(response));
+  }
+  return apiSuccess((await response.json()) as T);
 }
 
-function getFmpErrorMessage(error: unknown) {
-  return axios.isAxiosError(error)
-    ? error.response?.data?.message || error.message
-    : "Unexpected API error.";
+function marketDataUrl(path: string, params: QueryParams) {
+  const query = new URLSearchParams(cleanParams(params));
+  return `/api/market-data/${path}?${query.toString()}`;
+}
+
+function cleanParams(params: QueryParams): Record<string, string> {
+  return Object.fromEntries(validEntries(params));
+}
+
+function validEntries(params: QueryParams) {
+  return Object.entries(params)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => [key, String(value)]);
+}
+
+async function responseMessage(response: Response) {
+  const message = await response.text();
+  return parseErrorMessage(message) || `Market data request failed with ${response.status}.`;
+}
+
+function parseErrorMessage(message: string) {
+  if (!message) {
+    return null;
+  }
+  return readJsonMessage(message) ?? message;
+}
+
+function readJsonMessage(message: string) {
+  try {
+    const parsed = JSON.parse(message) as ErrorPayload;
+    return parsed.message ?? parsed.detail ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function apiSuccess<T>(data: T): ApiResult<T> {
@@ -45,3 +68,8 @@ function apiSuccess<T>(data: T): ApiResult<T> {
 function apiFailure<T>(message: string): ApiResult<T> {
   return { ok: false, message };
 }
+
+type ErrorPayload = {
+  message?: string;
+  detail?: string;
+};
