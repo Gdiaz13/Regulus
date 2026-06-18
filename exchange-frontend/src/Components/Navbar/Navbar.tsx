@@ -24,6 +24,7 @@ function SearchMenu() {
   return (
     <div className={styles.menu}>
       <Link to="/search" className={styles.link}>Search</Link>
+      <Link to="/portfolio" className={styles.link}>Portfolio</Link>
     </div>
   );
 }

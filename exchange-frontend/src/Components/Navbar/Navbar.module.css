@@ -23,6 +23,7 @@
 @media (min-width: 1024px) {
   .menu {
     display: flex !important;
+    gap: 1.5rem;
   }
 }
 
@@ -39,22 +40,6 @@
   .actions {
     display: flex !important;
   }
-}
-
-.login {
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.signup {
-  padding: 0.75rem 2rem;
-  font-weight: bold;
-  border-radius: 0.5rem;
-  transition: opacity 0.2s;
-  text-decoration: none;
-}
-.signup:hover {
-  opacity: 0.7;
 }
 
 /* Responsive utilities */

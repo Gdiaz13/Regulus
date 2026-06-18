@@ -192,7 +192,7 @@
       }
       
       /* Regulus star accent for buttons */
-      button, .cosmic-button, .heroButton, .signup {
+      button, .cosmic-button, .heroButton {
         background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)) 80%);
         color: hsl(var(--primary-foreground));
         border: none;
@@ -200,7 +200,7 @@
         font-weight: 600;
         transition: background 0.2s, color 0.2s, box-shadow 0.2s;
       }
-      button:hover, .cosmic-button:hover, .heroButton:hover, .signup:hover {
+      button:hover, .cosmic-button:hover, .heroButton:hover {
         background: linear-gradient(90deg, hsl(var(--accent)), hsl(var(--primary)) 80%);
         color: hsl(var(--background));
         box-shadow: 0 0 16px 2px hsl(var(--accent) / 0.3);

@@ -2,8 +2,8 @@ import type { FormEvent } from 'react';
 import styles from './DeletePortfolio.module.css';
 
 const buttonLabels = [
-  { label: 'Delete Portfolio', size: 'full' },
-  { label: 'Delete', size: 'medium' },
+  { label: 'Remove from Portfolio', size: 'full' },
+  { label: 'Remove', size: 'medium' },
   { label: 'X', size: 'short' },
 ];
 

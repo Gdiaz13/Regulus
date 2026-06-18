@@ -6,9 +6,10 @@ import App from "../App";
 import CompanyPage from "../Pages/CompanyPage/CompanyPage";
 import CompanyProfile from "../Components/CompanyProfile/CompanyProfile";
 import IncomeStatement from "../Components/IncomeStatement/IncomeStatement";
-import DesignPage from "../Pages/DesignGuide/DesignGuide";
 import BalanceSheet from "../Components/BalanceSheet/BalanceSheet";
 import CashFlowStatement from "../Components/CashFlowStatement/CashFlowStatement";
+import PortfolioPage from "../Pages/PortfolioPage/PortfolioPage";
+import NotFoundPage from "../Pages/NotFoundPage/NotFoundPage";
 
 export const router = createBrowserRouter([
     {
@@ -17,7 +18,7 @@ export const router = createBrowserRouter([
         children: [
             { path: "", element: <HomePage /> },
             { path: "search", element: <SearchPage /> },
-            { path: "design-guide", element: <DesignPage /> },
+            { path: "portfolio", element: <PortfolioPage /> },
             { path: "company/:ticker", 
                 element: <CompanyPage />, 
                 children: [
@@ -28,7 +29,7 @@ export const router = createBrowserRouter([
                     { path: "cashflow-statement", element: <CashFlowStatement /> }
                 ]
             },
-
+            { path: "*", element: <NotFoundPage /> },
         ]
     },
 ]);
