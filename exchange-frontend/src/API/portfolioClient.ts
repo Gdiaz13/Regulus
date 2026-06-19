@@ -2,6 +2,7 @@ import type {
   CreatePortfolioStock,
   IPortfolioStock,
 } from "../Interfaces/APIResponses/IPortfolioStock";
+import { responseMessage } from "./responseMessage";
 import type { ApiResult } from "./types";
 
 async function requestPortfolio<T>(
@@ -28,17 +29,12 @@ function portfolioHeaders(init?: RequestInit) {
 
 async function readPortfolioResponse<T>(response: Response): Promise<ApiResult<T>> {
   if (!response.ok) {
-    return portfolioFailure(await responseMessage(response));
+    return portfolioFailure(await responseMessage(response, `Portfolio request failed with ${response.status}.`));
   }
   if (response.status === 204) {
     return portfolioSuccess(undefined as T);
   }
   return portfolioSuccess((await response.json()) as T);
-}
-
-async function responseMessage(response: Response) {
-  const message = await response.text();
-  return message || `Portfolio request failed with ${response.status}.`;
 }
 
 function portfolioSuccess<T>(data: T): ApiResult<T> {

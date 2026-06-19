@@ -1,4 +1,5 @@
 import type { IApiHealth } from '../Interfaces/APIResponses/IApiHealth';
+import { responseMessage } from './responseMessage';
 import type { ApiResult } from './types';
 
 export function getApiHealth(): Promise<ApiResult<IApiHealth>> {
@@ -16,14 +17,9 @@ async function requestHealth(): Promise<ApiResult<IApiHealth>> {
 
 async function readHealthResponse(response: Response): Promise<ApiResult<IApiHealth>> {
   if (!response.ok) {
-    return healthFailure(await responseMessage(response));
+    return healthFailure(await responseMessage(response, `Health request failed with ${response.status}.`));
   }
   return healthSuccess((await response.json()) as IApiHealth);
-}
-
-async function responseMessage(response: Response) {
-  const message = await response.text();
-  return message || `Health request failed with ${response.status}.`;
 }
 
 function healthSuccess(data: IApiHealth): ApiResult<IApiHealth> {

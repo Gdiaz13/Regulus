@@ -1,3 +1,4 @@
+import { responseMessage } from "./responseMessage";
 import type { ApiResult } from "./types";
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
@@ -21,7 +22,7 @@ async function requestMarketData<T>(path: string, params: QueryParams): Promise<
 
 async function readMarketData<T>(response: Response): Promise<ApiResult<T>> {
   if (!response.ok) {
-    return apiFailure(await responseMessage(response));
+    return apiFailure(await responseMessage(response, `Market data request failed with ${response.status}.`));
   }
   return apiSuccess((await response.json()) as T);
 }
@@ -41,27 +42,6 @@ function validEntries(params: QueryParams) {
     .map(([key, value]) => [key, String(value)]);
 }
 
-async function responseMessage(response: Response) {
-  const message = await response.text();
-  return parseErrorMessage(message) || `Market data request failed with ${response.status}.`;
-}
-
-function parseErrorMessage(message: string) {
-  if (!message) {
-    return null;
-  }
-  return readJsonMessage(message) ?? message;
-}
-
-function readJsonMessage(message: string) {
-  try {
-    const parsed = JSON.parse(message) as ErrorPayload;
-    return parsed.message ?? parsed.detail ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function apiSuccess<T>(data: T): ApiResult<T> {
   return { ok: true, data };
 }
@@ -69,8 +49,3 @@ function apiSuccess<T>(data: T): ApiResult<T> {
 function apiFailure<T>(message: string): ApiResult<T> {
   return { ok: false, message };
 }
-
-type ErrorPayload = {
-  message?: string;
-  detail?: string;
-};

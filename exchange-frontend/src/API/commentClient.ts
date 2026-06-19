@@ -1,4 +1,5 @@
 import type { CreateStockComment, IStockComment } from '../Interfaces/APIResponses/IStockComment';
+import { responseMessage } from './responseMessage';
 import type { ApiResult } from './types';
 
 async function requestComment<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
@@ -22,17 +23,12 @@ function commentHeaders(init?: RequestInit) {
 
 async function readCommentResponse<T>(response: Response): Promise<ApiResult<T>> {
   if (!response.ok) {
-    return commentFailure(await responseMessage(response));
+    return commentFailure(await responseMessage(response, `Notes request failed with ${response.status}.`));
   }
   if (response.status === 204) {
     return commentSuccess(undefined as T);
   }
   return commentSuccess((await response.json()) as T);
-}
-
-async function responseMessage(response: Response) {
-  const message = await response.text();
-  return message || `Notes request failed with ${response.status}.`;
 }
 
 function commentSuccess<T>(data: T): ApiResult<T> {
