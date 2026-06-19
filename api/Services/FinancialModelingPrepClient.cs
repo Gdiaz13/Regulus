@@ -32,10 +32,7 @@ public sealed class FinancialModelingPrepClient
 
     private string? GetApiKey()
     {
-        var configuredKey = _configuration["FinancialModelingPrep:ApiKey"];
-        return string.IsNullOrWhiteSpace(configuredKey)
-            ? _configuration["FMP_API_KEY"]
-            : configuredKey;
+        return MarketDataConfiguration.GetApiKey(_configuration);
     }
 
     private static IResult ToResult(HttpResponseMessage response, string content)

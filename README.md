@@ -78,6 +78,7 @@ Code should stay modular: keep functions short, focused, typed, and easy to veri
 
 ## API Surface
 
+- `GET /api/health`
 - `GET /api/stocks`
 - `GET /api/stocks/{symbol}`
 - `POST /api/stocks`
