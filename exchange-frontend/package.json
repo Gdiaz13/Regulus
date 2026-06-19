@@ -8,6 +8,7 @@
     "dev": "node scripts/dev.mjs",
     "build": "tsc -b && node scripts/build.mjs",
     "lint": "eslint src --ext .ts,.tsx --no-error-on-unmatched-pattern",
+    "lint:functions": "node scripts/check-function-length.mjs",
     "preview": "node scripts/preview.mjs"
   },
   "dependencies": {

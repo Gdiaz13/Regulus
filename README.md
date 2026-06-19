@@ -68,6 +68,7 @@ The frontend dev server proxies `/api` calls to `http://localhost:5052`. Market-
 ```powershell
 cd exchange-frontend
 npm.cmd run lint
+npm.cmd run lint:functions
 npm.cmd run build
 
 cd ..\api

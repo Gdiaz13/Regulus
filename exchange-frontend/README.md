@@ -15,6 +15,7 @@ npm.cmd install
 ```powershell
 npm.cmd run dev
 npm.cmd run lint
+npm.cmd run lint:functions
 npm.cmd run build
 npm.cmd run preview
 ```
