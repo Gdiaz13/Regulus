@@ -12,7 +12,7 @@ Regulus Exchange is a full-stack stock research and portfolio app. The frontend 
 
 - Node.js and npm
 - .NET 9 SDK
-- SQL Server Express or another SQL Server instance
+- SQL Server LocalDB, SQL Server Express, or another SQL Server instance
 - Financial Modeling Prep API key
 
 ## Configuration
@@ -30,7 +30,8 @@ PowerShell environment variable alternative:
 $env:FMP_API_KEY="your_fmp_key"
 ```
 
-Update `api/appsettings.json` if your SQL Server connection string is different from the local default.
+The default API connection string uses SQL Server LocalDB. Update `api/appsettings.json` if you use a different SQL Server instance.
+In development, the API attempts to apply EF migrations on startup; if SQL Server is unavailable, the API still starts and database-backed routes return `503`.
 
 ## Run Locally
 

@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 
@@ -16,6 +20,8 @@ builder
     );
 
 var app = builder.Build();
+
+await DatabaseStartup.InitializeAsync(app);
 
 if (app.Environment.IsDevelopment())
 {
