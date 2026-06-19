@@ -26,5 +26,6 @@ Configure the Financial Modeling Prep key on the API, not in the frontend.
 
 - Shared API results use `ApiResult<T>`.
 - Portfolio state is shared through `src/hooks/usePortfolioStocks.ts`.
+- Portfolio notes are shared through `src/hooks/useStockComments.ts`.
 - Company statement pages use `src/hooks/useTickerResource.ts`.
 - Keep components and helpers small: one job per function, no long render bodies.

@@ -55,7 +55,7 @@ The frontend dev server proxies `/api` calls to `http://localhost:5052`. Market-
 
 - `/`: landing page
 - `/search`: company search and quick portfolio actions
-- `/portfolio`: persisted portfolio management
+- `/portfolio`: persisted portfolio management with stock notes
 - `/company/:ticker`: company dashboard
 - `/company/:ticker/company-profile`: key metrics
 - `/company/:ticker/income-statement`: income statement
@@ -74,3 +74,14 @@ dotnet build --no-restore
 ```
 
 Code should stay modular: keep functions short, focused, typed, and easy to verify.
+
+## API Surface
+
+- `GET /api/stocks`
+- `GET /api/stocks/{symbol}`
+- `POST /api/stocks`
+- `DELETE /api/stocks/{id}`
+- `GET /api/stocks/{stockId}/comments`
+- `POST /api/stocks/{stockId}/comments`
+- `DELETE /api/comments/{id}`
+- `GET /api/market-data/{providerPath}`

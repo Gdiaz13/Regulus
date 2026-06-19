@@ -9,3 +9,18 @@ GET {{api_HostAddress}}/api/market-data/search-name?query=AAPL
 Accept: application/json
 
 ###
+
+GET {{api_HostAddress}}/api/stocks/1/comments
+Accept: application/json
+
+###
+
+POST {{api_HostAddress}}/api/stocks/1/comments
+Content-Type: application/json
+
+{
+  "title": "Watch",
+  "content": "Track the next earnings report."
+}
+
+###

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import PortfolioCard from '../../Components/Portfolio/PortfolioCard/PortfolioCard';
+import StockNotes from '../../Components/Portfolio/StockNotes/StockNotes';
 import type { IPortfolioStock } from '../../Interfaces/APIResponses/IPortfolioStock';
 import { usePortfolioStocks } from '../../hooks/usePortfolioStocks';
 import styles from './PortfolioPage.module.css';
@@ -85,7 +86,16 @@ function PortfolioGrid({ stocks, onDelete }: GridProps) {
 }
 
 function renderStock(stock: IPortfolioStock, onDelete: (id: number) => void) {
-  return <PortfolioCard key={stock.id} portfolioValue={stock} onPortfolioDelete={onDelete} />;
+  return <PortfolioStockPanel key={stock.id} stock={stock} onDelete={onDelete} />;
+}
+
+function PortfolioStockPanel({ stock, onDelete }: StockPanelProps) {
+  return (
+    <article className={styles.stockPanel}>
+      <PortfolioCard portfolioValue={stock} onPortfolioDelete={onDelete} />
+      <StockNotes stockId={stock.id} />
+    </article>
+  );
 }
 
 type FormProps = {
@@ -96,6 +106,11 @@ type FormProps = {
 
 type GridProps = {
   stocks: IPortfolioStock[];
+  onDelete: (id: number) => void;
+};
+
+type StockPanelProps = {
+  stock: IPortfolioStock;
   onDelete: (id: number) => void;
 };
 

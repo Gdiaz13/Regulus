@@ -1,0 +1,66 @@
+.notes {
+  border-top: 1px solid hsl(var(--border));
+  margin-top: 1rem;
+  padding-top: 1rem;
+  width: 100%;
+}
+
+.form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form input,
+.form textarea {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  width: 100%;
+}
+
+.form textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.form button,
+.note button {
+  padding: 0.55rem 0.75rem;
+}
+
+.form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.message,
+.empty {
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0;
+}
+
+.list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.note {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.note span {
+  font-size: 0.78rem;
+  opacity: 0.72;
+}
+
+.note p {
+  margin: 0;
+}

@@ -67,10 +67,20 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
-  justify-items: center;
   margin-top: 1.5rem;
+}
+
+.stockPanel {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.stockPanel > div {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 @media (max-width: 520px) {

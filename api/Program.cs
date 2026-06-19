@@ -27,6 +27,7 @@ else
 }
 
 app.MapGet("/", () => "Exchange API running");
+app.MapCommentEndpoints();
 app.MapMarketDataEndpoints();
 app.MapStockEndpoints();
 
