@@ -18,7 +18,7 @@ export function usePortfolioStocks() {
     void loadPortfolio(setState);
   }, []);
   const add = (stock: CreatePortfolioStock) => addPortfolio(stock, state.values, setState);
-  const update = (id: number, stock: CreatePortfolioStock) => updatePortfolio(id, stock, setState);
+  const update = (id: number, stock: CreatePortfolioStock) => updatePortfolio(id, stock, state.values, setState);
   const remove = (id: number) => removePortfolio(id, setState);
   return { ...state, add, update, remove };
 }
@@ -56,8 +56,28 @@ async function removePortfolio(id: number, setState: StateSetter) {
   return true;
 }
 
-async function updatePortfolio(id: number, stock: CreatePortfolioStock, setState: StateSetter) {
-  const result = await updatePortfolioStock(id, normalizeStock(stock));
+async function updatePortfolio(
+  id: number,
+  stock: CreatePortfolioStock,
+  values: IPortfolioStock[],
+  setState: StateSetter,
+) {
+  const request = normalizeStock(stock);
+  if (rejectDuplicateUpdate(values, id, request.symbol, setState)) {
+    return false;
+  }
+  return applyUpdateResult(await updatePortfolioStock(id, request), setState);
+}
+
+function rejectDuplicateUpdate(values: IPortfolioStock[], id: number, symbol: string, setState: StateSetter) {
+  if (!portfolioHasOtherSymbol(values, id, symbol)) {
+    return false;
+  }
+  setState(errorState(`${symbol} is already in your portfolio.`, values));
+  return true;
+}
+
+function applyUpdateResult(result: Awaited<ReturnType<typeof updatePortfolioStock>>, setState: StateSetter) {
   if (!result.ok) {
     setState((state) => errorState(result.message, state.values));
     return false;
@@ -89,6 +109,10 @@ function replaceStock(values: IPortfolioStock[], next: IPortfolioStock) {
 
 function portfolioHasSymbol(values: IPortfolioStock[], symbol: string) {
   return values.some((stock) => stock.symbol.toUpperCase() === symbol);
+}
+
+function portfolioHasOtherSymbol(values: IPortfolioStock[], id: number, symbol: string) {
+  return values.some((stock) => stock.id !== id && stock.symbol.toUpperCase() === symbol);
 }
 
 function loadingState(): PortfolioState {
