@@ -16,6 +16,7 @@ This is my stock research and portfolio app. The goal is to keep it useful, read
 - Notes hang off a portfolio stock through `/api/stocks/{stockId}/comments`.
 - Market data calls go to `/api/market-data/...`; the API adds the FMP key so the browser never gets it.
 - `/api/health` is the quick "is the app wired up?" check for the API, database, and FMP config.
+- Portfolio symbols are stored uppercase, capped at 32 characters, and kept unique in the database.
 
 ## What You Need
 

@@ -10,6 +10,8 @@ import styles from './PortfolioPage.module.css';
 type Portfolio = ReturnType<typeof usePortfolioStocks>;
 type StockFieldName = keyof StockFieldState;
 
+const stockSymbolMaxLength = 32;
+
 type StockFieldState = {
   symbol: string;
   companyName: string;
@@ -20,7 +22,7 @@ type StockFieldState = {
 };
 
 const stockFields = [
-  { name: 'symbol', label: 'Ticker' },
+  { name: 'symbol', label: 'Ticker', maxLength: stockSymbolMaxLength },
   { name: 'companyName', label: 'Company name' },
   { name: 'purchasePrice', label: 'Purchase price', type: 'number' },
   { name: 'lastDividend', label: 'Last dividend', type: 'number' },
@@ -69,7 +71,7 @@ function PortfolioForm({ symbol, setSymbol, submit }: FormProps) {
   return (
     <form className={styles.form} onSubmit={submit}>
       <label htmlFor="portfolio-symbol">Ticker symbol</label>
-      <input id="portfolio-symbol" value={symbol} onChange={(event) => setSymbol(event.target.value)} />
+      <input id="portfolio-symbol" maxLength={stockSymbolMaxLength} value={symbol} onChange={(event) => setSymbol(event.target.value)} />
       <button type="submit" disabled={!symbol.trim()}>Add</button>
     </form>
   );
@@ -145,9 +147,18 @@ function StockField({ field, form }: StockFieldProps) {
   return (
     <label>
       <span>{field.label}</span>
-      <input type={field.type ?? 'text'} value={form.fields[field.name]} onChange={fieldChange(field, form)} />
+      <input {...stockInputProps(field, form)} />
     </label>
   );
+}
+
+function stockInputProps(field: StockFieldConfig, form: StockDetailsFormProps) {
+  return {
+    maxLength: field.maxLength,
+    onChange: fieldChange(field, form),
+    type: field.type ?? 'text',
+    value: form.fields[field.name],
+  };
 }
 
 function fieldChange(field: StockFieldConfig, form: StockDetailsFormProps) {
@@ -215,6 +226,7 @@ type StockPanelProps = {
 type StockFieldConfig = {
   name: StockFieldName;
   label: string;
+  maxLength?: number;
   type?: 'number';
 };
 

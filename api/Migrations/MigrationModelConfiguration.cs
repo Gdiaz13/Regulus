@@ -6,6 +6,8 @@ namespace api.Migrations;
 
 internal static class MigrationModelConfiguration
 {
+    private const int StockSymbolMaxLength = 32;
+
     public static void Configure(ModelBuilder modelBuilder)
     {
         ConfigureAnnotations(modelBuilder);
@@ -66,6 +68,7 @@ internal static class MigrationModelConfiguration
         ConfigureStockId(builder);
         ConfigureStockFields(builder);
         builder.HasKey("Id");
+        builder.HasIndex("Symbol").IsUnique();
         builder.ToTable("Stocks");
     }
 
@@ -82,7 +85,7 @@ internal static class MigrationModelConfiguration
         builder.Property<decimal>("LastDividend").HasColumnType("decimal(18,2)");
         builder.Property<long>("MarketCap").HasColumnType("bigint");
         builder.Property<decimal>("PurchasePrice").HasColumnType("decimal(18,2)");
-        builder.Property<string>("Symbol").IsRequired().HasColumnType("nvarchar(max)");
+        builder.Property<string>("Symbol").IsRequired().HasMaxLength(StockSymbolMaxLength).HasColumnType("nvarchar(32)");
     }
 
     private static void ConfigureCommentNavigation(EntityTypeBuilder builder)

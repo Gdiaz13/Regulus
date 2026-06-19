@@ -164,9 +164,10 @@ public static class StockEndpoints
 
     private static async Task<IResult?> ValidateStockRequest(ApplicationDBContext db, string symbol)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
+        var validation = ValidateSymbol(symbol);
+        if (validation is not null)
         {
-            return Results.BadRequest("A stock symbol is required.");
+            return validation;
         }
         if (await StockExists(db, symbol))
         {
@@ -177,15 +178,25 @@ public static class StockEndpoints
 
     private static async Task<IResult?> ValidateStockUpdate(ApplicationDBContext db, int id, string symbol)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
+        var validation = ValidateSymbol(symbol);
+        if (validation is not null)
         {
-            return Results.BadRequest("A stock symbol is required.");
+            return validation;
         }
         if (await SymbolBelongsToAnotherStock(db, id, symbol))
         {
             return Results.Conflict($"{symbol} is already in your portfolio.");
         }
         return null;
+    }
+
+    private static IResult? ValidateSymbol(string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return Results.BadRequest("A stock symbol is required.");
+        }
+        return SymbolIsTooLong(symbol) ? SymbolTooLong() : null;
     }
 
     private static Task<Stock?> FindStockBySymbol(ApplicationDBContext db, string symbol)
@@ -201,6 +212,16 @@ public static class StockEndpoints
     private static Task<bool> SymbolBelongsToAnotherStock(ApplicationDBContext db, int id, string symbol)
     {
         return db.Stocks.AnyAsync(stock => stock.Id != id && stock.Symbol == symbol);
+    }
+
+    private static bool SymbolIsTooLong(string symbol)
+    {
+        return symbol.Length > Stock.SymbolMaxLength;
+    }
+
+    private static IResult SymbolTooLong()
+    {
+        return Results.BadRequest($"Stock symbols must be {Stock.SymbolMaxLength} characters or less.");
     }
 
     private static string NormalizeSymbol(string? symbol)

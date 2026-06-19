@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,5 +10,18 @@ namespace api.Data
 
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<Comment> Comments { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            ConfigureStockSymbol(modelBuilder);
+        }
+
+        private static void ConfigureStockSymbol(ModelBuilder modelBuilder)
+        {
+            var stock = modelBuilder.Entity<Stock>();
+            stock.Property(value => value.Symbol).HasMaxLength(Stock.SymbolMaxLength);
+            stock.HasIndex(value => value.Symbol).IsUnique();
+        }
     }
 }

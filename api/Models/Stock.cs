@@ -1,11 +1,15 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Xml;
 
 namespace api.Models
 {
     public class Stock
     {
+        public const int SymbolMaxLength = 32;
+
         public int Id { get; set; }
+
+        [MaxLength(SymbolMaxLength)]
         public string Symbol { get; set; } = string.Empty;
         public string CompanyName { get; set; } = string.Empty;
 
