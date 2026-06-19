@@ -11,6 +11,7 @@ import CashFlowStatement from "../Components/CashFlowStatement/CashFlowStatement
 import PortfolioPage from "../Pages/PortfolioPage/PortfolioPage";
 import NotFoundPage from "../Pages/NotFoundPage/NotFoundPage";
 
+// CompanyPage owns the ticker route; its children render the profile and statements.
 export const router = createBrowserRouter([
     {
         path: "/",

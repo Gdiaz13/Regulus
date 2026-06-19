@@ -1,39 +1,47 @@
 # Regulus Exchange
 
-Regulus Exchange is a full-stack stock research and portfolio app. The frontend is a React/Vite app, and the backend is a .NET API with Entity Framework models for persisted portfolio stocks and comments.
+This is my stock research and portfolio app. The goal is to keep it useful, readable, and not tangled up: React handles the screens, the .NET API handles data, SQL Server stores the portfolio, and Financial Modeling Prep is the market-data source.
 
-## Project Structure
+## Quick Map
 
-- `exchange-frontend/`: React, TypeScript, Vite, and CSS modules.
-- `api/`: .NET API, EF Core context, migrations, and portfolio endpoints.
-- `Exchange.sln`: solution file for the API project.
+- `exchange-frontend/` is the React/Vite app.
+- `api/` is the .NET API.
+- `Exchange.sln` opens the API project in Visual Studio or Rider.
 
-## Prerequisites
+## How It Connects
+
+- The browser loads the React app.
+- In local dev, Vite forwards every `/api` request to `http://localhost:5052`.
+- Portfolio calls go to `/api/stocks` and use SQL Server through Entity Framework.
+- Notes hang off a portfolio stock through `/api/stocks/{stockId}/comments`.
+- Market data calls go to `/api/market-data/...`; the API adds the FMP key so the browser never gets it.
+- `/api/health` is the quick "is the app wired up?" check for the API, database, and FMP config.
+
+## What You Need
 
 - Node.js and npm
 - .NET 9 SDK
 - SQL Server LocalDB, SQL Server Express, or another SQL Server instance
-- Financial Modeling Prep API key
+- A Financial Modeling Prep API key
 
-## Configuration
+## Setup
 
-Store the Financial Modeling Prep key in API configuration. For local development, user secrets or an environment variable keep it out of source control:
+Set the FMP key on the API side:
 
 ```powershell
 cd api
 dotnet user-secrets set "FinancialModelingPrep:ApiKey" "your_fmp_key"
 ```
 
-PowerShell environment variable alternative:
+Or use an environment variable:
 
 ```powershell
 $env:FMP_API_KEY="your_fmp_key"
 ```
 
-The default API connection string uses SQL Server LocalDB. Update `api/appsettings.json` if you use a different SQL Server instance.
-In development, the API attempts to apply EF migrations on startup; if SQL Server is unavailable, the API still starts and database-backed routes return `503`.
+The default database points at SQL Server LocalDB in `api/appsettings.json`. If LocalDB is not running, the API still starts, `/api/health` shows the database as unavailable, and database-backed routes return `503`.
 
-## Run Locally
+## Run It
 
 Start the API:
 
@@ -50,20 +58,18 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-The frontend dev server proxies `/api` calls to `http://localhost:5052`. Market-data requests go through the API so the FMP key is not shipped to the browser.
+## Main Screens
 
-## Main Routes
+- `/` is the landing page.
+- `/search` searches companies and can add them to the portfolio.
+- `/portfolio` shows saved stocks and notes.
+- `/company/:ticker` opens the company dashboard.
+- `/company/:ticker/company-profile` shows key metrics.
+- `/company/:ticker/income-statement` shows income statement data.
+- `/company/:ticker/balance-sheet` shows balance sheet data.
+- `/company/:ticker/cashflow-statement` shows cash flow data.
 
-- `/`: landing page
-- `/search`: company search and quick portfolio actions
-- `/portfolio`: persisted portfolio management with stock notes
-- `/company/:ticker`: company dashboard
-- `/company/:ticker/company-profile`: key metrics
-- `/company/:ticker/income-statement`: income statement
-- `/company/:ticker/balance-sheet`: balance sheet
-- `/company/:ticker/cashflow-statement`: cash flow statement
-
-## Verification
+## Checks I Run
 
 ```powershell
 cd exchange-frontend
@@ -75,9 +81,9 @@ cd ..\api
 dotnet build --no-restore
 ```
 
-Code should stay modular: keep functions short, focused, typed, and easy to verify.
+`npm.cmd run lint:functions` is there on purpose. Keep functions short, focused, and easy to read.
 
-## API Surface
+## API Routes
 
 - `GET /api/health`
 - `GET /api/stocks`

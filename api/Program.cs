@@ -33,6 +33,8 @@ else
 }
 
 app.MapGet("/", () => "Exchange API running");
+
+// Endpoint groups stay in api/Endpoints so Program.cs only wires the app together.
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
 app.MapMarketDataEndpoints();

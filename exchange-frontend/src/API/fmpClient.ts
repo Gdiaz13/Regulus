@@ -2,6 +2,7 @@ import type { ApiResult } from "./types";
 
 type QueryParams = Record<string, string | number | boolean | undefined>;
 
+// The browser calls our API proxy; the .NET API adds the real FMP key.
 export async function requestFmp<T>(
   path: string,
   params: QueryParams,

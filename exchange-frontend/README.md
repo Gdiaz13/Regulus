@@ -1,6 +1,6 @@
-# Regulus Frontend
+# Regulus Frontend Notes
 
-React/Vite frontend for the Regulus Exchange app.
+This is the browser side of the app. It renders the pages, talks to `/api`, and leaves secrets and database work to the .NET API.
 
 ## Setup
 
@@ -23,10 +23,12 @@ npm.cmd run preview
 The Vite dev server proxies `/api` requests to the .NET API at `http://localhost:5052`.
 Configure the Financial Modeling Prep key on the API, not in the frontend.
 
-## Notes
+## How The Frontend Connects
 
-- Shared API results use `ApiResult<T>`.
-- Portfolio state is shared through `src/hooks/usePortfolioStocks.ts`.
-- Portfolio notes are shared through `src/hooks/useStockComments.ts`.
-- Company statement pages use `src/hooks/useTickerResource.ts`.
+- `src/Routes/Routes.tsx` decides which page renders for each URL.
+- `src/API/*Client.ts` files are the only place components should call `fetch`.
+- `src/hooks/usePortfolioStocks.ts` connects portfolio screens to `/api/stocks`.
+- `src/hooks/useStockComments.ts` connects stock notes to `/api/stocks/{stockId}/comments`.
+- `src/hooks/useTickerResource.ts` keeps the company statement pages using the same loading/error pattern.
+- `src/Components/HealthStatus` reads `/api/health` for the navbar status pill.
 - Keep components and helpers small: one job per function, no long render bodies.

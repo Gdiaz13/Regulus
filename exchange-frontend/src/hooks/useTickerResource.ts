@@ -5,6 +5,7 @@ import type { ApiResult, LoadStatus } from '../API/types';
 type TickerLoader<T> = (ticker: string) => Promise<ApiResult<T[]>>;
 type Selector<TItem, TData> = (items: TItem[]) => TData | null;
 
+// Shared company-tab loader: each page gives it a ticker fetcher and data selector.
 export type ResourceState<T> = {
   data: T | null;
   status: LoadStatus;
