@@ -1,13 +1,32 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import PortfolioCard from '../../Components/Portfolio/PortfolioCard/PortfolioCard';
 import StockNotes from '../../Components/Portfolio/StockNotes/StockNotes';
-import type { IPortfolioStock } from '../../Interfaces/APIResponses/IPortfolioStock';
+import type { CreatePortfolioStock, IPortfolioStock } from '../../Interfaces/APIResponses/IPortfolioStock';
 import { usePortfolioStocks } from '../../hooks/usePortfolioStocks';
 import styles from './PortfolioPage.module.css';
 
 type Portfolio = ReturnType<typeof usePortfolioStocks>;
+type StockFieldName = keyof StockFieldState;
+
+type StockFieldState = {
+  symbol: string;
+  companyName: string;
+  purchasePrice: string;
+  lastDividend: string;
+  industry: string;
+  marketCap: string;
+};
+
+const stockFields = [
+  { name: 'symbol', label: 'Ticker' },
+  { name: 'companyName', label: 'Company name' },
+  { name: 'purchasePrice', label: 'Purchase price', type: 'number' },
+  { name: 'lastDividend', label: 'Last dividend', type: 'number' },
+  { name: 'industry', label: 'Industry' },
+  { name: 'marketCap', label: 'Market cap', type: 'number' },
+] satisfies StockFieldConfig[];
 
 const PortfolioPage = () => {
   const portfolio = usePortfolioStocks();
@@ -70,33 +89,110 @@ function PortfolioContent({ portfolio }: { portfolio: Portfolio }) {
   if (portfolio.values.length === 0) {
     return <PortfolioEmpty />;
   }
-  return <PortfolioGrid stocks={portfolio.values} onDelete={portfolio.remove} />;
+  return <PortfolioGrid stocks={portfolio.values} onDelete={portfolio.remove} onUpdate={portfolio.update} />;
 }
 
 function PortfolioEmpty() {
   return <p className={styles.empty}>Add a ticker to start a persisted portfolio.</p>;
 }
 
-function PortfolioGrid({ stocks, onDelete }: GridProps) {
+function PortfolioGrid({ stocks, onDelete, onUpdate }: GridProps) {
   return (
     <section className={styles.grid}>
-      {stocks.map((stock) => renderStock(stock, onDelete))}
+      {stocks.map((stock) => renderStock(stock, onDelete, onUpdate))}
     </section>
   );
 }
 
-function renderStock(stock: IPortfolioStock, onDelete: (id: number) => void) {
-  return <PortfolioStockPanel key={stock.id} stock={stock} onDelete={onDelete} />;
+function renderStock(stock: IPortfolioStock, onDelete: DeleteStock, onUpdate: UpdateStock) {
+  return <PortfolioStockPanel key={stock.id} stock={stock} onDelete={onDelete} onUpdate={onUpdate} />;
 }
 
-function PortfolioStockPanel({ stock, onDelete }: StockPanelProps) {
+function PortfolioStockPanel({ stock, onDelete, onUpdate }: StockPanelProps) {
+  const form = useStockDetailsForm(stock, onUpdate);
   return (
     <article className={styles.stockPanel}>
       <PortfolioCard portfolioValue={stock} onPortfolioDelete={onDelete} />
+      <StockDetailsForm {...form} />
       <StockNotes stockId={stock.id} />
     </article>
   );
 }
+
+function useStockDetailsForm(stock: IPortfolioStock, onUpdate: UpdateStock) {
+  const [fields, setFields] = useState(() => stockFieldState(stock));
+  return {
+    fields,
+    setField: fieldSetter(setFields),
+    submit: submitStockDetails(stock.id, fields, onUpdate),
+  };
+}
+
+function StockDetailsForm(props: StockDetailsFormProps) {
+  return (
+    <form className={styles.detailsForm} onSubmit={props.submit}>
+      <div className={styles.detailsGrid}>{stockFields.map(renderStockField(props))}</div>
+      <button type="submit" disabled={!props.fields.symbol.trim()}>Update details</button>
+    </form>
+  );
+}
+
+function renderStockField(props: StockDetailsFormProps) {
+  return (field: StockFieldConfig) => <StockField key={field.name} field={field} form={props} />;
+}
+
+function StockField({ field, form }: StockFieldProps) {
+  return (
+    <label>
+      <span>{field.label}</span>
+      <input type={field.type ?? 'text'} value={form.fields[field.name]} onChange={fieldChange(field, form)} />
+    </label>
+  );
+}
+
+function fieldChange(field: StockFieldConfig, form: StockDetailsFormProps) {
+  return (event: ChangeEvent<HTMLInputElement>) => form.setField(field.name, event.target.value);
+}
+
+function fieldSetter(setFields: Dispatch<SetStateAction<StockFieldState>>) {
+  return (name: StockFieldName, value: string) => setFields((fields) => ({ ...fields, [name]: value }));
+}
+
+function submitStockDetails(id: number, fields: StockFieldState, onUpdate: UpdateStock) {
+  return (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void onUpdate(id, stockRequest(fields));
+  };
+}
+
+function stockFieldState(stock: IPortfolioStock): StockFieldState {
+  return {
+    symbol: stock.symbol,
+    companyName: stock.companyName,
+    purchasePrice: String(stock.purchasePrice),
+    lastDividend: String(stock.lastDividend),
+    industry: stock.industry,
+    marketCap: String(stock.marketCap),
+  };
+}
+
+function stockRequest(fields: StockFieldState): CreatePortfolioStock {
+  return {
+    symbol: fields.symbol,
+    companyName: fields.companyName,
+    purchasePrice: numberField(fields.purchasePrice),
+    lastDividend: numberField(fields.lastDividend),
+    industry: fields.industry,
+    marketCap: numberField(fields.marketCap),
+  };
+}
+
+function numberField(value: string) {
+  return value.trim() ? Number(value) : undefined;
+}
+
+type DeleteStock = (id: number) => void;
+type UpdateStock = (id: number, stock: CreatePortfolioStock) => Promise<boolean>;
 
 type FormProps = {
   symbol: string;
@@ -106,12 +202,31 @@ type FormProps = {
 
 type GridProps = {
   stocks: IPortfolioStock[];
-  onDelete: (id: number) => void;
+  onDelete: DeleteStock;
+  onUpdate: UpdateStock;
 };
 
 type StockPanelProps = {
   stock: IPortfolioStock;
-  onDelete: (id: number) => void;
+  onDelete: DeleteStock;
+  onUpdate: UpdateStock;
+};
+
+type StockFieldConfig = {
+  name: StockFieldName;
+  label: string;
+  type?: 'number';
+};
+
+type StockDetailsFormProps = {
+  fields: StockFieldState;
+  setField: (name: StockFieldName, value: string) => void;
+  submit: (event: FormEvent<HTMLFormElement>) => void;
+};
+
+type StockFieldProps = {
+  field: StockFieldConfig;
+  form: StockDetailsFormProps;
 };
 
 export default PortfolioPage;

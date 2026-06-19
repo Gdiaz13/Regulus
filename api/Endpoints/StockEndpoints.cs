@@ -13,6 +13,7 @@ public static class StockEndpoints
         stocks.MapGet("", GetStocks);
         stocks.MapGet("{symbol}", GetStock);
         stocks.MapPost("", CreateStock);
+        stocks.MapPut("{id:int}", UpdateStock);
         stocks.MapDelete("{id:int}", DeleteStock);
     }
 
@@ -59,6 +60,30 @@ public static class StockEndpoints
         return DatabaseRequest.Run(() => DeleteStockCore(id, db));
     }
 
+    private static Task<IResult> UpdateStock(
+        int id,
+        CreateStockRequest request,
+        ApplicationDBContext db
+    )
+    {
+        return DatabaseRequest.Run(() => UpdateStockCore(id, request, db));
+    }
+
+    private static async Task<IResult> UpdateStockCore(
+        int id,
+        CreateStockRequest request,
+        ApplicationDBContext db
+    )
+    {
+        var symbol = NormalizeSymbol(request.Symbol);
+        var validation = await ValidateStockUpdate(db, id, symbol);
+        if (validation is not null)
+        {
+            return validation;
+        }
+        return await SaveUpdatedStock(id, request, symbol, db);
+    }
+
     private static async Task<IResult> DeleteStockCore(int id, ApplicationDBContext db)
     {
         var stock = await db.Stocks.FindAsync(id);
@@ -72,6 +97,38 @@ public static class StockEndpoints
         return Results.NoContent();
     }
 
+    private static async Task<IResult> SaveUpdatedStock(
+        int id,
+        CreateStockRequest request,
+        string symbol,
+        ApplicationDBContext db
+    )
+    {
+        var stock = await db.Stocks.FindAsync(id);
+        if (stock is null)
+        {
+            return StockMissing(id);
+        }
+        return await SaveStockUpdate(stock, request, symbol, db);
+    }
+
+    private static async Task<IResult> SaveStockUpdate(
+        Stock stock,
+        CreateStockRequest request,
+        string symbol,
+        ApplicationDBContext db
+    )
+    {
+        ApplyStockUpdate(stock, request, symbol);
+        await db.SaveChangesAsync();
+        return Results.Ok(stock);
+    }
+
+    private static IResult StockMissing(int id)
+    {
+        return Results.NotFound($"Stock with id {id} was not found.");
+    }
+
     private static Stock CreateStockEntity(CreateStockRequest request, string symbol)
     {
         return new Stock
@@ -83,6 +140,16 @@ public static class StockEndpoints
             Industry = request.Industry?.Trim() ?? string.Empty,
             MarketCap = request.MarketCap ?? 0,
         };
+    }
+
+    private static void ApplyStockUpdate(Stock stock, CreateStockRequest request, string symbol)
+    {
+        stock.Symbol = symbol;
+        stock.CompanyName = request.CompanyName?.Trim() ?? symbol;
+        stock.PurchasePrice = request.PurchasePrice ?? 0;
+        stock.LastDividend = request.LastDividend ?? 0;
+        stock.Industry = request.Industry?.Trim() ?? string.Empty;
+        stock.MarketCap = request.MarketCap ?? 0;
     }
 
     private static Task<List<Stock>> ListStocks(ApplicationDBContext db)
@@ -108,6 +175,19 @@ public static class StockEndpoints
         return null;
     }
 
+    private static async Task<IResult?> ValidateStockUpdate(ApplicationDBContext db, int id, string symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return Results.BadRequest("A stock symbol is required.");
+        }
+        if (await SymbolBelongsToAnotherStock(db, id, symbol))
+        {
+            return Results.Conflict($"{symbol} is already in your portfolio.");
+        }
+        return null;
+    }
+
     private static Task<Stock?> FindStockBySymbol(ApplicationDBContext db, string symbol)
     {
         return db.Stocks.AsNoTracking().FirstOrDefaultAsync(stock => stock.Symbol == symbol);
@@ -116,6 +196,11 @@ public static class StockEndpoints
     private static Task<bool> StockExists(ApplicationDBContext db, string symbol)
     {
         return db.Stocks.AnyAsync(stock => stock.Symbol == symbol);
+    }
+
+    private static Task<bool> SymbolBelongsToAnotherStock(ApplicationDBContext db, int id, string symbol)
+    {
+        return db.Stocks.AnyAsync(stock => stock.Id != id && stock.Symbol == symbol);
     }
 
     private static string NormalizeSymbol(string? symbol)

@@ -10,6 +10,20 @@ Accept: application/json
 
 ###
 
+PUT {{api_HostAddress}}/api/stocks/1
+Content-Type: application/json
+
+{
+  "symbol": "AAPL",
+  "companyName": "Apple Inc.",
+  "purchasePrice": 175,
+  "lastDividend": 0.24,
+  "industry": "Consumer Electronics",
+  "marketCap": 2800000000000
+}
+
+###
+
 GET {{api_HostAddress}}/api/market-data/search-name?query=AAPL
 Accept: application/json
 

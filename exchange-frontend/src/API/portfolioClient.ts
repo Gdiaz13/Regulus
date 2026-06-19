@@ -58,6 +58,16 @@ export function addPortfolioStock(
   });
 }
 
+export function updatePortfolioStock(
+  id: number,
+  stock: CreatePortfolioStock,
+): Promise<ApiResult<IPortfolioStock>> {
+  return requestPortfolio<IPortfolioStock>(`/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(stock),
+  });
+}
+
 export function deletePortfolioStock(id: number): Promise<ApiResult<void>> {
   return requestPortfolio<void>(`/${id}`, {
     method: "DELETE",

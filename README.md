@@ -89,6 +89,7 @@ dotnet build --no-restore
 - `GET /api/stocks`
 - `GET /api/stocks/{symbol}`
 - `POST /api/stocks`
+- `PUT /api/stocks/{id}`
 - `DELETE /api/stocks/{id}`
 - `GET /api/stocks/{stockId}/comments`
 - `POST /api/stocks/{stockId}/comments`

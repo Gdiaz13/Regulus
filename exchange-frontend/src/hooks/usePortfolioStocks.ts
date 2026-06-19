@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { CreatePortfolioStock, IPortfolioStock } from '../Interfaces/APIResponses/IPortfolioStock';
 import type { LoadStatus } from '../API/types';
-import { addPortfolioStock, deletePortfolioStock, getPortfolioStocks } from '../API/portfolioClient';
+import { addPortfolioStock, deletePortfolioStock, getPortfolioStocks, updatePortfolioStock } from '../API/portfolioClient';
 
 type PortfolioState = {
   values: IPortfolioStock[];
@@ -18,8 +18,9 @@ export function usePortfolioStocks() {
     void loadPortfolio(setState);
   }, []);
   const add = (stock: CreatePortfolioStock) => addPortfolio(stock, state.values, setState);
+  const update = (id: number, stock: CreatePortfolioStock) => updatePortfolio(id, stock, setState);
   const remove = (id: number) => removePortfolio(id, setState);
-  return { ...state, add, remove };
+  return { ...state, add, update, remove };
 }
 
 async function loadPortfolio(setState: StateSetter) {
@@ -55,6 +56,16 @@ async function removePortfolio(id: number, setState: StateSetter) {
   return true;
 }
 
+async function updatePortfolio(id: number, stock: CreatePortfolioStock, setState: StateSetter) {
+  const result = await updatePortfolioStock(id, normalizeStock(stock));
+  if (!result.ok) {
+    setState((state) => errorState(result.message, state.values));
+    return false;
+  }
+  setState((state) => successState(replaceStock(state.values, result.data)));
+  return true;
+}
+
 function applyAddResult(result: Awaited<ReturnType<typeof addPortfolioStock>>, setState: StateSetter) {
   if (!result.ok) {
     setState((state) => errorState(result.message, state.values));
@@ -70,6 +81,10 @@ function normalizeStock(stock: CreatePortfolioStock): CreatePortfolioStock {
 
 function removeStock(values: IPortfolioStock[], id: number) {
   return values.filter((stock) => stock.id !== id);
+}
+
+function replaceStock(values: IPortfolioStock[], next: IPortfolioStock) {
+  return values.map((stock) => stock.id === next.id ? next : stock);
 }
 
 function portfolioHasSymbol(values: IPortfolioStock[], symbol: string) {
