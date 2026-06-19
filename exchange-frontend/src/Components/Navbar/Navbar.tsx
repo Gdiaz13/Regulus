@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import HealthStatus from '../HealthStatus/HealthStatus';
 import { ThemeToggle } from '../Theme/ThemeToggle';
 import styles from './Navbar.module.css';
 
@@ -32,6 +33,7 @@ function SearchMenu() {
 function NavActions() {
   return (
     <div className={styles.actions}>
+      <HealthStatus />
       <ThemeToggle />
     </div>
   );
