@@ -1,5 +1,6 @@
 using api.Data;
 using api.Models;
+using api.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
@@ -15,12 +16,17 @@ public static class StockEndpoints
         stocks.MapDelete("{id:int}", DeleteStock);
     }
 
-    private static async Task<List<Stock>> GetStocks(ApplicationDBContext db)
+    private static Task<IResult> GetStocks(ApplicationDBContext db)
     {
-        return await db.Stocks.AsNoTracking().OrderBy(stock => stock.Symbol).ToListAsync();
+        return DatabaseRequest.Run(async () => Results.Ok(await ListStocks(db)));
     }
 
-    private static async Task<IResult> GetStock(string symbol, ApplicationDBContext db)
+    private static Task<IResult> GetStock(string symbol, ApplicationDBContext db)
+    {
+        return DatabaseRequest.Run(() => GetStockCore(symbol, db));
+    }
+
+    private static async Task<IResult> GetStockCore(string symbol, ApplicationDBContext db)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
         var stock = await FindStockBySymbol(db, normalizedSymbol);
@@ -29,7 +35,12 @@ public static class StockEndpoints
             : Results.Ok(stock);
     }
 
-    private static async Task<IResult> CreateStock(CreateStockRequest request, ApplicationDBContext db)
+    private static Task<IResult> CreateStock(CreateStockRequest request, ApplicationDBContext db)
+    {
+        return DatabaseRequest.Run(() => CreateStockCore(request, db));
+    }
+
+    private static async Task<IResult> CreateStockCore(CreateStockRequest request, ApplicationDBContext db)
     {
         var normalizedSymbol = NormalizeSymbol(request.Symbol);
         var validationResult = await ValidateStockRequest(db, normalizedSymbol);
@@ -43,7 +54,12 @@ public static class StockEndpoints
         return Results.Created($"/api/stocks/{stock.Symbol}", stock);
     }
 
-    private static async Task<IResult> DeleteStock(int id, ApplicationDBContext db)
+    private static Task<IResult> DeleteStock(int id, ApplicationDBContext db)
+    {
+        return DatabaseRequest.Run(() => DeleteStockCore(id, db));
+    }
+
+    private static async Task<IResult> DeleteStockCore(int id, ApplicationDBContext db)
     {
         var stock = await db.Stocks.FindAsync(id);
         if (stock is null)
@@ -66,6 +82,11 @@ public static class StockEndpoints
             Industry = request.Industry?.Trim() ?? string.Empty,
             MarketCap = request.MarketCap ?? 0,
         };
+    }
+
+    private static Task<List<Stock>> ListStocks(ApplicationDBContext db)
+    {
+        return db.Stocks.AsNoTracking().OrderBy(stock => stock.Symbol).ToListAsync();
     }
 
     private static async Task<IResult?> ValidateStockRequest(ApplicationDBContext db, string symbol)

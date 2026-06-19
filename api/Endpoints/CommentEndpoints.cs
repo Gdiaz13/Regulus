@@ -1,5 +1,6 @@
 using api.Data;
 using api.Models;
+using api.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
@@ -14,9 +15,14 @@ public static class CommentEndpoints
         comments.MapDelete("comments/{id:int}", DeleteComment);
     }
 
-    private static async Task<List<CommentResponse>> GetStockComments(int stockId, ApplicationDBContext db)
+    private static Task<IResult> GetStockComments(int stockId, ApplicationDBContext db)
     {
-        return await db.Comments
+        return DatabaseRequest.Run(async () => Results.Ok(await ListStockComments(stockId, db)));
+    }
+
+    private static Task<List<CommentResponse>> ListStockComments(int stockId, ApplicationDBContext db)
+    {
+        return db.Comments
             .AsNoTracking()
             .Where(comment => comment.StockId == stockId)
             .OrderByDescending(comment => comment.CreatedOn)
@@ -30,7 +36,16 @@ public static class CommentEndpoints
             .ToListAsync();
     }
 
-    private static async Task<IResult> CreateStockComment(
+    private static Task<IResult> CreateStockComment(
+        int stockId,
+        CreateCommentRequest request,
+        ApplicationDBContext db
+    )
+    {
+        return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, db));
+    }
+
+    private static async Task<IResult> CreateStockCommentCore(
         int stockId,
         CreateCommentRequest request,
         ApplicationDBContext db
@@ -44,7 +59,12 @@ public static class CommentEndpoints
         return await SaveComment(stockId, request, db);
     }
 
-    private static async Task<IResult> DeleteComment(int id, ApplicationDBContext db)
+    private static Task<IResult> DeleteComment(int id, ApplicationDBContext db)
+    {
+        return DatabaseRequest.Run(() => DeleteCommentCore(id, db));
+    }
+
+    private static async Task<IResult> DeleteCommentCore(int id, ApplicationDBContext db)
     {
         var comment = await db.Comments.FindAsync(id);
         if (comment is null)
