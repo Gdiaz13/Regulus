@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import PortfolioCard from '../../Components/Portfolio/PortfolioCard/PortfolioCard';
@@ -123,6 +123,7 @@ function PortfolioStockPanel({ stock, onDelete, onUpdate }: StockPanelProps) {
 
 function useStockDetailsForm(stock: IPortfolioStock, onUpdate: UpdateStock) {
   const [fields, setFields] = useState(() => stockFieldState(stock));
+  useEffect(() => setFields(stockFieldState(stock)), [stock]);
   return {
     fields,
     setField: fieldSetter(setFields),
