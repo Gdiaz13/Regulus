@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { LoadStatus } from '../API/types';
-import { addStockComment, deleteStockComment, getStockComments } from '../API/commentClient';
+import { addStockComment, deleteStockComment, getStockComments, updateStockComment } from '../API/commentClient';
 import type { CreateStockComment, IStockComment } from '../Interfaces/APIResponses/IStockComment';
 
 type CommentState = {
@@ -18,8 +18,9 @@ export function useStockComments(stockId: number) {
     void loadComments(stockId, setState);
   }, [stockId]);
   const add = (comment: CreateStockComment) => addComment(stockId, comment, setState);
+  const update = (id: number, comment: CreateStockComment) => updateComment(id, comment, setState);
   const remove = (id: number) => removeComment(id, setState);
-  return { ...state, add, remove };
+  return { ...state, add, update, remove };
 }
 
 async function loadComments(stockId: number, setState: StateSetter) {
@@ -51,6 +52,15 @@ async function removeComment(id: number, setState: StateSetter) {
   return true;
 }
 
+async function updateComment(
+  id: number,
+  comment: CreateStockComment,
+  setState: StateSetter,
+) {
+  const result = await updateStockComment(id, comment);
+  return applyUpdateResult(result, setState);
+}
+
 function applyAddResult(result: Awaited<ReturnType<typeof addStockComment>>, setState: StateSetter) {
   if (!result.ok) {
     setState((state) => errorState(result.message, state.values));
@@ -60,8 +70,21 @@ function applyAddResult(result: Awaited<ReturnType<typeof addStockComment>>, set
   return true;
 }
 
+function applyUpdateResult(result: Awaited<ReturnType<typeof updateStockComment>>, setState: StateSetter) {
+  if (!result.ok) {
+    setState((state) => errorState(result.message, state.values));
+    return false;
+  }
+  setState((state) => successState(replaceById(state.values, result.data)));
+  return true;
+}
+
 function removeById(values: IStockComment[], id: number) {
   return values.filter((comment) => comment.id !== id);
+}
+
+function replaceById(values: IStockComment[], next: IStockComment) {
+  return values.map((comment) => comment.id === next.id ? next : comment);
 }
 
 function loadingState(): CommentState {

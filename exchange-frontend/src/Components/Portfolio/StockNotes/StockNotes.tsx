@@ -28,16 +28,33 @@ function useNoteForm(add: Comments['add']) {
       setContent('');
     }
   };
-  return { title, setTitle, content, setContent, submit };
+  return { title, setTitle, content, setContent, submit, submitLabel: 'Save note' };
 }
 
 function NoteForm(props: NoteFormProps) {
   return (
     <form className={styles.form} onSubmit={props.submit}>
+      <NoteFields {...props} />
+      <NoteActions {...props} />
+    </form>
+  );
+}
+
+function NoteFields(props: NoteFormProps) {
+  return (
+    <>
       <input value={props.title} onChange={(event) => props.setTitle(event.target.value)} placeholder="Note title" />
       <textarea value={props.content} onChange={(event) => props.setContent(event.target.value)} placeholder="What matters?" />
-      <button type="submit" disabled={!canSubmit(props.title, props.content)}>Save note</button>
-    </form>
+    </>
+  );
+}
+
+function NoteActions(props: NoteFormProps) {
+  return (
+    <div className={styles.actions}>
+      <button type="submit" disabled={!canSubmit(props.title, props.content)}>{props.submitLabel}</button>
+      {props.onCancel && <button type="button" onClick={props.onCancel}>Cancel</button>}
+    </div>
   );
 }
 
@@ -52,22 +69,54 @@ function NoteList({ comments }: { comments: Comments }) {
   if (comments.values.length === 0 && comments.status !== 'loading') {
     return <p className={styles.empty}>No notes yet.</p>;
   }
-  return <ul className={styles.list}>{comments.values.map(renderNote(comments.remove))}</ul>;
+  return <ul className={styles.list}>{comments.values.map(renderNote(comments))}</ul>;
 }
 
-function renderNote(remove: (id: number) => void) {
-  return (comment: IStockComment) => <NoteItem key={comment.id} comment={comment} remove={remove} />;
+function renderNote(comments: Comments) {
+  return (comment: IStockComment) => <NoteItem key={comment.id} comment={comment} comments={comments} />;
 }
 
-function NoteItem({ comment, remove }: NoteItemProps) {
+function NoteItem({ comment, comments }: NoteItemProps) {
+  const [editing, setEditing] = useState(false);
+  if (editing) {
+    return <EditableNote comment={comment} comments={comments} onDone={() => setEditing(false)} />;
+  }
+  return <ReadOnlyNote comment={comment} comments={comments} onEdit={() => setEditing(true)} />;
+}
+
+function ReadOnlyNote({ comment, comments, onEdit }: ReadOnlyNoteProps) {
   return (
     <li className={styles.note}>
       <strong>{comment.title}</strong>
       <span>{formatDate(comment.createdOn)}</span>
       <p>{comment.content}</p>
-      <button type="button" onClick={() => remove(comment.id)}>Delete note</button>
+      <div className={styles.actions}>
+        <button type="button" onClick={onEdit}>Edit note</button>
+        <button type="button" onClick={() => comments.remove(comment.id)}>Delete note</button>
+      </div>
     </li>
   );
+}
+
+function EditableNote({ comment, comments, onDone }: EditableNoteProps) {
+  const form = useEditNoteForm(comment, comments.update, onDone);
+  return (
+    <li className={styles.note}>
+      <NoteForm {...form} />
+    </li>
+  );
+}
+
+function useEditNoteForm(comment: IStockComment, update: Comments['update'], onDone: () => void) {
+  const [title, setTitle] = useState(comment.title);
+  const [content, setContent] = useState(comment.content);
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (canSubmit(title, content) && await update(comment.id, { title, content })) {
+      onDone();
+    }
+  };
+  return { title, setTitle, content, setContent, submit, submitLabel: 'Update note', onCancel: onDone };
 }
 
 function canSubmit(title: string, content: string) {
@@ -84,11 +133,21 @@ type NoteFormProps = {
   content: string;
   setContent: (value: string) => void;
   submit: (event: FormEvent<HTMLFormElement>) => void;
+  submitLabel: string;
+  onCancel?: () => void;
 };
 
 type NoteItemProps = {
   comment: IStockComment;
-  remove: (id: number) => void;
+  comments: Comments;
+};
+
+type ReadOnlyNoteProps = NoteItemProps & {
+  onEdit: () => void;
+};
+
+type EditableNoteProps = NoteItemProps & {
+  onDone: () => void;
 };
 
 export default StockNotes;

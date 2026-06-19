@@ -29,3 +29,13 @@ Content-Type: application/json
 }
 
 ###
+
+PUT {{api_HostAddress}}/api/comments/1
+Content-Type: application/json
+
+{
+  "title": "Updated watch",
+  "content": "Keep an eye on margins and guidance."
+}
+
+###

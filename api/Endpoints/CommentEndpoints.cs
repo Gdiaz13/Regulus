@@ -12,6 +12,7 @@ public static class CommentEndpoints
         var comments = app.MapGroup("/api");
         comments.MapGet("stocks/{stockId:int}/comments", GetStockComments);
         comments.MapPost("stocks/{stockId:int}/comments", CreateStockComment);
+        comments.MapPut("comments/{id:int}", UpdateComment);
         comments.MapDelete("comments/{id:int}", DeleteComment);
     }
 
@@ -64,6 +65,29 @@ public static class CommentEndpoints
         return DatabaseRequest.Run(() => DeleteCommentCore(id, db));
     }
 
+    private static Task<IResult> UpdateComment(
+        int id,
+        CreateCommentRequest request,
+        ApplicationDBContext db
+    )
+    {
+        return DatabaseRequest.Run(() => UpdateCommentCore(id, request, db));
+    }
+
+    private static async Task<IResult> UpdateCommentCore(
+        int id,
+        CreateCommentRequest request,
+        ApplicationDBContext db
+    )
+    {
+        var validation = ValidateCommentBody(request);
+        if (validation is not null)
+        {
+            return validation;
+        }
+        return await SaveUpdatedComment(id, request, db);
+    }
+
     private static async Task<IResult> DeleteCommentCore(int id, ApplicationDBContext db)
     {
         var comment = await db.Comments.FindAsync(id);
@@ -82,9 +106,10 @@ public static class CommentEndpoints
         ApplicationDBContext db
     )
     {
-        if (IsBlank(request.Title) || IsBlank(request.Content))
+        var validation = ValidateCommentBody(request);
+        if (validation is not null)
         {
-            return Results.BadRequest("A note title and content are required.");
+            return validation;
         }
         return await StockExists(stockId, db) ? null : Results.NotFound($"Stock with id {stockId} was not found.");
     }
@@ -101,6 +126,22 @@ public static class CommentEndpoints
         return Results.Created($"/api/comments/{comment.Id}", ToResponse(comment));
     }
 
+    private static async Task<IResult> SaveUpdatedComment(
+        int id,
+        CreateCommentRequest request,
+        ApplicationDBContext db
+    )
+    {
+        var comment = await db.Comments.FindAsync(id);
+        if (comment is null)
+        {
+            return Results.NotFound($"Comment with id {id} was not found.");
+        }
+        ApplyCommentUpdate(comment, request);
+        await db.SaveChangesAsync();
+        return Results.Ok(ToResponse(comment));
+    }
+
     private static Comment CreateComment(int stockId, CreateCommentRequest request)
     {
         return new Comment
@@ -110,6 +151,19 @@ public static class CommentEndpoints
             Content = Clean(request.Content),
             CreatedOn = DateTime.UtcNow,
         };
+    }
+
+    private static void ApplyCommentUpdate(Comment comment, CreateCommentRequest request)
+    {
+        comment.Title = Clean(request.Title);
+        comment.Content = Clean(request.Content);
+    }
+
+    private static IResult? ValidateCommentBody(CreateCommentRequest request)
+    {
+        return IsBlank(request.Title) || IsBlank(request.Content)
+            ? Results.BadRequest("A note title and content are required.")
+            : null;
     }
 
     private static CommentResponse ToResponse(Comment comment)

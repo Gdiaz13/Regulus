@@ -50,10 +50,21 @@ export function addStockComment(
   return requestComment<IStockComment>(`/stocks/${stockId}/comments`, postComment(comment));
 }
 
+export function updateStockComment(
+  id: number,
+  comment: CreateStockComment,
+): Promise<ApiResult<IStockComment>> {
+  return requestComment<IStockComment>(`/comments/${id}`, putComment(comment));
+}
+
 export function deleteStockComment(id: number): Promise<ApiResult<void>> {
   return requestComment<void>(`/comments/${id}`, { method: 'DELETE' });
 }
 
 function postComment(comment: CreateStockComment): RequestInit {
   return { method: 'POST', body: JSON.stringify(comment) };
+}
+
+function putComment(comment: CreateStockComment): RequestInit {
+  return { method: 'PUT', body: JSON.stringify(comment) };
 }

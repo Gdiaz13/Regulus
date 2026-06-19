@@ -92,5 +92,6 @@ dotnet build --no-restore
 - `DELETE /api/stocks/{id}`
 - `GET /api/stocks/{stockId}/comments`
 - `POST /api/stocks/{stockId}/comments`
+- `PUT /api/comments/{id}`
 - `DELETE /api/comments/{id}`
 - `GET /api/market-data/{providerPath}`
