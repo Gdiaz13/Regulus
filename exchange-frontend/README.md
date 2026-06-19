@@ -28,6 +28,7 @@ Configure the Financial Modeling Prep key on the API, not in the frontend.
 - `src/Routes/Routes.tsx` decides which page renders for each URL.
 - `src/API/*Client.ts` files are the only place components should call `fetch`.
 - `src/hooks/usePortfolioStocks.ts` connects portfolio screens to `/api/stocks`.
+- `src/Components/Portfolio/StockDetails` owns the portfolio detail edit form.
 - `src/hooks/useStockComments.ts` connects stock notes to `/api/stocks/{stockId}/comments`.
 - `src/hooks/useTickerResource.ts` keeps the company statement pages using the same loading/error pattern.
 - `src/Components/HealthStatus` reads `/api/health` for the navbar status pill.
