@@ -16,7 +16,7 @@ namespace api.Migrations
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            MigrationModelConfiguration.Configure(modelBuilder);
+            MigrationModelConfiguration.ConfigureInitial(modelBuilder);
 #pragma warning restore 612, 618
         }
     }
