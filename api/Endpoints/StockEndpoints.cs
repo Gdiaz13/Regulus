@@ -91,7 +91,6 @@ public static class StockEndpoints
         {
             return Results.NotFound($"Stock with id {id} was not found.");
         }
-        await DeleteStockComments(id, db);
         db.Stocks.Remove(stock);
         await db.SaveChangesAsync();
         return Results.NoContent();
@@ -155,11 +154,6 @@ public static class StockEndpoints
     private static Task<List<Stock>> ListStocks(ApplicationDBContext db)
     {
         return db.Stocks.AsNoTracking().OrderBy(stock => stock.Symbol).ToListAsync();
-    }
-
-    private static Task DeleteStockComments(int stockId, ApplicationDBContext db)
-    {
-        return db.Comments.Where(comment => comment.StockId == stockId).ExecuteDeleteAsync();
     }
 
     private static async Task<IResult?> ValidateStockRequest(ApplicationDBContext db, string symbol)

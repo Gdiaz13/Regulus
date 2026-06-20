@@ -1,12 +1,6 @@
 import type { FormEvent } from 'react';
 import styles from './AddToPortfolio.module.css';
 
-const buttonLabels = [
-  { label: 'Add to Portfolio', size: 'full' },
-  { label: 'Add', size: 'medium' },
-  { label: '+', size: 'short' },
-];
-
 interface Props {
   symbol: string;
   onPortfolioAdd: () => void;
@@ -18,7 +12,9 @@ const AddToPortfolio = ({ symbol, onPortfolioAdd }: Props) => (
     onSubmit={submitHandler(onPortfolioAdd)}
     aria-label={`Add ${symbol} to portfolio`}
   >
-    {buttonLabels.map(renderButton)}
+    <button className={styles.addToPortfolioButton} type="submit" aria-label={`Add ${symbol} to portfolio`}>
+      <ButtonLabel />
+    </button>
   </form>
 );
 
@@ -29,11 +25,13 @@ function submitHandler(onSubmit: () => void) {
   };
 }
 
-function renderButton(button: { label: string; size: string }) {
+function ButtonLabel() {
   return (
-    <button className={styles.addToPortfolioButton} data-label={button.size} type="submit" key={button.size}>
-      {button.label}
-    </button>
+    <>
+      <span className={styles.fullLabel}>Add to Portfolio</span>
+      <span className={styles.mediumLabel}>Add</span>
+      <span className={styles.shortLabel}>+</span>
+    </>
   );
 }
 

@@ -15,6 +15,7 @@ namespace api.Data
         {
             base.OnModelCreating(modelBuilder);
             ConfigureStockSymbol(modelBuilder);
+            ConfigureCommentStock(modelBuilder);
         }
 
         private static void ConfigureStockSymbol(ModelBuilder modelBuilder)
@@ -22,6 +23,17 @@ namespace api.Data
             var stock = modelBuilder.Entity<Stock>();
             stock.Property(value => value.Symbol).HasMaxLength(Stock.SymbolMaxLength);
             stock.HasIndex(value => value.Symbol).IsUnique();
+        }
+
+        private static void ConfigureCommentStock(ModelBuilder modelBuilder)
+        {
+            modelBuilder
+                .Entity<Comment>()
+                .HasOne(comment => comment.Stock)
+                .WithMany(stock => stock.Comments)
+                .HasForeignKey(comment => comment.StockId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
         }
     }
 }

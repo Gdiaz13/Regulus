@@ -1,7 +1,4 @@
 import { build } from 'vite';
-import config from '../vite.config.mjs';
+import { viteOptions } from './viteOptions.mjs';
 
-await build({
-  ...config,
-  configFile: false,
-});
+await build(viteOptions);

@@ -21,7 +21,7 @@ function SearchForm(props: SearchFormProps) {
   return (
     <section className={styles.section}>
       <div className={styles.container}>
-        <form className={styles.form} onSubmit={props.onSubmit}>
+        <form className={styles.form} onSubmit={props.onSubmit} aria-label="Search companies">
           <input className={styles.input} {...searchInputProps(props)} />
         </form>
       </div>
@@ -70,6 +70,7 @@ function resultProps(logic: SearchLogic): ResultProps {
 function searchInputProps(props: SearchFormProps) {
   return {
     id: 'search-input',
+    'aria-label': 'Company search',
     placeholder: 'Search companies',
     value: props.search,
     onChange: props.onChange,

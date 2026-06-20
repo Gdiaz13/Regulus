@@ -1,12 +1,6 @@
 import type { FormEvent } from 'react';
 import styles from './DeletePortfolio.module.css';
 
-const buttonLabels = [
-  { label: 'Remove from Portfolio', size: 'full' },
-  { label: 'Remove', size: 'medium' },
-  { label: 'X', size: 'short' },
-];
-
 interface Props {
   onPortfolioDelete: () => void;
   portfolioValue: string;
@@ -18,7 +12,9 @@ const DeletePortfolio = ({ onPortfolioDelete, portfolioValue }: Props) => (
     onSubmit={submitHandler(onPortfolioDelete)}
     aria-label={`Remove ${portfolioValue} from portfolio`}
   >
-    {buttonLabels.map(renderButton)}
+    <button className={styles.deleteButton} type="submit" aria-label={`Remove ${portfolioValue} from portfolio`}>
+      <ButtonLabel />
+    </button>
   </form>
 );
 
@@ -29,11 +25,13 @@ function submitHandler(onSubmit: () => void) {
   };
 }
 
-function renderButton(button: { label: string; size: string }) {
+function ButtonLabel() {
   return (
-    <button className={styles.deleteButton} data-label={button.size} type="submit" key={button.size}>
-      {button.label}
-    </button>
+    <>
+      <span className={styles.fullLabel}>Remove from Portfolio</span>
+      <span className={styles.mediumLabel}>Remove</span>
+      <span className={styles.shortLabel}>X</span>
+    </>
   );
 }
 

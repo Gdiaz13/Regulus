@@ -7,7 +7,7 @@ type ThemeName = 'dark' | 'light';
 export const ThemeToggle = () => {
   const { isDarkMode, toggleTheme } = useThemeMode();
   return (
-    <button onClick={toggleTheme} className={buttonClass()}>
+    <button type="button" onClick={toggleTheme} className={buttonClass()} aria-label={buttonLabel(isDarkMode)}>
       {themeIcon(isDarkMode)}
     </button>
   );
@@ -36,6 +36,10 @@ function nextTheme(isDarkMode: boolean): ThemeName {
 
 function buttonClass() {
   return cn('p-2 rounded-full transition-colors duration-300 focus:outline-hidden');
+}
+
+function buttonLabel(isDarkMode: boolean) {
+  return isDarkMode ? 'Switch to light theme' : 'Switch to dark theme';
 }
 
 function themeIcon(isDarkMode: boolean) {

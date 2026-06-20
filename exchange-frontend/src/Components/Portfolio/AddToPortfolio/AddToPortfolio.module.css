@@ -14,8 +14,7 @@
   bottom: 1.5rem;
   transform: translateX(-50%);
   z-index: 1;
-  min-width: 220px;
-  max-width: 90%;
+  width: min(14rem, 90%);
   transition: transform 0.2s, background 0.2s;
   justify-content: center;
 }
@@ -50,42 +49,40 @@
   color: #232336;
   cursor: pointer;
   font-size: 1rem;
-  letter-spacing: 0.02em;
   transition: background 0.2s, color 0.2s, transform 0.1s;
+  width: 100%;
 }
 
-/* Responsive text for Add to Portfolio button */
+.fullLabel {
+  display: inline;
+}
+
+.mediumLabel,
+.shortLabel {
+  display: none;
+}
+
 @media (max-width: 900px) {
-  .addToPortfolioButton[data-label="full"] {
+  .fullLabel {
     display: none;
   }
-  .addToPortfolioButton[data-label="medium"] {
-    display: inline-block;
+  .mediumLabel {
+    display: inline;
   }
-  .addToPortfolioButton[data-label="short"] {
+  .shortLabel {
     display: none;
   }
 }
 @media (max-width: 600px) {
-  .addToPortfolioButton[data-label="full"] {
+  .fullLabel,
+  .mediumLabel {
     display: none;
   }
-  .addToPortfolioButton[data-label="medium"] {
-    display: none;
+  .shortLabel {
+    display: inline;
   }
-  .addToPortfolioButton[data-label="short"] {
-    display: inline-block;
-  }
-}
-@media (min-width: 901px) {
-  .addToPortfolioButton[data-label="full"] {
-    display: inline-block;
-  }
-  .addToPortfolioButton[data-label="medium"] {
-    display: none;
-  }
-  .addToPortfolioButton[data-label="short"] {
-    display: none;
+  .addToPortfolioForm {
+    width: 4rem;
   }
 }
 

@@ -1,5 +1,5 @@
-import Spline from '@splinetool/react-spline';
 import { Link } from 'react-router-dom';
+import heroImage from './stars.jpg';
 import styles from './Hero.module.css';
 
 const Hero = () => (
@@ -40,7 +40,7 @@ function HeroButton() {
 function HeroScene() {
   return (
     <div className={styles.heroImageWrap}>
-      <Spline scene="https://prod.spline.design/NOJJe08001V5hvjW/scene.splinecode" />
+      <img className={styles.heroImage} src={heroImage} alt="" aria-hidden="true" />
     </div>
   );
 }

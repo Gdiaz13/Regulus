@@ -194,5 +194,5 @@ public sealed record CommentResponse(
     string Title,
     string Content,
     DateTime CreatedOn,
-    int? StockId
+    int StockId
 );

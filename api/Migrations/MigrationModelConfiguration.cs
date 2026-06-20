@@ -10,12 +10,17 @@ internal static class MigrationModelConfiguration
 
     public static void ConfigureInitial(ModelBuilder modelBuilder)
     {
-        Configure(modelBuilder, ConfigureInitialStockEntity);
+        Configure(modelBuilder, ConfigureInitialCommentEntity, ConfigureInitialStockEntity, ConfigureInitialCommentNavigation);
+    }
+
+    public static void ConfigureUniqueStockSymbol(ModelBuilder modelBuilder)
+    {
+        Configure(modelBuilder, ConfigureInitialCommentEntity, ConfigureCurrentStockEntity, ConfigureInitialCommentNavigation);
     }
 
     public static void ConfigureCurrent(ModelBuilder modelBuilder)
     {
-        Configure(modelBuilder, ConfigureCurrentStockEntity);
+        Configure(modelBuilder, ConfigureCurrentCommentEntity, ConfigureCurrentStockEntity, ConfigureCurrentCommentNavigation);
     }
 
     private static void ConfigureAnnotations(ModelBuilder modelBuilder)
@@ -26,9 +31,9 @@ internal static class MigrationModelConfiguration
         SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
     }
 
-    private static void ConfigureCommentModel(ModelBuilder modelBuilder)
+    private static void ConfigureCommentModel(ModelBuilder modelBuilder, Action<EntityTypeBuilder> configureComment)
     {
-        modelBuilder.Entity("api.Models.Comment", ConfigureCommentEntity);
+        modelBuilder.Entity("api.Models.Comment", configureComment);
     }
 
     private static void ConfigureStockModel(ModelBuilder modelBuilder, Action<EntityTypeBuilder> configureStock)
@@ -36,27 +41,49 @@ internal static class MigrationModelConfiguration
         modelBuilder.Entity("api.Models.Stock", configureStock);
     }
 
-    private static void ConfigureNavigations(ModelBuilder modelBuilder)
+    private static void ConfigureNavigations(
+        ModelBuilder modelBuilder,
+        Action<EntityTypeBuilder> configureCommentNavigation
+    )
     {
-        modelBuilder.Entity("api.Models.Comment", ConfigureCommentNavigation);
+        modelBuilder.Entity("api.Models.Comment", configureCommentNavigation);
         modelBuilder.Entity("api.Models.Stock", ConfigureStockNavigation);
     }
 
-    private static void ConfigureCommentEntity(EntityTypeBuilder builder)
+    private static void ConfigureInitialCommentEntity(EntityTypeBuilder builder)
+    {
+        ConfigureCommentEntity(builder, ConfigureOptionalCommentStockId);
+    }
+
+    private static void ConfigureCurrentCommentEntity(EntityTypeBuilder builder)
+    {
+        ConfigureCommentEntity(builder, ConfigureRequiredCommentStockId);
+    }
+
+    private static void ConfigureCommentEntity(
+        EntityTypeBuilder builder,
+        Action<EntityTypeBuilder> configureStockId
+    )
     {
         ConfigureCommentId(builder);
-        ConfigureCommentFields(builder);
+        ConfigureCommentTextFields(builder);
+        configureStockId(builder);
         builder.HasKey("Id");
         builder.HasIndex("StockId");
         builder.ToTable("Comments");
     }
 
-    private static void Configure(ModelBuilder modelBuilder, Action<EntityTypeBuilder> configureStock)
+    private static void Configure(
+        ModelBuilder modelBuilder,
+        Action<EntityTypeBuilder> configureComment,
+        Action<EntityTypeBuilder> configureStock,
+        Action<EntityTypeBuilder> configureCommentNavigation
+    )
     {
         ConfigureAnnotations(modelBuilder);
-        ConfigureCommentModel(modelBuilder);
+        ConfigureCommentModel(modelBuilder, configureComment);
         ConfigureStockModel(modelBuilder, configureStock);
-        ConfigureNavigations(modelBuilder);
+        ConfigureNavigations(modelBuilder, configureCommentNavigation);
     }
 
     private static void ConfigureCommentId(EntityTypeBuilder builder)
@@ -65,12 +92,21 @@ internal static class MigrationModelConfiguration
         SqlServerPropertyBuilderExtensions.UseIdentityColumn(id);
     }
 
-    private static void ConfigureCommentFields(EntityTypeBuilder builder)
+    private static void ConfigureCommentTextFields(EntityTypeBuilder builder)
     {
         builder.Property<string>("Content").IsRequired().HasColumnType("nvarchar(max)");
         builder.Property<DateTime>("CreatedOn").HasColumnType("datetime2");
-        builder.Property<int?>("StockId").HasColumnType("int");
         builder.Property<string>("Title").IsRequired().HasColumnType("nvarchar(max)");
+    }
+
+    private static void ConfigureOptionalCommentStockId(EntityTypeBuilder builder)
+    {
+        builder.Property<int?>("StockId").HasColumnType("int");
+    }
+
+    private static void ConfigureRequiredCommentStockId(EntityTypeBuilder builder)
+    {
+        builder.Property<int>("StockId").HasColumnType("int");
     }
 
     private static void ConfigureInitialStockEntity(EntityTypeBuilder builder)
@@ -117,9 +153,16 @@ internal static class MigrationModelConfiguration
         symbol.HasColumnType("nvarchar(max)");
     }
 
-    private static void ConfigureCommentNavigation(EntityTypeBuilder builder)
+    private static void ConfigureInitialCommentNavigation(EntityTypeBuilder builder)
     {
         builder.HasOne("api.Models.Stock", "Stock").WithMany("Comments").HasForeignKey("StockId");
+        builder.Navigation("Stock");
+    }
+
+    private static void ConfigureCurrentCommentNavigation(EntityTypeBuilder builder)
+    {
+        var relation = builder.HasOne("api.Models.Stock", "Stock").WithMany("Comments").HasForeignKey("StockId");
+        relation.OnDelete(DeleteBehavior.Cascade).IsRequired();
         builder.Navigation("Stock");
     }
 

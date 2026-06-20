@@ -19,13 +19,12 @@
   position: relative;
 }
 
-.deleteButton[data-label="full"] {
-  display: inline-block;
+.fullLabel {
+  display: inline;
 }
-.deleteButton[data-label="medium"] {
-  display: none;
-}
-.deleteButton[data-label="short"] {
+
+.mediumLabel,
+.shortLabel {
   display: none;
 }
 
@@ -38,13 +37,13 @@
 }
 
 @media (max-width: 900px) {
-  .deleteButton[data-label="full"] {
+  .fullLabel {
     display: none;
   }
-  .deleteButton[data-label="medium"] {
-    display: inline-block;
+  .mediumLabel {
+    display: inline;
   }
-  .deleteButton[data-label="short"] {
+  .shortLabel {
     display: none;
   }
   .deleteButton {
@@ -53,14 +52,14 @@
   }
 }
 @media (max-width: 600px) {
-  .deleteButton[data-label="full"] {
+  .fullLabel,
+  .mediumLabel {
     display: none;
   }
-  .deleteButton[data-label="medium"] {
-    display: none;
+  .shortLabel {
+    display: inline;
   }
-  .deleteButton[data-label="short"] {
-    display: inline-block;
+  .deleteButton {
     padding: 0.45rem 0.7rem;
     font-size: 1.1rem;
     font-weight: 700;

@@ -1,36 +1,49 @@
-
-import HomePage from "../Pages/HomePage/HomePage";
-import SearchPage from "../Pages/SearchPage/SearchPage";
-import { createBrowserRouter, Navigate } from "react-router";
+import { lazy, Suspense } from "react";
+import type { ReactNode } from "react";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
-import CompanyPage from "../Pages/CompanyPage/CompanyPage";
-import CompanyProfile from "../Components/CompanyProfile/CompanyProfile";
-import IncomeStatement from "../Components/IncomeStatement/IncomeStatement";
-import BalanceSheet from "../Components/BalanceSheet/BalanceSheet";
-import CashFlowStatement from "../Components/CashFlowStatement/CashFlowStatement";
-import PortfolioPage from "../Pages/PortfolioPage/PortfolioPage";
-import NotFoundPage from "../Pages/NotFoundPage/NotFoundPage";
+import ResourceStatus from "../Components/AsyncResource/ResourceStatus";
 
-// CompanyPage owns the ticker route; its children render the profile and statements.
+const HomePage = lazy(() => import("../Pages/HomePage/HomePage"));
+const SearchPage = lazy(() => import("../Pages/SearchPage/SearchPage"));
+const PortfolioPage = lazy(() => import("../Pages/PortfolioPage/PortfolioPage"));
+const CompanyPage = lazy(() => import("../Pages/CompanyPage/CompanyPage"));
+const CompanyProfile = lazy(() => import("../Components/CompanyProfile/CompanyProfile"));
+const IncomeStatement = lazy(() => import("../Components/IncomeStatement/IncomeStatement"));
+const BalanceSheet = lazy(() => import("../Components/BalanceSheet/BalanceSheet"));
+const CashFlowStatement = lazy(() => import("../Components/CashFlowStatement/CashFlowStatement"));
+const NotFoundPage = lazy(() => import("../Pages/NotFoundPage/NotFoundPage"));
+const routeFallback = <ResourceStatus status="loading" message={null} />;
+
+// Route components load on demand so the first bundle stays small.
 export const router = createBrowserRouter([
-    {
-        path: "/",
-        element:<App />,
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      { path: "", element: page(<HomePage />) },
+      { path: "search", element: page(<SearchPage />) },
+      { path: "portfolio", element: page(<PortfolioPage />) },
+      {
+        path: "company/:ticker",
+        element: page(<CompanyPage />),
         children: [
-            { path: "", element: <HomePage /> },
-            { path: "search", element: <SearchPage /> },
-            { path: "portfolio", element: <PortfolioPage /> },
-            { path: "company/:ticker", 
-                element: <CompanyPage />, 
-                children: [
-                    { index: true, element: <Navigate to="company-profile" replace /> },
-                    { path: "company-profile", element: <CompanyProfile /> },
-                    { path: "income-statement", element: <IncomeStatement /> },
-                    { path: "balance-sheet", element: <BalanceSheet /> },
-                    { path: "cashflow-statement", element: <CashFlowStatement /> }
-                ]
-            },
-            { path: "*", element: <NotFoundPage /> },
-        ]
-    },
+          { index: true, element: <Navigate to="company-profile" replace /> },
+          { path: "company-profile", element: page(<CompanyProfile />) },
+          { path: "income-statement", element: page(<IncomeStatement />) },
+          { path: "balance-sheet", element: page(<BalanceSheet />) },
+          { path: "cashflow-statement", element: page(<CashFlowStatement />) },
+        ],
+      },
+      { path: "*", element: page(<NotFoundPage />) },
+    ],
+  },
 ]);
+
+function page(element: ReactNode) {
+  return (
+    <Suspense fallback={routeFallback}>
+      {element}
+    </Suspense>
+  );
+}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { IPortfolioStock } from '../../../Interfaces/APIResponses/IPortfolioStock';
+import { companyProfilePath } from '../../../Routes/companyPaths';
 import DeletePortfolio from '../DeletePortfolio/DeletePortfolio';
 import styles from './PortfolioCard.module.css';
 
@@ -19,7 +20,7 @@ const PortfolioCard = ({ portfolioValue, onPortfolioDelete }: Props) => {
 
 function PortfolioLink({ symbol }: { symbol: string }) {
   return (
-    <Link to={`/company/${symbol}/company-profile`} className={styles.portfolioTitle}>
+    <Link to={companyProfilePath(symbol)} className={styles.portfolioTitle}>
       {symbol}
     </Link>
   );

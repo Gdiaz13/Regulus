@@ -9,14 +9,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260619000100_AddUniqueStockSymbol")]
-    partial class AddUniqueStockSymbol
+    [Migration("20260620000100_RequireCommentStock")]
+    partial class RequireCommentStock
     {
-        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            MigrationModelConfiguration.ConfigureUniqueStockSymbol(modelBuilder);
+            MigrationModelConfiguration.ConfigureCurrent(modelBuilder);
 #pragma warning restore 612, 618
         }
     }

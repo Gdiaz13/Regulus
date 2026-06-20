@@ -1,9 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 const maxLines = 15;
-const frontendRoot = process.cwd();
+const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
+const frontendRoot = path.resolve(scriptRoot, '..');
 const workspaceRoot = path.resolve(frontendRoot, '..');
 
 main();

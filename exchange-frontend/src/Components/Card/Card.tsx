@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { ICompanySearch } from '../../Interfaces/APIResponses/ICompanySearch';
+import { companyProfilePath } from '../../Routes/companyPaths';
 import AddToPortfolio from '../Portfolio/AddToPortfolio/AddToPortfolio';
 import styles from './Card.module.css';
 
@@ -29,7 +30,7 @@ function CardTitleLinks({ company }: { company: ICompanySearch }) {
 
 function CompanyLink(props: CompanyLinkProps) {
   return (
-    <Link to={companyPath(props.company)} className={titleClass(props.variant)} data-label={props.variant}>
+    <Link to={companyProfilePath(props.company.symbol)} className={titleClass(props.variant)} data-label={props.variant}>
       {props.label}
     </Link>
   );
@@ -62,10 +63,6 @@ function fullTitle(company: ICompanySearch) {
 
 function exchangeLabel(company: ICompanySearch) {
   return `${company.exchangeFullName} - ${company.exchange}`;
-}
-
-function companyPath(company: ICompanySearch) {
-  return `/company/${company.symbol}/company-profile`;
 }
 
 type TitleVariant = 'full' | 'medium' | 'short';

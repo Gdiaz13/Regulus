@@ -3,7 +3,7 @@ export interface IStockComment {
   title: string;
   content: string;
   createdOn: string;
-  stockId: number | null;
+  stockId: number;
 }
 
 export interface CreateStockComment {

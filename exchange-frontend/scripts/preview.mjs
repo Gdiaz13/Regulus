@@ -1,9 +1,6 @@
 import { preview } from 'vite';
-import config from '../vite.config.mjs';
+import { viteOptions } from './viteOptions.mjs';
 
-const server = await preview({
-  ...config,
-  configFile: false,
-});
+const server = await preview(viteOptions);
 
 server.printUrls();

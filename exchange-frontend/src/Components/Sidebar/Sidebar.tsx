@@ -1,7 +1,9 @@
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
 import { FcHome, FcMoneyTransfer } from 'react-icons/fc';
 import { FaScaleBalanced } from 'react-icons/fa6';
 import type { IconType } from 'react-icons';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 
 const navItems: SidebarItem[] = [
@@ -11,22 +13,74 @@ const navItems: SidebarItem[] = [
   { to: 'balance-sheet', label: 'Balance Sheet', Icon: FaScaleBalanced },
 ];
 
-const Sidebar = () => (
-  <nav className={styles.sidebar}>
-    <div className={styles.sidebarContent}>
-      <div className={styles.sidebarNav}>{navItems.map(renderNavItem)}</div>
-    </div>
-  </nav>
-);
-
-function renderNavItem(item: SidebarItem) {
+const Sidebar = () => {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   return (
-    <Link to={item.to} className={styles.link} key={item.to}>
-      <item.Icon />
-      <h6 className={styles.linkLabel}>{item.label}</h6>
-    </Link>
+    <>
+      <SidebarToggle open={open} onToggle={() => setOpen((value) => !value)} />
+      <SidebarPanel open={open} onNavigate={close} />
+    </>
+  );
+};
+
+function SidebarToggle({ open, onToggle }: ToggleProps) {
+  return (
+    <button type="button" className={styles.sidebarButton} onClick={onToggle} aria-label={toggleLabel(open)}>
+      {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+    </button>
   );
 }
+
+function SidebarPanel({ open, onNavigate }: PanelProps) {
+  return (
+    <nav className={sidebarClass(open)} aria-label="Company sections">
+      <div className={styles.sidebarContent}>
+        <div className={styles.sidebarNav}>{navItems.map(renderNavItem(onNavigate))}</div>
+      </div>
+    </nav>
+  );
+}
+
+function renderNavItem(onNavigate: () => void) {
+  return (item: SidebarItem) => <SidebarLink item={item} onNavigate={onNavigate} key={item.to} />;
+}
+
+function SidebarLink({ item, onNavigate }: LinkProps) {
+  return (
+    <NavLink to={item.to} className={linkClass} onClick={onNavigate}>
+      <item.Icon aria-hidden="true" />
+      <span className={styles.linkLabel}>{item.label}</span>
+    </NavLink>
+  );
+}
+
+function sidebarClass(open: boolean) {
+  return open ? `${styles.sidebar} ${styles.open}` : styles.sidebar;
+}
+
+function linkClass({ isActive }: { isActive: boolean }) {
+  return isActive ? `${styles.link} ${styles.active}` : styles.link;
+}
+
+function toggleLabel(open: boolean) {
+  return open ? 'Close company navigation' : 'Open company navigation';
+}
+
+type ToggleProps = {
+  open: boolean;
+  onToggle: () => void;
+};
+
+type PanelProps = {
+  open: boolean;
+  onNavigate: () => void;
+};
+
+type LinkProps = {
+  item: SidebarItem;
+  onNavigate: () => void;
+};
 
 type SidebarItem = {
   to: string;

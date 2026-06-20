@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import type { IStockComment } from '../../../Interfaces/APIResponses/IStockComment';
 import { useStockComments } from '../../../hooks/useStockComments';
 import styles from './StockNotes.module.css';
@@ -43,10 +43,28 @@ function NoteForm(props: NoteFormProps) {
 function NoteFields(props: NoteFormProps) {
   return (
     <>
-      <input value={props.title} onChange={(event) => props.setTitle(event.target.value)} placeholder="Note title" />
-      <textarea value={props.content} onChange={(event) => props.setContent(event.target.value)} placeholder="What matters?" />
+      <input {...noteTitleInputProps(props)} />
+      <textarea {...noteContentInputProps(props)} />
     </>
   );
+}
+
+function noteTitleInputProps(props: NoteFormProps) {
+  return {
+    'aria-label': 'Note title',
+    onChange: (event: ChangeEvent<HTMLInputElement>) => props.setTitle(event.target.value),
+    placeholder: 'Note title',
+    value: props.title,
+  };
+}
+
+function noteContentInputProps(props: NoteFormProps) {
+  return {
+    'aria-label': 'Note content',
+    onChange: (event: ChangeEvent<HTMLTextAreaElement>) => props.setContent(event.target.value),
+    placeholder: 'What matters?',
+    value: props.content,
+  };
 }
 
 function NoteActions(props: NoteFormProps) {

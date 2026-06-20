@@ -45,4 +45,5 @@ app.Run();
 static void ConfigureFmpClient(HttpClient client)
 {
     client.BaseAddress = new Uri("https://financialmodelingprep.com/stable/");
+    client.Timeout = TimeSpan.FromSeconds(10);
 }

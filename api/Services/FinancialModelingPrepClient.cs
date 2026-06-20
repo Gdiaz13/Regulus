@@ -20,7 +20,19 @@ public sealed class FinancialModelingPrepClient
         {
             return MissingApiKey();
         }
-        return await SendAsync(path, query, apiKey);
+        return await TrySendAsync(path, query, apiKey);
+    }
+
+    private async Task<IResult> TrySendAsync(string path, IReadOnlyDictionary<string, string?> query, string apiKey)
+    {
+        try
+        {
+            return await SendAsync(path, query, apiKey);
+        }
+        catch (Exception exception) when (IsMarketDataException(exception))
+        {
+            return MarketDataUnavailable();
+        }
     }
 
     private async Task<IResult> SendAsync(string path, IReadOnlyDictionary<string, string?> query, string apiKey)
@@ -69,6 +81,16 @@ public sealed class FinancialModelingPrepClient
     private static IResult MissingApiKey()
     {
         return Results.Problem("Missing Financial Modeling Prep API key.", statusCode: 500);
+    }
+
+    private static IResult MarketDataUnavailable()
+    {
+        return Results.Problem("Market data provider is unavailable.", statusCode: 503);
+    }
+
+    private static bool IsMarketDataException(Exception exception)
+    {
+        return exception is HttpRequestException or TaskCanceledException;
     }
 
     private static string ErrorMessage(string content)

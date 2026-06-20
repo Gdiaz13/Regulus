@@ -1,24 +1,19 @@
-import type { ReactNode } from 'react'
-import styles from './Dashboard.module.css';
+import type { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
+import styles from './Dashboard.module.css';
 
-interface Props {
-    children: ReactNode;
-    ticker: string;
-}
+type Props = {
+  children: ReactNode;
+  ticker: string;
+};
 
-const Dashboard = ({children, ticker}: Props) => {
-  return (
-    <div className={styles.dashboardMain}>
-    <div className={styles.dashboardHeader}>
-      <div className={styles.dashboardHeaderInner}>
-   
-      </div>
-    </div>
-    <div className={styles.dashboardCards}> {children} </div>
-    <div className={styles.dashboardCards}>{< Outlet context={ticker} />}</div>
-  </div>
-  )
-}
+const Dashboard = ({ children, ticker }: Props) => (
+  <main className={styles.dashboardMain}>
+    <section className={styles.dashboardSummary}>{children}</section>
+    <section className={styles.dashboardDetails}>
+      <Outlet context={ticker} />
+    </section>
+  </main>
+);
 
-export default Dashboard
+export default Dashboard;

@@ -1,10 +1,7 @@
 import { createServer } from 'vite';
-import config from '../vite.config.mjs';
+import { viteOptions } from './viteOptions.mjs';
 
-const server = await createServer({
-  ...config,
-  configFile: false,
-});
+const server = await createServer(viteOptions);
 
 await server.listen();
 server.printUrls();

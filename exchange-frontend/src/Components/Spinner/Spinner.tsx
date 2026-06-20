@@ -1,23 +1,22 @@
-import { ClipLoader } from 'react-spinners';
+import styles from './Spinner.module.css';
 
 type Props = {
-    isLoading?: boolean;
+  isLoading?: boolean;
 };
 
-const Spinner = ({ isLoading = true}: Props) => {
-  return (<>
-    <div id="loading-spinner">
-        <ClipLoader
-            color="#FFD700"
-            loading={isLoading}
-            size={150}
-            aria-label="Loading Spinner"
-            data-testid="loader" 
-            />
+const Spinner = ({ isLoading = true }: Props) => {
+  if (!isLoading) {
+    return null;
+  }
+  return <SpinnerMarkup />;
+};
+
+function SpinnerMarkup() {
+  return (
+    <div className={styles.spinner} role="status" aria-label="Loading content">
+      <span className={styles.loader} />
     </div>
-    </>
-  
-  )
+  );
 }
 
-export default Spinner
+export default Spinner;
