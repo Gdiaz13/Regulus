@@ -23,10 +23,20 @@ const PortfolioList = ({ portfolioValues, onPortfolioDelete }: Props) => {
 
 function PortfolioToggle({ open, onToggle }: ToggleProps) {
   return (
-    <button className={styles.portfolioTab} onClick={onToggle} aria-label={toggleLabel(open)}>
+    <button {...toggleProps(open, onToggle)}>
       {open ? 'Close' : 'My Portfolio'}
     </button>
   );
+}
+
+function toggleProps(open: boolean, onToggle: () => void) {
+  return {
+    'aria-expanded': open,
+    'aria-label': toggleLabel(open),
+    className: styles.portfolioTab,
+    onClick: onToggle,
+    type: 'button' as const,
+  };
 }
 
 function PortfolioPanel({ open, values, onDelete }: PanelProps) {

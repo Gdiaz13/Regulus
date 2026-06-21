@@ -1,6 +1,7 @@
 import type { ICompanyCashFlow } from "../../../Interfaces/APIResponses/ICompanyCashFlow";
+import type { DataConfig } from "../../Table/types";
 
-export const config = [
+export const cashFlowConfig = [
   {
     label: "Date",
     render: (company: ICompanyCashFlow) => company.date,
@@ -40,4 +41,4 @@ export const config = [
     render: (company: ICompanyCashFlow) => company.growthFreeCashFlow,
     isCurrency: true,
   },
-];
+] satisfies DataConfig<ICompanyCashFlow>[];

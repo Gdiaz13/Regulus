@@ -82,7 +82,7 @@ cd ..\api
 dotnet build --no-restore
 ```
 
-`npm.cmd run lint:functions` is there on purpose. Keep functions short, focused, and easy to read.
+`npm.cmd run lint:functions` is there on purpose. It checks the frontend, frontend scripts, and API code so functions stay short, focused, and easy to read.
 
 ## API Routes
 

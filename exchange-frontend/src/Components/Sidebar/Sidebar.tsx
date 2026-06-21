@@ -26,10 +26,20 @@ const Sidebar = () => {
 
 function SidebarToggle({ open, onToggle }: ToggleProps) {
   return (
-    <button type="button" className={styles.sidebarButton} onClick={onToggle} aria-label={toggleLabel(open)}>
+    <button {...toggleProps(open, onToggle)}>
       {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
     </button>
   );
+}
+
+function toggleProps(open: boolean, onToggle: () => void) {
+  return {
+    'aria-expanded': open,
+    'aria-label': toggleLabel(open),
+    className: styles.sidebarButton,
+    onClick: onToggle,
+    type: 'button' as const,
+  };
 }
 
 function SidebarPanel({ open, onNavigate }: PanelProps) {

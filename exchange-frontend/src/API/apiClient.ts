@@ -13,8 +13,13 @@ type ApiRequestOptions = {
 
 // All browser calls use this helper so every API returns the same ApiResult shape.
 export async function requestApi<T>(url: string, options: ApiRequestOptions): Promise<ApiResult<T>> {
+  const response = await fetchResponse(url, options);
+  return response.ok ? readApiResponse(response.data, options.failureMessage) : response;
+}
+
+async function fetchResponse(url: string, options: ApiRequestOptions): Promise<ApiResult<Response>> {
   try {
-    return readApiResponse(await fetch(url, options.init), options.failureMessage);
+    return apiSuccess(await fetch(url, options.init));
   } catch {
     return apiFailure(options.connectionMessage);
   }
@@ -30,7 +35,14 @@ export function apiPathWithQuery(path: string, params: QueryParams) {
 }
 
 export function jsonInit(init?: RequestInit): RequestInit {
+  if (!hasBody(init)) {
+    return init ?? {};
+  }
   return { ...init, headers: jsonHeaders(init) };
+}
+
+function hasBody(init?: RequestInit) {
+  return init?.body !== undefined && init.body !== null;
 }
 
 async function readApiResponse<T>(response: Response, fallback: string): Promise<ApiResult<T>> {
@@ -40,7 +52,15 @@ async function readApiResponse<T>(response: Response, fallback: string): Promise
   if (response.status === 204) {
     return apiSuccess(undefined as T);
   }
-  return apiSuccess((await response.json()) as T);
+  return parseJsonResponse(response, fallback);
+}
+
+async function parseJsonResponse<T>(response: Response, fallback: string): Promise<ApiResult<T>> {
+  try {
+    return apiSuccess((await response.json()) as T);
+  } catch {
+    return apiFailure(statusMessage(fallback, response.status));
+  }
 }
 
 function withQuery(path: string, params: QueryParams) {

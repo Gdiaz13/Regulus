@@ -55,10 +55,20 @@ function StockField({ field, form }: StockFieldProps) {
 function stockInputProps(field: StockFieldConfig, form: StockDetailsFormProps) {
   return {
     maxLength: field.maxLength,
+    min: numberMin(field),
     onChange: fieldChange(field, form),
+    step: numberStep(field),
     type: field.type ?? 'text',
     value: form.fields[field.name],
   };
+}
+
+function numberStep(field: StockFieldConfig) {
+  return field.type === 'number' ? 'any' : undefined;
+}
+
+function numberMin(field: StockFieldConfig) {
+  return field.type === 'number' ? 0 : undefined;
 }
 
 function fieldChange(field: StockFieldConfig, form: StockDetailsFormProps) {
@@ -99,7 +109,12 @@ function stockRequest(fields: StockFieldState): CreatePortfolioStock {
 }
 
 function numberField(value: string) {
-  return value.trim() ? Number(value) : undefined;
+  const parsed = Number(value);
+  return validNumber(value, parsed) ? parsed : undefined;
+}
+
+function validNumber(value: string, parsed: number) {
+  return value.trim().length > 0 && Number.isFinite(parsed);
 }
 
 type Props = {

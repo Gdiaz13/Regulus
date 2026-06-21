@@ -3,7 +3,7 @@ import { getKeyMetrics } from '../../API/GET/getKeyMetrics';
 import ResourceStatus from '../AsyncResource/ResourceStatus';
 import RatioList from '../RatioList/RatioList';
 import { useTickerFirstResource } from '../../hooks/useTickerResource';
-import { tableConfig } from './Config/CompanyProfileConfig';
+import { keyMetricsConfig } from './Config/CompanyProfileConfig';
 
 const emptyMessage = 'No key metrics found for this ticker.';
 
@@ -15,7 +15,7 @@ const CompanyProfile = () => {
     return <ResourceStatus status={state.status} message={state.message} />;
   }
 
-  return <RatioList data={state.data} config={tableConfig} />;
+  return <RatioList data={state.data} config={keyMetricsConfig} />;
 };
 
 export default CompanyProfile;

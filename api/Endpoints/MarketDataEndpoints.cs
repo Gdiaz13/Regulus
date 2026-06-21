@@ -15,39 +15,68 @@ public static class MarketDataEndpoints
         marketData.MapGet("cash-flow-statement-growth", GetCashFlow);
     }
 
-    private static Task<IResult> SearchByName(string query, FinancialModelingPrepClient client)
+    private static Task<IResult> SearchByName(string? query, FinancialModelingPrepClient client)
     {
-        return client.GetAsync("search-name", Query("query", query));
+        return ForwardValue("search-name", "query", query, "Search query is required.", client);
     }
 
-    private static Task<IResult> GetProfile(string symbol, FinancialModelingPrepClient client)
+    private static Task<IResult> GetProfile(string? symbol, FinancialModelingPrepClient client)
     {
-        return client.GetAsync("profile", Symbol(symbol));
+        return ForwardSymbol("profile", symbol, client);
     }
 
-    private static Task<IResult> GetKeyMetrics(string symbol, FinancialModelingPrepClient client)
+    private static Task<IResult> GetKeyMetrics(string? symbol, FinancialModelingPrepClient client)
     {
-        return client.GetAsync("key-metrics-ttm", Symbol(symbol));
+        return ForwardSymbol("key-metrics-ttm", symbol, client);
     }
 
-    private static Task<IResult> GetIncomeStatement(string symbol, FinancialModelingPrepClient client)
+    private static Task<IResult> GetIncomeStatement(string? symbol, FinancialModelingPrepClient client)
     {
-        return client.GetAsync("income-statement", Symbol(symbol));
+        return ForwardSymbol("income-statement", symbol, client);
     }
 
-    private static Task<IResult> GetBalanceSheet(string symbol, FinancialModelingPrepClient client)
+    private static Task<IResult> GetBalanceSheet(string? symbol, FinancialModelingPrepClient client)
     {
-        return client.GetAsync("balance-sheet-statement", Symbol(symbol));
+        return ForwardSymbol("balance-sheet-statement", symbol, client);
     }
 
-    private static Task<IResult> GetCashFlow(string symbol, FinancialModelingPrepClient client)
+    private static Task<IResult> GetCashFlow(string? symbol, FinancialModelingPrepClient client)
     {
-        return client.GetAsync("cash-flow-statement-growth", Symbol(symbol));
+        return ForwardSymbol("cash-flow-statement-growth", symbol, client);
     }
 
-    private static IReadOnlyDictionary<string, string?> Symbol(string symbol)
+    private static Task<IResult> ForwardSymbol(
+        string path,
+        string? symbol,
+        FinancialModelingPrepClient client
+    )
     {
-        return Query("symbol", symbol);
+        return ForwardValue(path, "symbol", symbol, "A stock symbol is required.", client);
+    }
+
+    // Keep validation here so bad requests never leave our API proxy.
+    private static Task<IResult> ForwardValue(
+        string path,
+        string key,
+        string? value,
+        string message,
+        FinancialModelingPrepClient client
+    )
+    {
+        var cleanValue = Clean(value);
+        return string.IsNullOrWhiteSpace(cleanValue)
+            ? BadRequest(message)
+            : client.GetAsync(path, Query(key, cleanValue));
+    }
+
+    private static string Clean(string? value)
+    {
+        return value?.Trim() ?? string.Empty;
+    }
+
+    private static Task<IResult> BadRequest(string message)
+    {
+        return Task.FromResult<IResult>(Results.BadRequest(message));
     }
 
     private static IReadOnlyDictionary<string, string?> Query(string key, string value)

@@ -44,7 +44,7 @@ public static class StockEndpoints
     private static async Task<IResult> CreateStockCore(CreateStockRequest request, ApplicationDBContext db)
     {
         var normalizedSymbol = NormalizeSymbol(request.Symbol);
-        var validationResult = await ValidateStockRequest(db, normalizedSymbol);
+        var validationResult = await ValidateStockRequest(db, request, normalizedSymbol);
         if (validationResult is not null)
         {
             return validationResult;
@@ -76,7 +76,7 @@ public static class StockEndpoints
     )
     {
         var symbol = NormalizeSymbol(request.Symbol);
-        var validation = await ValidateStockUpdate(db, id, symbol);
+        var validation = await ValidateStockUpdate(db, id, request, symbol);
         if (validation is not null)
         {
             return validation;
@@ -156,7 +156,7 @@ public static class StockEndpoints
         return db.Stocks.AsNoTracking().OrderBy(stock => stock.Symbol).ToListAsync();
     }
 
-    private static async Task<IResult?> ValidateStockRequest(ApplicationDBContext db, string symbol)
+    private static async Task<IResult?> ValidateStockRequest(ApplicationDBContext db, CreateStockRequest request, string symbol)
     {
         var validation = ValidateSymbol(symbol);
         if (validation is not null)
@@ -167,10 +167,10 @@ public static class StockEndpoints
         {
             return Results.Conflict($"{symbol} is already in your portfolio.");
         }
-        return null;
+        return ValidateStockNumbers(request);
     }
 
-    private static async Task<IResult?> ValidateStockUpdate(ApplicationDBContext db, int id, string symbol)
+    private static async Task<IResult?> ValidateStockUpdate(ApplicationDBContext db, int id, CreateStockRequest request, string symbol)
     {
         var validation = ValidateSymbol(symbol);
         if (validation is not null)
@@ -181,7 +181,32 @@ public static class StockEndpoints
         {
             return Results.Conflict($"{symbol} is already in your portfolio.");
         }
-        return null;
+        return ValidateStockNumbers(request);
+    }
+
+    private static IResult? ValidateStockNumbers(CreateStockRequest request)
+    {
+        return HasNegativeNumber(request) ? NegativeNumbers() : null;
+    }
+
+    private static bool HasNegativeNumber(CreateStockRequest request)
+    {
+        return IsNegative(request.PurchasePrice) || IsNegative(request.LastDividend) || IsNegative(request.MarketCap);
+    }
+
+    private static bool IsNegative(decimal? value)
+    {
+        return value < 0;
+    }
+
+    private static bool IsNegative(long? value)
+    {
+        return value < 0;
+    }
+
+    private static IResult NegativeNumbers()
+    {
+        return Results.BadRequest("Portfolio numbers cannot be negative.");
     }
 
     private static IResult? ValidateSymbol(string symbol)

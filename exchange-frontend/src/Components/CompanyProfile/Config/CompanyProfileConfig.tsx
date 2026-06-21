@@ -1,6 +1,7 @@
 import type { ICompanyKeyMetrics } from "../../../Interfaces/APIResponses/ICompanyKeyMetrics";
+import type { DataConfig } from "../../Table/types";
 
-export const tableConfig = [
+export const keyMetricsConfig = [
   {
     label: "Symbol",
     render: (company: ICompanyKeyMetrics) => company.symbol,
@@ -230,4 +231,4 @@ export const tableConfig = [
     subTitle: "Current assets minus total liabilities over the trailing twelve months.",
     isCurrency: true,
   },
-];
+] satisfies DataConfig<ICompanyKeyMetrics>[];

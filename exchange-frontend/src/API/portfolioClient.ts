@@ -5,6 +5,7 @@ import type {
 import { apiPath, jsonInit, requestApi } from "./apiClient";
 import type { ApiResult } from "./types";
 
+// Portfolio screens use this file instead of building /api/stocks URLs by hand.
 function requestPortfolio<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
   return requestApi<T>(apiPath('/api/stocks', path), {
     init: jsonInit(init),

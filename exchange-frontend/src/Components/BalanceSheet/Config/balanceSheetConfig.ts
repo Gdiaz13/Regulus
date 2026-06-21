@@ -1,4 +1,5 @@
 import type { ICompanyBalanceSheet } from "../../../Interfaces/APIResponses/ICompanyBalanceSheet";
+import type { DataConfig } from "../../Table/types";
 
 export const balanceSheetConfig = [
   {
@@ -101,4 +102,4 @@ export const balanceSheetConfig = [
     render: (company: ICompanyBalanceSheet) => company.totalLiabilitiesAndTotalEquity,
     isCurrency: true,
   },
-];
+] satisfies DataConfig<ICompanyBalanceSheet>[];

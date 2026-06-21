@@ -1,4 +1,5 @@
 import type { ICompanyIncomeStatement } from '../../../Interfaces/APIResponses/ICompanyIncomeStatement';
+import type { DataConfig } from '../../Table/types';
 
 export const incomeStatementConfig = [
   {
@@ -138,4 +139,4 @@ export const incomeStatementConfig = [
     render: (data: ICompanyIncomeStatement) => data.weightedAverageShsOutDil,
     subTitle: 'Average number of diluted shares outstanding during the period.'
   },
-];
+] satisfies DataConfig<ICompanyIncomeStatement>[];

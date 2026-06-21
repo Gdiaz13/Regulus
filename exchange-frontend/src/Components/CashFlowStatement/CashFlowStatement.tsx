@@ -3,7 +3,8 @@ import { getCashFlow } from '../../API/GET/getCashFlow';
 import ResourceStatus from '../AsyncResource/ResourceStatus';
 import Table from '../Table/Table';
 import { useTickerListResource } from '../../hooks/useTickerResource';
-import { config } from './Config/CashFlowConfig';
+import { cashFlowConfig } from './Config/CashFlowConfig';
+import type { ICompanyCashFlow } from '../../Interfaces/APIResponses/ICompanyCashFlow';
 
 const emptyMessage = 'No cash flow statements found for this ticker.';
 
@@ -15,7 +16,11 @@ const CashFlowStatement = () => {
     return <ResourceStatus status={state.status} message={state.message} />;
   }
 
-  return <Table config={config} data={state.data} />;
+  return <Table config={cashFlowConfig} data={state.data} rowKey={cashFlowKey} />;
 };
+
+function cashFlowKey(row: ICompanyCashFlow) {
+  return `${row.symbol}-${row.date}-${row.period}`;
+}
 
 export default CashFlowStatement;

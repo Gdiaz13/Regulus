@@ -14,7 +14,7 @@ export const ThemeToggle = () => {
 };
 
 function useThemeMode() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => readStoredTheme() === 'dark');
   useEffect(() => setTheme(readStoredTheme(), setIsDarkMode), []);
   const toggleTheme = () => setTheme(nextTheme(isDarkMode), setIsDarkMode);
   return { isDarkMode, toggleTheme };
@@ -22,12 +22,28 @@ function useThemeMode() {
 
 function setTheme(theme: ThemeName, setIsDarkMode: (value: boolean) => void) {
   document.documentElement.classList.toggle('dark', theme === 'dark');
-  localStorage.setItem('theme', theme);
+  saveTheme(theme);
   setIsDarkMode(theme === 'dark');
 }
 
 function readStoredTheme(): ThemeName {
-  return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+  return storedTheme() === 'dark' ? 'dark' : 'light';
+}
+
+function saveTheme(theme: ThemeName) {
+  try {
+    localStorage.setItem('theme', theme);
+  } catch {
+    return;
+  }
+}
+
+function storedTheme() {
+  try {
+    return localStorage.getItem('theme');
+  } catch {
+    return null;
+  }
 }
 
 function nextTheme(isDarkMode: boolean): ThemeName {

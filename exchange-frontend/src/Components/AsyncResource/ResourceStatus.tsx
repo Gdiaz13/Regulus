@@ -19,7 +19,11 @@ export default function ResourceStatus({ status, message, style }: Props) {
     return <Spinner />;
   }
 
-  return <div style={{ ...defaultMessageStyle, ...style }}>{messageText(message)}</div>;
+  return <div role={statusRole(status)} style={{ ...defaultMessageStyle, ...style }}>{messageText(message)}</div>;
+}
+
+function statusRole(status: LoadStatus) {
+  return status === 'error' ? 'alert' : 'status';
 }
 
 function messageText(message: string | null) {

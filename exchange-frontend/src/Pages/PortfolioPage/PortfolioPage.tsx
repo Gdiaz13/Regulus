@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import PortfolioCard from '../../Components/Portfolio/PortfolioCard/PortfolioCard';
 import { portfolioSymbolMaxLength } from '../../Components/Portfolio/portfolioRules';
@@ -11,6 +11,7 @@ import styles from './PortfolioPage.module.css';
 
 type Portfolio = ReturnType<typeof usePortfolioStocks>;
 
+// This page connects saved stocks to their editable details and notes.
 const PortfolioPage = () => {
   const portfolio = usePortfolioStocks();
   const form = usePortfolioForm(portfolio.add);
@@ -52,10 +53,23 @@ function PortfolioForm({ symbol, setSymbol, submit }: FormProps) {
   return (
     <form className={styles.form} onSubmit={submit}>
       <label htmlFor="portfolio-symbol">Ticker symbol</label>
-      <input id="portfolio-symbol" maxLength={portfolioSymbolMaxLength} value={symbol} onChange={(event) => setSymbol(event.target.value)} />
+      <input {...portfolioInputProps(symbol, setSymbol)} />
       <button type="submit" disabled={!symbol.trim()}>Add</button>
     </form>
   );
+}
+
+function portfolioInputProps(symbol: string, setSymbol: SetSymbol) {
+  return {
+    id: 'portfolio-symbol',
+    maxLength: portfolioSymbolMaxLength,
+    onChange: handleSymbolChange(setSymbol),
+    value: symbol,
+  };
+}
+
+function handleSymbolChange(setSymbol: SetSymbol) {
+  return (event: ChangeEvent<HTMLInputElement>) => setSymbol(event.target.value);
 }
 
 function PortfolioMessage({ portfolio }: { portfolio: Portfolio }) {
@@ -106,9 +120,11 @@ type UpdateStock = (id: number, stock: CreatePortfolioStock) => Promise<boolean>
 
 type FormProps = {
   symbol: string;
-  setSymbol: (value: string) => void;
+  setSymbol: SetSymbol;
   submit: (event: FormEvent<HTMLFormElement>) => void;
 };
+
+type SetSymbol = (value: string) => void;
 
 type GridProps = {
   stocks: IPortfolioStock[];

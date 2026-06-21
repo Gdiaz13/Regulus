@@ -7,11 +7,12 @@ const maxLines = 15;
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptRoot, '..');
 const workspaceRoot = path.resolve(frontendRoot, '..');
+const ignoredDirectories = new Set(['bin', 'dist', 'node_modules', 'obj']);
 
 main();
 
 function main() {
-  const findings = [...scanTypeScriptProject(), ...scanCSharpProject()];
+  const findings = [...scanFrontendProject(), ...scanCSharpProject()];
   if (findings.length === 0) {
     console.log(`No functions exceed ${maxLines} lines.`);
     return;
@@ -20,28 +21,50 @@ function main() {
   process.exitCode = 1;
 }
 
-function scanTypeScriptProject() {
-  return filesUnder(path.join(frontendRoot, 'src'), isTypeScriptFile).flatMap(scanTypeScriptFile);
+function scanFrontendProject() {
+  return frontendRoots().flatMap((root) => filesFrom(root, isFrontendCodeFile)).flatMap(scanFrontendFile);
+}
+
+function frontendRoots() {
+  return [
+    path.join(frontendRoot, 'src'),
+    path.join(frontendRoot, 'scripts'),
+    path.join(frontendRoot, 'vite.config.ts'),
+    path.join(frontendRoot, 'eslint.config.js'),
+  ];
 }
 
 function scanCSharpProject() {
   return filesUnder(path.join(workspaceRoot, 'api'), isCSharpFile).flatMap(scanCSharpFile);
 }
 
+function filesFrom(root, predicate) {
+  const stat = fs.statSync(root);
+  return stat.isDirectory() ? filesUnder(root, predicate) : matchingFile(root, predicate);
+}
+
+function matchingFile(file, predicate) {
+  return predicate(file) ? [file] : [];
+}
+
 function filesUnder(root, predicate) {
   return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(root, entry.name);
     if (entry.isDirectory()) {
-      return filesUnder(fullPath, predicate);
+      return ignoredDirectory(entry.name) ? [] : filesUnder(fullPath, predicate);
     }
     return predicate(fullPath) ? [fullPath] : [];
   });
 }
 
-function scanTypeScriptFile(file) {
+function ignoredDirectory(name) {
+  return ignoredDirectories.has(name);
+}
+
+function scanFrontendFile(file) {
   const source = createSourceFile(file);
   const findings = [];
-  inspectTypeScriptNode(source, source, file, findings);
+  inspectFrontendNode(source, source, file, findings);
   return findings;
 }
 
@@ -50,14 +73,14 @@ function createSourceFile(file) {
   return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind(file));
 }
 
-function inspectTypeScriptNode(node, source, file, findings) {
+function inspectFrontendNode(node, source, file, findings) {
   if (isFunctionLike(node)) {
-    recordTypeScriptNode(node, source, file, findings);
+    recordFrontendNode(node, source, file, findings);
   }
-  ts.forEachChild(node, (child) => inspectTypeScriptNode(child, source, file, findings));
+  ts.forEachChild(node, (child) => inspectFrontendNode(child, source, file, findings));
 }
 
-function recordTypeScriptNode(node, source, file, findings) {
+function recordFrontendNode(node, source, file, findings) {
   const start = sourceLine(source, node.getStart(source));
   const end = sourceLine(source, node.getEnd());
   const lines = end - start + 1;
@@ -117,11 +140,14 @@ function sourceLine(source, position) {
 }
 
 function scriptKind(file) {
-  return file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  if (file.endsWith('.tsx')) {
+    return ts.ScriptKind.TSX;
+  }
+  return file.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS;
 }
 
-function isTypeScriptFile(file) {
-  return /\.tsx?$/.test(file);
+function isFrontendCodeFile(file) {
+  return /\.(tsx?|[cm]?js)$/.test(file);
 }
 
 function isCSharpFile(file) {

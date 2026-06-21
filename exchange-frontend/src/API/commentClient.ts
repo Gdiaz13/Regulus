@@ -2,6 +2,7 @@ import type { CreateStockComment, IStockComment } from '../Interfaces/APIRespons
 import { apiPath, jsonInit, requestApi } from './apiClient';
 import type { ApiResult } from './types';
 
+// Notes belong to a stock, so reads and creates start at /stocks/{id}/comments.
 function requestComment<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
   return requestApi<T>(apiPath('/api', path), {
     init: jsonInit(init),
