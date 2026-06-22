@@ -11,6 +11,7 @@ builder.Logging.AddDebug();
 
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
+builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 
 builder
     .Services
@@ -38,6 +39,7 @@ app.MapGet("/", () => "Exchange API running");
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
 app.MapMarketDataEndpoints();
+app.MapPredictionEndpoints();
 app.MapStockEndpoints();
 
 app.Run();
@@ -46,4 +48,11 @@ static void ConfigureFmpClient(HttpClient client)
 {
     client.BaseAddress = new Uri("https://financialmodelingprep.com/stable/");
     client.Timeout = TimeSpan.FromSeconds(10);
+}
+
+static void ConfigureRegulasAiClient(IServiceProvider services, HttpClient client)
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    client.BaseAddress = RegulasAiConfiguration.CoreUrl(configuration);
+    client.Timeout = TimeSpan.FromSeconds(15);
 }

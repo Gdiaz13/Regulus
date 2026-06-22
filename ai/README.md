@@ -1,0 +1,93 @@
+# Regulas AI Services
+
+This folder holds the Python AI side of Regulas. It is separate from the C# API
+on purpose: the backend is the gateway, and these services are the brains it
+calls. Right now every brain is a **mock** - the shapes are real, the numbers
+are not. Real models drop in later without changing the wiring.
+
+## How the hierarchy works
+
+Predictions flow one way only, from the bottom up:
+
+```
+Specialist AI  ->  Category AI  ->  RegulasCoreAI  ->  C# gateway
+```
+
+- **Specialists** each own one slice: `StockTechAI` (tech stocks), `PokemonAI`
+  (Pokemon cards). They are the only ones that actually score an asset.
+- **Category AIs** (`StockAI`, `TCGAI`) route each asset to the right specialist
+  and summarize the group.
+- **RegulasCoreAI** is the commander. It routes each asset to the right category
+  AI and returns one combined overview. The C# backend only ever calls this one.
+
+If a service below is not running, the one above falls back to a local mock and
+adds a warning, so you can start just one service and still get a response.
+
+## Shared code
+
+`regulas_ai_core/` is the shared library every service imports:
+
+- `contract.py` - the prediction shape. This is the source of truth; the C#
+  DTOs in `api/Contracts/AiContracts.cs` mirror it.
+- `mock.py` - the fake-but-deterministic prediction generator (clearly marked).
+- `service.py` - builds a specialist app from a small config.
+- `manager.py` - builds the category and commander apps.
+- `aggregate.py` / `upstream.py` - summarizing and calling downstream services.
+
+## Endpoints
+
+Specialists expose `GET /health`, `GET /model-info`, `POST /predict`,
+`POST /explain`. Managers expose `GET /health` and `POST /predict` (which takes
+a list of assets).
+
+## Setup
+
+```powershell
+cd ai
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+## Run the services
+
+Each runs on its own port. Start the bottom of the tree first if you want real
+calls instead of fallbacks:
+
+```powershell
+uvicorn main:app --app-dir "regulas.ai.stocks.tech"          --port 8101   # StockTechAI
+uvicorn main:app --app-dir "regulas.ai.stocks.semiconductor" --port 8102   # StockSemiconductorAI
+uvicorn main:app --app-dir "regulas.ai.tcg.pokemon"          --port 8111   # PokemonAI
+uvicorn main:app --app-dir "regulas.ai.stocks.core"  --port 8201   # StockAI
+uvicorn main:app --app-dir "regulas.ai.tcg.core"     --port 8202   # TCGAI
+uvicorn main:app --app-dir "regulas.ai.core"         --port 8301   # RegulasCoreAI
+```
+
+The C# backend points at RegulasCoreAI on `http://localhost:8301` by default
+(see `RegulasAi:CoreUrl` in `api/appsettings.json`).
+
+## Tests
+
+```powershell
+cd ai
+pytest
+```
+
+## Ports
+
+| Service          | Port | Status        |
+|------------------|------|---------------|
+| StockTechAI      | 8101 | mock          |
+| StockSemiconductorAI | 8102 | mock      |
+| PokemonAI        | 8111 | mock          |
+| MagicAI          | 8112 | not built yet |
+| OnePieceAI       | 8113 | not built yet |
+| StockAI          | 8201 | mock          |
+| TCGAI            | 8202 | mock          |
+| RegulasCoreAI    | 8301 | mock          |
+
+## Adding a new specialist later
+
+Make a folder like `regulas.ai.stocks.energy`, write a `main.py` with a
+`SpecialistConfig`, and register its URL in the matching category AI. Nothing
+else has to change. That is the whole point of the hierarchy.

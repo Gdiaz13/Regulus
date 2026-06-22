@@ -1,0 +1,109 @@
+.card {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.symbol {
+  color: hsl(var(--accent));
+  font-weight: 700;
+  margin-left: 0.35rem;
+}
+
+.mock {
+  background: #ffd700;
+  color: #1a1a1a;
+  border-radius: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.arrow {
+  opacity: 0.6;
+}
+
+.predicted {
+  color: hsl(var(--accent));
+}
+
+.up {
+  color: #2ecc71;
+}
+
+.down {
+  color: #e74c3c;
+}
+
+.scores {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.score {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.55rem;
+}
+
+.score dt {
+  opacity: 0.75;
+}
+
+.score dd {
+  font-weight: 700;
+  margin: 0;
+}
+
+.reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reasonTitle {
+  font-weight: 700;
+  margin: 0;
+}
+
+.reasonList,
+.warningList {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.warningList {
+  color: #ffb347;
+}
+
+.model {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin: 0;
+}

@@ -13,6 +13,8 @@ namespace api.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Asset> Assets { get; set; }
         public DbSet<AssetCategory> AssetCategories { get; set; }
+        public DbSet<Prediction> Predictions { get; set; }
+        public DbSet<PredictionReason> PredictionReasons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +23,7 @@ namespace api.Data
             ConfigureCommentStock(modelBuilder);
             ConfigureAssetCategory(modelBuilder);
             ConfigureAsset(modelBuilder);
+            ConfigurePrediction(modelBuilder);
         }
 
         private static void ConfigureStockSymbol(ModelBuilder modelBuilder)
@@ -67,6 +70,34 @@ namespace api.Data
                 .WithMany(category => category.Assets)
                 .HasForeignKey(value => value.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
+        }
+
+        private static void ConfigurePrediction(ModelBuilder modelBuilder)
+        {
+            var prediction = modelBuilder.Entity<Prediction>();
+            prediction.Property(value => value.AssetId).HasMaxLength(Prediction.AssetIdMaxLength);
+            prediction.Property(value => value.AssetType).HasConversion<string>().HasMaxLength(Asset.AssetTypeMaxLength);
+            prediction.HasIndex(value => new { value.AssetId, value.CreatedOn });
+            ConfigurePredictionReasons(prediction);
+            ConfigurePredictionReasonKind(modelBuilder);
+        }
+
+        private static void ConfigurePredictionReasons(EntityTypeBuilder<Prediction> prediction)
+        {
+            prediction
+                .HasMany(value => value.Reasons)
+                .WithOne(reason => reason.Prediction)
+                .HasForeignKey(reason => reason.PredictionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+
+        private static void ConfigurePredictionReasonKind(ModelBuilder modelBuilder)
+        {
+            modelBuilder
+                .Entity<PredictionReason>()
+                .Property(value => value.Kind)
+                .HasConversion<string>()
+                .HasMaxLength(16);
         }
     }
 }
