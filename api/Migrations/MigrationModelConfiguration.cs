@@ -7,6 +7,10 @@ namespace api.Migrations;
 internal static class MigrationModelConfiguration
 {
     private const int StockSymbolMaxLength = 32;
+    private const int AssetSymbolMaxLength = 32;
+    private const int AssetTypeMaxLength = 32;
+    private const int CategoryNameMaxLength = 64;
+    private const int CategorySlugMaxLength = 64;
 
     public static void ConfigureInitial(ModelBuilder modelBuilder)
     {
@@ -18,9 +22,15 @@ internal static class MigrationModelConfiguration
         Configure(modelBuilder, ConfigureInitialCommentEntity, ConfigureCurrentStockEntity, ConfigureInitialCommentNavigation);
     }
 
-    public static void ConfigureCurrent(ModelBuilder modelBuilder)
+    public static void ConfigureRequireCommentStock(ModelBuilder modelBuilder)
     {
         Configure(modelBuilder, ConfigureCurrentCommentEntity, ConfigureCurrentStockEntity, ConfigureCurrentCommentNavigation);
+    }
+
+    public static void ConfigureCurrent(ModelBuilder modelBuilder)
+    {
+        ConfigureRequireCommentStock(modelBuilder);
+        ConfigureAssetModels(modelBuilder);
     }
 
     private static void ConfigureAnnotations(ModelBuilder modelBuilder)
@@ -169,5 +179,60 @@ internal static class MigrationModelConfiguration
     private static void ConfigureStockNavigation(EntityTypeBuilder builder)
     {
         builder.Navigation("Comments");
+    }
+
+    private static void ConfigureAssetModels(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity("api.Models.AssetCategory", ConfigureAssetCategoryEntity);
+        modelBuilder.Entity("api.Models.Asset", ConfigureAssetEntity);
+        modelBuilder.Entity("api.Models.Asset", ConfigureAssetNavigation);
+        modelBuilder.Entity("api.Models.AssetCategory", ConfigureAssetCategoryNavigation);
+    }
+
+    private static void ConfigureAssetCategoryEntity(EntityTypeBuilder builder)
+    {
+        ConfigureIdentityId(builder);
+        builder.Property<string>("Name").IsRequired().HasMaxLength(CategoryNameMaxLength).HasColumnType("nvarchar(64)");
+        builder.Property<string>("Slug").IsRequired().HasMaxLength(CategorySlugMaxLength).HasColumnType("nvarchar(64)");
+        builder.Property<string>("AssetType").IsRequired().HasMaxLength(AssetTypeMaxLength).HasColumnType("nvarchar(32)");
+        builder.HasKey("Id");
+        builder.HasIndex("Name").IsUnique();
+        builder.HasIndex("Slug").IsUnique();
+        builder.ToTable("AssetCategories");
+    }
+
+    private static void ConfigureAssetEntity(EntityTypeBuilder builder)
+    {
+        ConfigureIdentityId(builder);
+        builder.Property<string>("Symbol").IsRequired().HasMaxLength(AssetSymbolMaxLength).HasColumnType("nvarchar(32)");
+        builder.Property<string>("Name").IsRequired().HasColumnType("nvarchar(max)");
+        builder.Property<string>("AssetType").IsRequired().HasMaxLength(AssetTypeMaxLength).HasColumnType("nvarchar(32)");
+        builder.Property<int?>("CategoryId").HasColumnType("int");
+        builder.Property<DateTime>("CreatedOn").HasColumnType("datetime2");
+        builder.HasKey("Id");
+        builder.HasIndex("CategoryId");
+        builder.HasIndex("AssetType", "Symbol").IsUnique();
+        builder.ToTable("Assets");
+    }
+
+    private static void ConfigureAssetNavigation(EntityTypeBuilder builder)
+    {
+        builder
+            .HasOne("api.Models.AssetCategory", "Category")
+            .WithMany("Assets")
+            .HasForeignKey("CategoryId")
+            .OnDelete(DeleteBehavior.SetNull);
+        builder.Navigation("Category");
+    }
+
+    private static void ConfigureAssetCategoryNavigation(EntityTypeBuilder builder)
+    {
+        builder.Navigation("Assets");
+    }
+
+    private static void ConfigureIdentityId(EntityTypeBuilder builder)
+    {
+        var id = builder.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("int");
+        SqlServerPropertyBuilderExtensions.UseIdentityColumn(id);
     }
 }

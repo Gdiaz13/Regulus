@@ -70,6 +70,15 @@ npm.cmd run dev
 - `/company/:ticker/balance-sheet` shows balance sheet data.
 - `/company/:ticker/cashflow-statement` shows cash flow data.
 
+## Data Model Groundwork
+
+Regulas is meant to track more than stocks down the road (ETFs, TCG cards, and crypto later), so the database now has a flexible foundation sitting next to the portfolio tables:
+
+- `Assets` holds anything trackable, tagged with an `AssetType` (`Stock`, `Etf`, `TcgCard`, `Crypto`, or `Collectible`). The same symbol can live under different types, so a stock ticker and a card code never collide.
+- `AssetCategories` groups assets into market segments like "Technology" or "Pokemon". These line up with the category-level AI layer that comes later.
+
+This is groundwork only. There are no `Assets` endpoints yet and the portfolio still runs on the existing `Stocks` table. The new tables are here so that adding markets and AI predictions later does not mean rewriting the schema.
+
 ## Checks I Run
 
 ```powershell
