@@ -111,7 +111,10 @@ npm.cmd run build
 
 cd ..\api
 dotnet build --no-restore
+dotnet test ..\api.Tests
 ```
+
+Backend tests live in `api.Tests` (xUnit) and cover the prediction layer: request mapping, saving predictions to the database, and the RegulasCoreAI client. The Python AI services have their own tests - see `ai/README.md`.
 
 `npm.cmd run lint:functions` is there on purpose. It checks the frontend, frontend scripts, and API code so functions stay short, focused, and easy to read.
 
