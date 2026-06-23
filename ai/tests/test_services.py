@@ -45,6 +45,11 @@ def test_specialist_predict_returns_contract():
     assert body["assetId"] == "AMD" and body["modelName"] == "StockTechAI"
 
 
+def test_specialist_train_is_mock_placeholder():
+    body = _specialist_client().post("/train").json()
+    assert body["status"] == "accepted" and body["isMock"] is True
+
+
 def _category_client() -> TestClient:
     config = CategoryConfig(
         "StockAI", "0.1.0", "Stocks", "Stock",
@@ -57,6 +62,13 @@ def test_category_summarizes_specialists():
     body = _category_client().post("/predict", json=[STOCK_REQUEST]).json()
     assert body["category"] == "Stocks" and len(body["predictions"]) == 1
     assert "offline" in body["predictions"][0]["warnings"][-1]
+
+
+def test_category_has_standard_manager_routes():
+    client = _category_client()
+    assert client.get("/model-info").json()["modelName"] == "StockAI"
+    assert client.post("/train").json()["status"] == "accepted"
+    assert client.post("/explain", json=[STOCK_REQUEST]).json()["requestCount"] == 1
 
 
 def _multi_specialist_client() -> TestClient:
@@ -87,3 +99,10 @@ def _commander_client() -> TestClient:
 def test_commander_returns_overview():
     body = _commander_client().post("/predict", json=[STOCK_REQUEST]).json()
     assert body["modelName"] == "RegulasCoreAI" and len(body["categories"]) == 1
+
+
+def test_commander_has_standard_manager_routes():
+    client = _commander_client()
+    assert client.get("/model-info").json()["category"] == "Core"
+    assert client.post("/train").json()["isMock"] is True
+    assert client.post("/explain", json=[STOCK_REQUEST]).json()["requestCount"] == 1

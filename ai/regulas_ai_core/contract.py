@@ -89,3 +89,13 @@ class HealthResponse(BaseModel):
     status: str
     modelName: str
     isMock: bool
+
+
+class TrainResponse(BaseModel):
+    """Answer for POST /train while training is still a separate placeholder."""
+
+    status: str
+    modelName: str
+    modelVersion: str
+    message: str
+    isMock: bool
