@@ -13,27 +13,34 @@
 .line {
   fill: none;
   stroke: hsl(var(--accent));
-  stroke-width: 2;
+  stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
+  filter: drop-shadow(0 0 6px hsl(var(--accent) / 0.45));
+}
+
+.dot {
+  fill: hsl(var(--accent));
+  stroke: hsl(var(--background));
+  stroke-width: 2;
 }
 
 .grid {
   stroke: hsl(var(--border));
   stroke-width: 1;
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 .axisText {
   fill: currentColor;
   font-size: 12px;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .empty {
   padding: 2rem;
   text-align: center;
   opacity: 0.7;
-  border: 1px dashed hsl(var(--border));
+  border: 1px dashed hsl(var(--border) / 0.7);
   border-radius: 0.5rem;
 }

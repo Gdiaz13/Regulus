@@ -209,4 +209,37 @@
         background: var(--portfolio-card-bg) !important;
       }
 
+      /* UI polish: button states + unified form controls. Theme tokens only. */
+      button {
+        cursor: pointer;
+        padding: 0.5rem 1.1rem;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      button:disabled:hover {
+        background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)) 80%);
+        color: hsl(var(--primary-foreground));
+        box-shadow: none;
+      }
+
+      input, select, textarea {
+        background: hsl(var(--foreground) / 0.04);
+        color: inherit;
+        border: 1px solid hsl(var(--border) / 0.55);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      input:focus-visible, select:focus-visible, textarea:focus-visible {
+        outline: none;
+        border-color: hsl(var(--accent));
+        box-shadow: 0 0 0 3px hsl(var(--accent) / 0.25);
+      }
+      input::placeholder, textarea::placeholder {
+        color: hsl(var(--foreground) / 0.45);
+      }
+
 

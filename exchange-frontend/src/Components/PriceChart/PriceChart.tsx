@@ -21,10 +21,16 @@ function Chart({ points, scale }: { points: IPricePoint[]; scale: Scale }) {
       <GridLines scale={scale} />
       <polygon className={styles.area} points={areaPoints(points, scale)} />
       <polyline className={styles.line} points={linePoints(points, scale)} />
+      <LastDot points={points} scale={scale} />
       <PriceLabels scale={scale} />
       <DateLabels points={points} />
     </svg>
   );
+}
+
+function LastDot({ points, scale }: { points: IPricePoint[]; scale: Scale }) {
+  const last = points[points.length - 1];
+  return <circle className={styles.dot} cx={xFor(scale.count - 1, scale.count)} cy={yFor(last.close, scale)} r={4} />;
 }
 
 function GridLines({ scale }: { scale: Scale }) {

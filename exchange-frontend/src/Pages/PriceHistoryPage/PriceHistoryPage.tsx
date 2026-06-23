@@ -40,7 +40,7 @@ function Header() {
 function Controls({ fields, onLoad, onCapture, enabled, busy }: ControlsProps) {
   return (
     <div className={styles.controls}>
-      <input className={styles.input} value={fields.symbol} maxLength={32} placeholder="Symbol e.g. AMD" onChange={(event) => fields.setSymbol(event.target.value)} />
+      <input className={styles.symbolInput} value={fields.symbol} maxLength={32} placeholder="Symbol e.g. AMD" onChange={(event) => fields.setSymbol(event.target.value)} />
       <TypeSelect value={fields.assetType} onChange={fields.setAssetType} />
       <button onClick={onLoad} disabled={!enabled || busy}>Load stored</button>
       <button onClick={onCapture} disabled={!enabled || busy}>Capture from FMP</button>
@@ -50,7 +50,7 @@ function Controls({ fields, onLoad, onCapture, enabled, busy }: ControlsProps) {
 
 function TypeSelect({ value, onChange }: { value: string; onChange: SetText }) {
   return (
-    <select className={styles.input} value={value} onChange={(event) => onChange(event.target.value)}>
+    <select value={value} onChange={(event) => onChange(event.target.value)}>
       {assetTypes.map((type) => <option key={type} value={type}>{type}</option>)}
     </select>
   );
@@ -72,8 +72,8 @@ function Loaded({ history }: { history: IPriceHistory }) {
     <section className={styles.results}>
       <div className={styles.summary}>
         <span className={styles.symbol}>{history.symbol}</span>
-        <span>{history.count} days</span>
-        <span>Latest close ${latest.close.toFixed(2)}</span>
+        <span className={styles.meta}>{history.count} days · {history.assetType}</span>
+        <span className={styles.latest}>Latest close ${latest.close.toFixed(2)}</span>
       </div>
       <PriceChart points={history.points} />
     </section>
