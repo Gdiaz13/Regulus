@@ -1,0 +1,71 @@
+.page {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.header {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  color: hsl(var(--accent));
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
+  margin: 0 0 0.75rem;
+}
+
+.note {
+  max-width: 60ch;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+}
+
+.hint {
+  border: 1px dashed hsl(var(--border));
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.results {
+  margin-top: 1.5rem;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: baseline;
+  opacity: 0.9;
+}
+
+.symbol {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: hsl(var(--accent));
+}
