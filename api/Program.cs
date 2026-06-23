@@ -39,6 +39,7 @@ app.MapGet("/", () => "Exchange API running");
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
 app.MapMarketDataEndpoints();
+app.MapPriceHistoryEndpoints();
 app.MapPredictionEndpoints();
 app.MapStockEndpoints();
 

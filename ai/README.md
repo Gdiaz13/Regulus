@@ -30,15 +30,24 @@ adds a warning, so you can start just one service and still get a response.
 - `contract.py` - the prediction shape. This is the source of truth; the C#
   DTOs in `api/Contracts/AiContracts.cs` mirror it.
 - `mock.py` - the fake-but-deterministic prediction generator (clearly marked).
+- `training.py` - the mock training response; training stays separate from prediction.
 - `service.py` - builds a specialist app from a small config.
 - `manager.py` - builds the category and commander apps.
 - `aggregate.py` / `upstream.py` - summarizing and calling downstream services.
 
 ## Endpoints
 
-Specialists expose `GET /health`, `GET /model-info`, `POST /predict`,
-`POST /explain`. Managers expose `GET /health` and `POST /predict` (which takes
-a list of assets).
+Every AI service exposes the same basic shape:
+
+- `GET /health`
+- `GET /model-info`
+- `POST /predict`
+- `POST /train`
+- `POST /explain`
+
+Training is still a mock placeholder. It is separate from prediction on purpose
+so real training can become a background job later without changing user
+requests.
 
 ## Setup
 

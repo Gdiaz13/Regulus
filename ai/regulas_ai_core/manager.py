@@ -10,8 +10,17 @@ from dataclasses import dataclass
 from fastapi import FastAPI
 
 from .aggregate import build_category, build_overview
-from .contract import CategoryPrediction, HealthResponse, PredictRequest, Prediction, RegulasOverview
+from .contract import (
+    CategoryPrediction,
+    HealthResponse,
+    ModelInfo,
+    PredictRequest,
+    Prediction,
+    RegulasOverview,
+    TrainResponse,
+)
 from .mock import build_mock_prediction
+from .training import train_response
 from .upstream import fetch_category, fetch_prediction
 
 
@@ -59,7 +68,7 @@ def _category_prediction(config: CategoryConfig, request: PredictRequest) -> Pre
 def create_category_app(config: CategoryConfig) -> FastAPI:
     """Build a category AI that fans out to its specialists and summarizes them."""
     app = FastAPI(title=config.model_name)
-    _register_manager_health(app, config.model_name)
+    _register_category_common(app, config)
     _register_category_predict(app, config)
     return app
 
@@ -70,6 +79,28 @@ def _register_category_predict(app: FastAPI, config: CategoryConfig) -> None:
         return build_category(config.category, config.asset_type, predictions, config.model_name, config.model_version)
 
     app.add_api_route("/predict", predict, methods=["POST"], response_model=CategoryPrediction)
+
+
+def _register_category_common(app: FastAPI, config: CategoryConfig) -> None:
+    _register_manager_health(app, config.model_name)
+    _register_train(app, config.model_name, config.model_version)
+    _register_category_info(app, config)
+    _register_category_explain(app, config)
+
+
+def _register_category_info(app: FastAPI, config: CategoryConfig) -> None:
+    def model_info() -> ModelInfo:
+        return _model_info(config.model_name, config.model_version, config.asset_type, config.category)
+
+    app.add_api_route("/model-info", model_info, methods=["GET"], response_model=ModelInfo)
+
+
+def _register_category_explain(app: FastAPI, config: CategoryConfig) -> None:
+    def explain(requests: list[PredictRequest]) -> dict:
+        category = build_category(config.category, config.asset_type, [], config.model_name, config.model_version)
+        return {"modelName": config.model_name, "summary": category.summary, "requestCount": len(requests)}
+
+    app.add_api_route("/explain", explain, methods=["POST"], response_model=dict)
 
 
 def _local_category(ref: CategoryRef, requests: list[PredictRequest]) -> CategoryPrediction:
@@ -91,7 +122,7 @@ def _group_by_type(requests: list[PredictRequest]) -> dict[str, list[PredictRequ
 def create_commander_app(config: CommanderConfig) -> FastAPI:
     """Build RegulasCoreAI: route assets to category AIs, then summarize all of them."""
     app = FastAPI(title=config.model_name)
-    _register_manager_health(app, config.model_name)
+    _register_commander_common(app, config)
     _register_commander_predict(app, config)
     return app
 
@@ -110,8 +141,51 @@ def _register_commander_predict(app: FastAPI, config: CommanderConfig) -> None:
     app.add_api_route("/predict", predict, methods=["POST"], response_model=RegulasOverview)
 
 
+def _register_commander_common(app: FastAPI, config: CommanderConfig) -> None:
+    _register_manager_health(app, config.model_name)
+    _register_train(app, config.model_name, config.model_version)
+    _register_commander_info(app, config)
+    _register_commander_explain(app, config)
+
+
+def _register_commander_info(app: FastAPI, config: CommanderConfig) -> None:
+    def model_info() -> ModelInfo:
+        return _model_info(config.model_name, config.model_version, "Mixed", "Core")
+
+    app.add_api_route("/model-info", model_info, methods=["GET"], response_model=ModelInfo)
+
+
+def _register_commander_explain(app: FastAPI, config: CommanderConfig) -> None:
+    def explain(requests: list[PredictRequest]) -> dict:
+        return {
+            "modelName": config.model_name,
+            "summary": "Routes assets upward through category AIs.",
+            "requestCount": len(requests),
+        }
+
+    app.add_api_route("/explain", explain, methods=["POST"], response_model=dict)
+
+
 def _register_manager_health(app: FastAPI, model_name: str) -> None:
     def health() -> HealthResponse:
         return HealthResponse(status="ok", modelName=model_name, isMock=True)
 
     app.add_api_route("/health", health, methods=["GET"], response_model=HealthResponse)
+
+
+def _register_train(app: FastAPI, model_name: str, model_version: str) -> None:
+    def train() -> TrainResponse:
+        return train_response(model_name, model_version)
+
+    app.add_api_route("/train", train, methods=["POST"], response_model=TrainResponse)
+
+
+def _model_info(model_name: str, model_version: str, asset_type: str, category: str) -> ModelInfo:
+    return ModelInfo(
+        modelName=model_name,
+        modelVersion=model_version,
+        assetType=asset_type,
+        category=category,
+        purpose="routes predictions upward through the Regulas AI hierarchy",
+        isMock=True,
+    )

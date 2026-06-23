@@ -80,10 +80,11 @@ Regulas is meant to track more than stocks down the road (ETFs, TCG cards, and c
 - `AssetCategories` groups assets into market segments like "Technology" or "Pokemon". These line up with the category-level AI layer that comes later.
 
 - `Predictions` and `PredictionReasons` store every AI prediction so I can check later which models were actually right. Reasons and warnings live together in `PredictionReasons`, told apart by a `Kind` column, so a saved prediction always carries both the opportunity and the risk side.
+- `PriceHistories` stores end-of-day prices (open/high/low/close and volume) per asset, one row per day. This is the real data the models will eventually learn from, and what past predictions get scored against.
 
-This is groundwork only. There are no `Assets` endpoints yet and the portfolio still runs on the existing `Stocks` table. The new tables are here so that adding markets and AI predictions later does not mean rewriting the schema.
+The portfolio still runs on the existing `Stocks` table, and there is no generic `Assets` CRUD yet. But capturing price history is the first thing that actually writes `Assets` rows: it find-or-creates the asset for a symbol, so the flexible tables stop being pure groundwork. Everything is built so adding markets and AI later does not mean rewriting the schema.
 
-The `Assets`, `AssetCategories`, `Predictions`, and `PredictionReasons` tables are all created by migrations that run automatically when the API starts in development, so there is nothing to run by hand. The migrations are hand-written raw SQL (see `api/Migrations/`) to keep methods short and the model snapshot in one place.
+The `Assets`, `AssetCategories`, `Predictions`, `PredictionReasons`, and `PriceHistories` tables are all created by migrations that run automatically when the API starts in development, so there is nothing to run by hand. The migrations are hand-written raw SQL (see `api/Migrations/`) to keep methods short and the model snapshot in one place.
 
 ## The AI Layer
 
@@ -114,7 +115,7 @@ dotnet build --no-restore
 dotnet test ..\api.Tests
 ```
 
-Backend tests live in `api.Tests` (xUnit) and cover the prediction layer: request mapping, saving predictions to the database, and the RegulasCoreAI client. The Python AI services have their own tests - see `ai/README.md`.
+Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (request mapping, saving predictions, the RegulasCoreAI client) and price-history capture (find-or-create asset, dedupe by day). The Python AI services have their own tests - see `ai/README.md`.
 
 `npm.cmd run lint:functions` is there on purpose. It checks the frontend, frontend scripts, and API code so functions stay short, focused, and easy to read.
 
@@ -131,12 +132,14 @@ Backend tests live in `api.Tests` (xUnit) and cover the prediction layer: reques
 - `PUT /api/comments/{id}`
 - `DELETE /api/comments/{id}`
 - `GET /api/market-data/{providerPath}`
+- `POST /api/price-history/{symbol}/capture` (pull EOD history from FMP, store it, and find-or-create the asset)
+- `GET /api/price-history/{symbol}` (read stored history for a symbol)
 - `POST /api/predict` (send a list of assets, get back the RegulasCoreAI overview)
 - `GET /api/predict/health` (is the AI service reachable?)
 
 ## What's Done, Mock, and Planned
 
-- **Done and real:** the portfolio (stocks + notes), market-data proxy, health check, the flexible asset/category tables, and the prediction tables.
+- **Done and real:** the portfolio (stocks + notes), market-data proxy, health check, the flexible asset/category tables, the prediction tables, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set) shown on a **Prices** page with a simple SVG chart.
 - **Done but mock:** the whole AI layer. `POST /api/predict` returns real-shaped predictions with fake numbers, every one flagged with a `MOCK DATA` warning and `IsMock = true` when saved.
-- **Planned next:** asset endpoints, a frontend service + screen for predictions, more specialists (energy, semiconductor, memory, dividend; magic, one piece), price-history capture, and real models behind the specialists.
+- **Planned next:** asset endpoints, more specialists (energy, semiconductor, memory, dividend; magic, one piece), and real models behind the specialists.
 - **Crypto** (Bitcoin, Ethereum, etc.) is designed for but not built. The asset types and AI hierarchy already leave room for it.
