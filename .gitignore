@@ -5,8 +5,16 @@ exchange-frontend/.env
 # Build outputs and generated files
 api/bin/
 api/obj/
+api.Tests/bin/
+api.Tests/obj/
 exchange-frontend/dist/
 exchange-frontend/node_modules/
 exchange-frontend/*.tsbuildinfo
 exchange-frontend/node_modules/.tmp/
 exchange-frontend/.npm-cache/
+
+# Python AI services
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/

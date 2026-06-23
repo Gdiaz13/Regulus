@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import getCompanies from '../../../API/GET/getCompanies';
 import type { LoadStatus } from '../../../API/types';
 import type { ICompanySearch } from '../../../Interfaces/APIResponses/ICompanySearch';
 import { usePortfolioStocks } from '../../../hooks/usePortfolioStocks';
+import { setIfActive, useActiveFlag } from '../../../hooks/useActiveFlag';
+import type { ActiveFlag } from '../../../hooks/useActiveFlag';
 
 type SearchSetters = {
+  active: ActiveFlag;
   setResults: Dispatch<SetStateAction<ICompanySearch[]>>;
   setStatus: Dispatch<SetStateAction<LoadStatus>>;
   setMessage: Dispatch<SetStateAction<string | null>>;
+};
+
+type SearchRequest = {
+  current: number;
 };
 
 export function useSearchLogic() {
@@ -40,25 +47,49 @@ function useCompanySearch() {
   const [results, setResults] = useState<ICompanySearch[]>([]);
   const [status, setStatus] = useState<LoadStatus>('idle');
   const [message, setMessage] = useState<string | null>(null);
-  const setters = { setResults, setStatus, setMessage };
+  const active = useActiveFlag();
+  const request = useRef(0);
+  const setters = { active, setResults, setStatus, setMessage };
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => setQuery(event.target.value);
-  const submit = (event: FormEvent<HTMLFormElement>) => submitSearch(event, query, setters);
+  const submit = (event: FormEvent<HTMLFormElement>) => submitSearch(event, query, request, setters);
   return { query, results, status, message, handleChange, submit };
 }
 
 async function submitSearch(
   event: FormEvent<HTMLFormElement>,
   query: string,
+  request: SearchRequest,
   setters: SearchSetters,
 ) {
   event.preventDefault();
   const trimmedQuery = query.trim();
-  if (!trimmedQuery) {
-    setIdleSearch(setters);
+  if (searchIsBlank(trimmedQuery, request, setters)) {
     return;
   }
-  startSearch(setters);
-  applySearchResult(trimmedQuery, await getCompanies(trimmedQuery), setters);
+  const requestId = startSearchRequest(request, setters);
+  const result = await getCompanies(trimmedQuery);
+  applyLatestSearchResult(request, requestId, trimmedQuery, result, setters);
+}
+
+function searchIsBlank(query: string, request: SearchRequest, setters: SearchSetters) {
+  if (query) {
+    return false;
+  }
+  cancelSearch(request, setters);
+  return true;
+}
+
+// Search requests can finish out of order, so only the latest submit wins.
+function applyLatestSearchResult(
+  request: SearchRequest,
+  requestId: number,
+  query: string,
+  result: Awaited<ReturnType<typeof getCompanies>>,
+  setters: SearchSetters,
+) {
+  if (request.current === requestId) {
+    applySearchResult(query, result, setters);
+  }
 }
 
 function applySearchResult(
@@ -77,32 +108,60 @@ function applySearchResult(
   setSearchEmpty(query, setters);
 }
 
-function setIdleSearch({ setResults, setStatus, setMessage }: SearchSetters) {
-  setResults([]);
-  setStatus('idle');
-  setMessage(null);
+function cancelSearch(request: SearchRequest, setters: SearchSetters) {
+  nextRequestId(request);
+  setIdleSearch(setters);
 }
 
-function startSearch({ setStatus, setMessage }: SearchSetters) {
-  setStatus('loading');
-  setMessage(null);
+function startSearchRequest(request: SearchRequest, setters: SearchSetters) {
+  const requestId = nextRequestId(request);
+  startSearch(setters);
+  return requestId;
+}
+
+function nextRequestId(request: SearchRequest) {
+  request.current += 1;
+  return request.current;
+}
+
+function setIdleSearch(setters: SearchSetters) {
+  setResults(setters, []);
+  setStatus(setters, 'idle');
+  setMessage(setters, null);
+}
+
+function startSearch(setters: SearchSetters) {
+  setStatus(setters, 'loading');
+  setMessage(setters, null);
 }
 
 function setSearchSuccess(results: ICompanySearch[], setters: SearchSetters) {
-  setters.setResults(results);
-  setters.setStatus('success');
+  setResults(setters, results);
+  setStatus(setters, 'success');
 }
 
-function setSearchEmpty(query: string, { setResults, setStatus, setMessage }: SearchSetters) {
-  setResults([]);
-  setStatus('empty');
-  setMessage(`No companies found for "${query}".`);
+function setSearchEmpty(query: string, setters: SearchSetters) {
+  setResults(setters, []);
+  setStatus(setters, 'empty');
+  setMessage(setters, `No companies found for "${query}".`);
 }
 
-function setSearchError(message: string, { setResults, setStatus, setMessage }: SearchSetters) {
-  setResults([]);
-  setStatus('error');
-  setMessage(message);
+function setSearchError(message: string, setters: SearchSetters) {
+  setResults(setters, []);
+  setStatus(setters, 'error');
+  setMessage(setters, message);
+}
+
+function setResults(setters: SearchSetters, results: ICompanySearch[]) {
+  setIfActive(setters.active, setters.setResults, results);
+}
+
+function setStatus(setters: SearchSetters, status: LoadStatus) {
+  setIfActive(setters.active, setters.setStatus, status);
+}
+
+function setMessage(setters: SearchSetters, message: string | null) {
+  setIfActive(setters.active, setters.setMessage, message);
 }
 
 function companyStock(company: ICompanySearch) {

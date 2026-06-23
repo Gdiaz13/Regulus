@@ -1,0 +1,55 @@
+.staged {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+}
+
+.symbol {
+  font-weight: 800;
+  color: hsl(var(--accent));
+}
+
+.meta {
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+.remove {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+
+.staged > button {
+  min-width: 10rem;
+  padding: 0.75rem 1.25rem;
+}
+
+.staged > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

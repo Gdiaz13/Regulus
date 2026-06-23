@@ -1,5 +1,6 @@
 using api.Data;
 using api.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
 
@@ -37,7 +38,21 @@ public static class HealthEndpoints
     private static async Task<bool> ProbeDatabase(ApplicationDBContext db)
     {
         using var timeout = new CancellationTokenSource(DatabaseProbeTimeout);
-        return await db.Database.CanConnectAsync(timeout.Token).WaitAsync(DatabaseProbeTimeout);
+        if (!await db.Database.CanConnectAsync(timeout.Token).WaitAsync(DatabaseProbeTimeout))
+        {
+            return false;
+        }
+        return await CanQueryPortfolioTable(db, timeout.Token);
+    }
+
+    // Health checks the same table the portfolio screens need.
+    private static async Task<bool> CanQueryPortfolioTable(
+        ApplicationDBContext db,
+        CancellationToken token
+    )
+    {
+        await db.Stocks.AsNoTracking().Select(stock => stock.Id).FirstOrDefaultAsync(token);
+        return true;
     }
 
     private sealed record HealthResponse(

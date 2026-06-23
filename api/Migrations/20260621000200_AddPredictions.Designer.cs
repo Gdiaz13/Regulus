@@ -9,13 +9,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace api.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260620000100_RequireCommentStock")]
-    partial class RequireCommentStock
+    [Migration("20260621000200_AddPredictions")]
+    partial class AddPredictions
     {
+        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            MigrationModelConfiguration.ConfigureRequireCommentStock(modelBuilder);
+            MigrationModelConfiguration.ConfigureCurrent(modelBuilder);
 #pragma warning restore 612, 618
         }
     }

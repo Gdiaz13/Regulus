@@ -3,6 +3,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { LoadStatus } from '../API/types';
 import { addStockComment, deleteStockComment, getStockComments, updateStockComment } from '../API/commentClient';
 import type { CreateStockComment, IStockComment } from '../Interfaces/APIResponses/IStockComment';
+import { setIfActive, useActiveFlag } from './useActiveFlag';
+import type { ActiveFlag } from './useActiveFlag';
 
 type CommentState = {
   values: IStockComment[];
@@ -14,68 +16,79 @@ type StateSetter = Dispatch<SetStateAction<CommentState>>;
 
 export function useStockComments(stockId: number) {
   const [state, setState] = useState<CommentState>(initialState);
+  const active = useActiveFlag();
   useEffect(() => {
-    void loadComments(stockId, setState);
-  }, [stockId]);
-  const add = (comment: CreateStockComment) => addComment(stockId, comment, setState);
-  const update = (id: number, comment: CreateStockComment) => updateComment(id, comment, setState);
-  const remove = (id: number) => removeComment(id, setState);
+    void loadComments(stockId, active, setState);
+  }, [active, stockId]);
+  const add = (comment: CreateStockComment) => addComment(stockId, comment, active, setState);
+  const update = (id: number, comment: CreateStockComment) => updateComment(id, comment, active, setState);
+  const remove = (id: number) => removeComment(id, active, setState);
   return { ...state, add, update, remove };
 }
 
-async function loadComments(stockId: number, setState: StateSetter) {
-  setState(loadingState());
+async function loadComments(stockId: number, active: ActiveFlag, setState: StateSetter) {
+  setIfActive(active, setState, loadingState());
   const result = await getStockComments(stockId);
   if (!result.ok) {
-    setState(errorState(result.message));
+    setIfActive(active, setState, errorState(result.message));
     return;
   }
-  setState(successState(result.data));
+  setIfActive(active, setState, successState(result.data));
 }
 
 async function addComment(
   stockId: number,
   comment: CreateStockComment,
+  active: ActiveFlag,
   setState: StateSetter,
 ) {
   const result = await addStockComment(stockId, comment);
-  return applyAddResult(result, setState);
+  return applyAddResult(result, active, setState);
 }
 
-async function removeComment(id: number, setState: StateSetter) {
+async function removeComment(id: number, active: ActiveFlag, setState: StateSetter) {
   const result = await deleteStockComment(id);
   if (!result.ok) {
-    setState((state) => errorState(result.message, state.values));
+    setIfActive(active, setState, (state) => errorState(result.message, state.values));
     return false;
   }
-  setState((state) => successState(removeById(state.values, id)));
+  setIfActive(active, setState, (state) => successState(removeById(state.values, id)));
   return true;
 }
 
 async function updateComment(
   id: number,
   comment: CreateStockComment,
+  active: ActiveFlag,
   setState: StateSetter,
 ) {
   const result = await updateStockComment(id, comment);
-  return applyUpdateResult(result, setState);
+  return applyUpdateResult(result, active, setState);
 }
 
-function applyAddResult(result: Awaited<ReturnType<typeof addStockComment>>, setState: StateSetter) {
+function applyAddResult(
+  result: Awaited<ReturnType<typeof addStockComment>>,
+  active: ActiveFlag,
+  setState: StateSetter,
+) {
   if (!result.ok) {
-    setState((state) => errorState(result.message, state.values));
+    setIfActive(active, setState, (state) => errorState(result.message, state.values));
     return false;
   }
-  setState((state) => successState([result.data, ...state.values]));
+  setIfActive(active, setState, (state) => successState([result.data, ...state.values]));
   return true;
 }
 
-function applyUpdateResult(result: Awaited<ReturnType<typeof updateStockComment>>, setState: StateSetter) {
+function applyUpdateResult(
+  result: Awaited<ReturnType<typeof updateStockComment>>,
+  active: ActiveFlag,
+  setState: StateSetter,
+) {
   if (!result.ok) {
-    setState((state) => errorState(result.message, state.values));
+    setIfActive(active, setState, (state) => errorState(result.message, state.values));
     return false;
   }
-  setState((state) => successState(replaceById(state.values, result.data)));
+  setIfActive(active, setState, (state) => successState(replaceById(state.values, result.data)));
   return true;
 }
 
