@@ -15,6 +15,7 @@ namespace api.Data
         public DbSet<AssetCategory> AssetCategories { get; set; }
         public DbSet<Prediction> Predictions { get; set; }
         public DbSet<PredictionReason> PredictionReasons { get; set; }
+        public DbSet<PriceHistory> PriceHistories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,6 +25,7 @@ namespace api.Data
             ConfigureAssetCategory(modelBuilder);
             ConfigureAsset(modelBuilder);
             ConfigurePrediction(modelBuilder);
+            ConfigurePriceHistory(modelBuilder);
         }
 
         private static void ConfigureStockSymbol(ModelBuilder modelBuilder)
@@ -98,6 +100,23 @@ namespace api.Data
                 .Property(value => value.Kind)
                 .HasConversion<string>()
                 .HasMaxLength(16);
+        }
+
+        private static void ConfigurePriceHistory(ModelBuilder modelBuilder)
+        {
+            var price = modelBuilder.Entity<PriceHistory>();
+            price.Property(value => value.Source).HasMaxLength(PriceHistory.SourceMaxLength);
+            price.HasIndex(value => new { value.AssetId, value.Date }).IsUnique();
+            ConfigurePriceHistoryAsset(price);
+        }
+
+        private static void ConfigurePriceHistoryAsset(EntityTypeBuilder<PriceHistory> price)
+        {
+            price
+                .HasOne(value => value.Asset)
+                .WithMany()
+                .HasForeignKey(value => value.AssetId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -15,6 +15,7 @@ internal static class MigrationModelConfiguration
     private const int ModelNameMaxLength = 64;
     private const int ReasonKindMaxLength = 16;
     private const int ReasonTextMaxLength = 512;
+    private const int PriceSourceMaxLength = 32;
 
     public static void ConfigureInitial(ModelBuilder modelBuilder)
     {
@@ -37,10 +38,16 @@ internal static class MigrationModelConfiguration
         ConfigureAssetModels(modelBuilder);
     }
 
-    public static void ConfigureCurrent(ModelBuilder modelBuilder)
+    public static void ConfigureAddPredictions(ModelBuilder modelBuilder)
     {
         ConfigureAddAssets(modelBuilder);
         ConfigurePredictionModels(modelBuilder);
+    }
+
+    public static void ConfigureCurrent(ModelBuilder modelBuilder)
+    {
+        ConfigureAddPredictions(modelBuilder);
+        ConfigurePriceHistoryModel(modelBuilder);
     }
 
     private static void ConfigureAnnotations(ModelBuilder modelBuilder)
@@ -317,5 +324,43 @@ internal static class MigrationModelConfiguration
             .HasForeignKey("PredictionId")
             .OnDelete(DeleteBehavior.Cascade);
         builder.Navigation("Prediction");
+    }
+
+    private static void ConfigurePriceHistoryModel(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity("api.Models.PriceHistory", ConfigurePriceHistoryEntity);
+        modelBuilder.Entity("api.Models.PriceHistory", ConfigurePriceHistoryNavigation);
+    }
+
+    private static void ConfigurePriceHistoryEntity(EntityTypeBuilder builder)
+    {
+        ConfigureIdentityId(builder);
+        ConfigurePriceHistoryFields(builder);
+        builder.HasKey("Id");
+        builder.HasIndex("AssetId", "Date").IsUnique();
+        builder.ToTable("PriceHistories");
+    }
+
+    private static void ConfigurePriceHistoryFields(EntityTypeBuilder builder)
+    {
+        builder.Property<int>("AssetId").HasColumnType("int");
+        builder.Property<DateOnly>("Date").HasColumnType("date");
+        builder.Property<decimal>("Open").HasColumnType("decimal(18,4)");
+        builder.Property<decimal>("High").HasColumnType("decimal(18,4)");
+        builder.Property<decimal>("Low").HasColumnType("decimal(18,4)");
+        builder.Property<decimal>("Close").HasColumnType("decimal(18,4)");
+        builder.Property<long>("Volume").HasColumnType("bigint");
+        builder.Property<string>("Source").IsRequired().HasMaxLength(PriceSourceMaxLength).HasColumnType("nvarchar(32)");
+        builder.Property<DateTime>("CreatedOn").HasColumnType("datetime2");
+    }
+
+    private static void ConfigurePriceHistoryNavigation(EntityTypeBuilder builder)
+    {
+        builder
+            .HasOne("api.Models.Asset", "Asset")
+            .WithMany()
+            .HasForeignKey("AssetId")
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.Navigation("Asset");
     }
 }
