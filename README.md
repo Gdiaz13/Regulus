@@ -139,7 +139,7 @@ Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (reques
 
 ## What's Done, Mock, and Planned
 
-- **Done and real:** the portfolio (stocks + notes), market-data proxy, health check, the flexible asset/category tables, the prediction tables, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set).
+- **Done and real:** the portfolio (stocks + notes), market-data proxy, health check, the flexible asset/category tables, the prediction tables, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set) shown on a **Prices** page with a simple SVG chart.
 - **Done but mock:** the whole AI layer. `POST /api/predict` returns real-shaped predictions with fake numbers, every one flagged with a `MOCK DATA` warning and `IsMock = true` when saved.
-- **Planned next:** asset endpoints, more specialists (energy, semiconductor, memory, dividend; magic, one piece), a price-history chart on the frontend, and real models behind the specialists.
+- **Planned next:** asset endpoints, more specialists (energy, semiconductor, memory, dividend; magic, one piece), and real models behind the specialists.
 - **Crypto** (Bitcoin, Ethereum, etc.) is designed for but not built. The asset types and AI hierarchy already leave room for it.
