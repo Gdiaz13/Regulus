@@ -7,6 +7,7 @@ import ResourceStatus from "../Components/AsyncResource/ResourceStatus";
 const HomePage = lazy(() => import("../Pages/HomePage/HomePage"));
 const SearchPage = lazy(() => import("../Pages/SearchPage/SearchPage"));
 const PortfolioPage = lazy(() => import("../Pages/PortfolioPage/PortfolioPage"));
+const PredictionsPage = lazy(() => import("../Pages/PredictionsPage/PredictionsPage"));
 const CompanyPage = lazy(() => import("../Pages/CompanyPage/CompanyPage"));
 const CompanyProfile = lazy(() => import("../Components/CompanyProfile/CompanyProfile"));
 const IncomeStatement = lazy(() => import("../Components/IncomeStatement/IncomeStatement"));
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: "", element: page(<HomePage />) },
       { path: "search", element: page(<SearchPage />) },
       { path: "portfolio", element: page(<PortfolioPage />) },
+      { path: "predictions", element: page(<PredictionsPage />) },
       {
         path: "company/:ticker",
         element: page(<CompanyPage />),

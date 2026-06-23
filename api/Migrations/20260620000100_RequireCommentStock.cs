@@ -19,12 +19,24 @@ namespace api.Migrations
             ALTER TABLE [Comments] ALTER COLUMN [StockId] int NULL;
             """;
 
+        // SQL Server will not alter a column's nullability while an index depends on
+        // it, so the index is dropped around the ALTER and rebuilt afterwards.
+        private const string DropStockIdIndexSql = """
+            DROP INDEX [IX_Comments_StockId] ON [Comments];
+            """;
+
+        private const string CreateStockIdIndexSql = """
+            CREATE INDEX [IX_Comments_StockId] ON [Comments] ([StockId]);
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             DropCommentForeignKey(migrationBuilder);
             DeleteOrphanComments(migrationBuilder);
+            DropStockIdIndex(migrationBuilder);
             RequireStockId(migrationBuilder);
+            CreateStockIdIndex(migrationBuilder);
             AddRequiredForeignKey(migrationBuilder);
         }
 
@@ -32,7 +44,9 @@ namespace api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             DropCommentForeignKey(migrationBuilder);
+            DropStockIdIndex(migrationBuilder);
             AllowNullableStockId(migrationBuilder);
+            CreateStockIdIndex(migrationBuilder);
             AddOptionalForeignKey(migrationBuilder);
         }
 
@@ -49,6 +63,16 @@ namespace api.Migrations
         private static void AllowNullableStockId(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(AllowNullableStockIdSql);
+        }
+
+        private static void DropStockIdIndex(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql(DropStockIdIndexSql);
+        }
+
+        private static void CreateStockIdIndex(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql(CreateStockIdIndexSql);
         }
 
         private static void DropCommentForeignKey(MigrationBuilder migrationBuilder)

@@ -1,11 +1,12 @@
 # Regulus Exchange
 
-This is my stock research and portfolio app. The goal is to keep it useful, readable, and not tangled up: React handles the screens, the .NET API handles data, SQL Server stores the portfolio, and Financial Modeling Prep is the market-data source.
+This is my market research and portfolio app. The goal is to keep it useful, readable, and not tangled up: React handles the screens, the .NET API handles data and is the only thing the browser talks to, SQL Server stores the portfolio, Financial Modeling Prep is the market-data source, and a set of small Python AI services handle predictions.
 
 ## Quick Map
 
 - `exchange-frontend/` is the React/Vite app.
-- `api/` is the .NET API.
+- `api/` is the .NET API and the gateway for everything else.
+- `ai/` is the Python AI services (mock for now). See `ai/README.md`.
 - `Exchange.sln` opens the API project in Visual Studio or Rider.
 
 ## How It Connects
@@ -16,6 +17,7 @@ This is my stock research and portfolio app. The goal is to keep it useful, read
 - Notes hang off a portfolio stock through `/api/stocks/{stockId}/comments`.
 - Market data calls go to `/api/market-data/...`; the API adds the FMP key so the browser never gets it.
 - `/api/health` is the quick "is the app wired up?" check for the API, database, and FMP config.
+- Prediction calls go to `/api/predict`; the API asks RegulasCoreAI, saves the result, and returns it. The browser never calls the Python services directly.
 - Portfolio symbols are stored uppercase, capped at 32 characters, and kept unique in the database.
 
 ## What You Need
@@ -70,6 +72,35 @@ npm.cmd run dev
 - `/company/:ticker/balance-sheet` shows balance sheet data.
 - `/company/:ticker/cashflow-statement` shows cash flow data.
 
+## Data Model Groundwork
+
+Regulas is meant to track more than stocks down the road (ETFs, TCG cards, and crypto later), so the database now has a flexible foundation sitting next to the portfolio tables:
+
+- `Assets` holds anything trackable, tagged with an `AssetType` (`Stock`, `Etf`, `TcgCard`, `Crypto`, or `Collectible`). The same symbol can live under different types, so a stock ticker and a card code never collide.
+- `AssetCategories` groups assets into market segments like "Technology" or "Pokemon". These line up with the category-level AI layer that comes later.
+
+- `Predictions` and `PredictionReasons` store every AI prediction so I can check later which models were actually right. Reasons and warnings live together in `PredictionReasons`, told apart by a `Kind` column, so a saved prediction always carries both the opportunity and the risk side.
+
+This is groundwork only. There are no `Assets` endpoints yet and the portfolio still runs on the existing `Stocks` table. The new tables are here so that adding markets and AI predictions later does not mean rewriting the schema.
+
+The `Assets`, `AssetCategories`, `Predictions`, and `PredictionReasons` tables are all created by migrations that run automatically when the API starts in development, so there is nothing to run by hand. The migrations are hand-written raw SQL (see `api/Migrations/`) to keep methods short and the model snapshot in one place.
+
+## The AI Layer
+
+The AI lives in `ai/` as separate Python (FastAPI) services, not inside the API. The backend is the gateway; the AI services are the brains it calls. Everything here is **mock** right now - the data shapes are real, the numbers are fake and clearly flagged. Real models replace the mock generator later without touching the wiring.
+
+Predictions only ever flow upward:
+
+```
+Specialist AI  ->  Category AI  ->  RegulasCoreAI  ->  C# gateway  ->  browser
+```
+
+- Specialists own one slice each: `StockTechAI`, `PokemonAI`.
+- Category AIs (`StockAI`, `TCGAI`) route each asset to the right specialist and summarize them.
+- `RegulasCoreAI` is the commander and the only AI the backend calls. It routes each asset to the right category AI and returns one combined overview.
+
+A service falls back to a local mock (with a warning) if the one below it is not running, so I can start just one and still get a response. Full run and port details are in `ai/README.md`. The backend finds RegulasCoreAI through `RegulasAi:CoreUrl` in `api/appsettings.json` (defaults to `http://localhost:8301`), or the `REGULAS_CORE_AI_URL` environment variable.
+
 ## Checks I Run
 
 ```powershell
@@ -80,7 +111,10 @@ npm.cmd run build
 
 cd ..\api
 dotnet build --no-restore
+dotnet test ..\api.Tests
 ```
+
+Backend tests live in `api.Tests` (xUnit) and cover the prediction layer: request mapping, saving predictions to the database, and the RegulasCoreAI client. The Python AI services have their own tests - see `ai/README.md`.
 
 `npm.cmd run lint:functions` is there on purpose. It checks the frontend, frontend scripts, and API code so functions stay short, focused, and easy to read.
 
@@ -97,3 +131,12 @@ dotnet build --no-restore
 - `PUT /api/comments/{id}`
 - `DELETE /api/comments/{id}`
 - `GET /api/market-data/{providerPath}`
+- `POST /api/predict` (send a list of assets, get back the RegulasCoreAI overview)
+- `GET /api/predict/health` (is the AI service reachable?)
+
+## What's Done, Mock, and Planned
+
+- **Done and real:** the portfolio (stocks + notes), market-data proxy, health check, the flexible asset/category tables, and the prediction tables.
+- **Done but mock:** the whole AI layer. `POST /api/predict` returns real-shaped predictions with fake numbers, every one flagged with a `MOCK DATA` warning and `IsMock = true` when saved.
+- **Planned next:** asset endpoints, a frontend service + screen for predictions, more specialists (energy, semiconductor, memory, dividend; magic, one piece), price-history capture, and real models behind the specialists.
+- **Crypto** (Bitcoin, Ethereum, etc.) is designed for but not built. The asset types and AI hierarchy already leave room for it.
