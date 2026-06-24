@@ -5,6 +5,28 @@ Accept: application/json
 
 ###
 
+GET {{api_HostAddress}}/api/assets
+Accept: application/json
+
+###
+
+GET {{api_HostAddress}}/api/assets?assetType=Stock
+Accept: application/json
+
+###
+
+POST {{api_HostAddress}}/api/assets
+Content-Type: application/json
+
+{
+  "symbol": "AMD",
+  "name": "Advanced Micro Devices",
+  "assetType": "Stock",
+  "category": "Technology"
+}
+
+###
+
 GET {{api_HostAddress}}/api/stocks
 Accept: application/json
 

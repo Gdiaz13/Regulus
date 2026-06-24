@@ -13,7 +13,8 @@ This is my market research and portfolio app. The goal is to keep it useful, rea
 
 - The browser loads the React app.
 - In local dev, Vite forwards every `/api` request to `http://localhost:5052`.
-- Portfolio calls go to `/api/stocks` and use SQL Server through Entity Framework.
+- Generic asset calls go to `/api/assets`; portfolio calls still go to `/api/stocks`.
+- Both use SQL Server through Entity Framework.
 - Notes hang off a portfolio stock through `/api/stocks/{stockId}/comments`.
 - Market data calls go to `/api/market-data/...`; the API adds the FMP key so the browser never gets it.
 - `/api/health` is the quick "is the app wired up?" check for the API, database, and FMP config.
@@ -82,7 +83,7 @@ Regulas is meant to track more than stocks down the road (ETFs, TCG cards, and c
 - `Predictions` and `PredictionReasons` store every AI prediction so I can check later which models were actually right. Reasons and warnings live together in `PredictionReasons`, told apart by a `Kind` column, so a saved prediction always carries both the opportunity and the risk side.
 - `PriceHistories` stores end-of-day prices (open/high/low/close and volume) per asset, one row per day. This is the real data the models will eventually learn from, and what past predictions get scored against.
 
-The portfolio still runs on the existing `Stocks` table, and there is no generic `Assets` CRUD yet. But capturing price history is the first thing that actually writes `Assets` rows: it find-or-creates the asset for a symbol, so the flexible tables stop being pure groundwork. Everything is built so adding markets and AI later does not mean rewriting the schema.
+The portfolio still runs on the existing `Stocks` table, but there is now a small `/api/assets` gateway for the flexible asset table too. Capturing price history also writes `Assets` rows: it find-or-creates the asset for a symbol, so the flexible tables are not just groundwork anymore. Everything is built so adding markets and AI later does not mean rewriting the schema.
 
 The `Assets`, `AssetCategories`, `Predictions`, `PredictionReasons`, and `PriceHistories` tables are all created by migrations that run automatically when the API starts in development, so there is nothing to run by hand. The migrations are hand-written raw SQL (see `api/Migrations/`) to keep methods short and the model snapshot in one place.
 
@@ -122,6 +123,10 @@ Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (reques
 ## API Routes
 
 - `GET /api/health`
+- `GET /api/assets`
+- `GET /api/assets?assetType=Stock`
+- `GET /api/assets/{id}`
+- `POST /api/assets`
 - `GET /api/stocks`
 - `GET /api/stocks/{symbol}`
 - `POST /api/stocks`
@@ -139,7 +144,7 @@ Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (reques
 
 ## What's Done, Mock, and Planned
 
-- **Done and real:** the portfolio (stocks + notes), market-data proxy, health check, the flexible asset/category tables, the prediction tables, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set) shown on a **Prices** page with a simple SVG chart.
+- **Done and real:** the portfolio (stocks + notes), basic asset endpoints, market-data proxy, health check, the flexible asset/category tables, the prediction tables, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set) shown on a **Prices** page with a simple SVG chart.
 - **Done but mock:** the whole AI layer. `POST /api/predict` returns real-shaped predictions with fake numbers, every one flagged with a `MOCK DATA` warning and `IsMock = true` when saved.
 - **Planned next:** asset endpoints, more specialists (energy, semiconductor, memory, dividend; magic, one piece), and real models behind the specialists.
 - **Crypto** (Bitcoin, Ethereum, etc.) is designed for but not built. The asset types and AI hierarchy already leave room for it.
