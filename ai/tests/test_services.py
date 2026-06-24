@@ -185,6 +185,19 @@ def test_stock_tradingagents_service_analyzes_stock():
     assert body["symbol"] == "AMD" and body["isMock"] is True
 
 
+def test_stock_tradingagents_has_standard_support_routes():
+    module = _load_service("regulas.ai.tradingagents.stock")
+    client = TestClient(module.app)
+    assert client.post("/train").json()["status"] == "accepted"
+    assert client.post("/explain", json={"symbol": "amd"}).json()["symbol"] == "AMD"
+
+
+def test_stock_tradingagents_predict_includes_raw_decision():
+    module = _load_service("regulas.ai.tradingagents.stock")
+    body = TestClient(module.app).post("/predict", json=[STOCK_REQUEST]).json()
+    assert body["predictions"][0]["rawDecision"]["source"] == "mock-tradingagents-adapter"
+
+
 def _commander_client() -> TestClient:
     config = CommanderConfig(
         "RegulasCoreAI", "0.1.0",

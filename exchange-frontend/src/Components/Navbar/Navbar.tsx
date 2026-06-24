@@ -27,6 +27,7 @@ function SearchMenu() {
       <Link to="/search" className={styles.link}>Search</Link>
       <Link to="/portfolio" className={styles.link}>Portfolio</Link>
       <Link to="/predictions" className={styles.link}>Predictions</Link>
+      <Link to="/trading-agents" className={styles.link}>Research</Link>
       <Link to="/price-history" className={styles.link}>Prices</Link>
     </div>
   );

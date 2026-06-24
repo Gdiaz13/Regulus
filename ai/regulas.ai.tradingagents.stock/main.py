@@ -17,8 +17,9 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from regulas_ai_core.aggregate import build_category
-from regulas_ai_core.contract import CategoryPrediction, HealthResponse, ModelInfo, PredictRequest
+from regulas_ai_core.contract import CategoryPrediction, HealthResponse, ModelInfo, PredictRequest, TrainResponse
 from regulas_ai_core.mock import MOCK_WARNING, build_mock_prediction
+from regulas_ai_core.training import train_response
 
 MODEL_NAME = "StockTradingAgentsAI"
 MODEL_VERSION = "0.1.0"
@@ -36,6 +37,7 @@ class StockAnalysisRequest(BaseModel):
 class StockAnalysisResponse(BaseModel):
     symbol: str
     analysisDate: date
+    currentPrice: float
     summary: str
     recommendation: str
     confidenceScore: float
@@ -70,9 +72,14 @@ def model_info() -> ModelInfo:
 @app.post("/analyze-stock", response_model=StockAnalysisResponse)
 def analyze_stock(request: StockAnalysisRequest) -> StockAnalysisResponse:
     symbol = request.symbol.strip().upper()
+    return _analysis_response(request, symbol)
+
+
+def _analysis_response(request: StockAnalysisRequest, symbol: str) -> StockAnalysisResponse:
     return StockAnalysisResponse(
         symbol=symbol,
         analysisDate=request.analysisDate or date.today(),
+        currentPrice=request.currentPrice,
         summary=f"The mock TradingAgents branch reviewed {symbol} as a research signal.",
         recommendation="research-only hold/watch",
         confidenceScore=0.58,
@@ -84,7 +91,23 @@ def analyze_stock(request: StockAnalysisRequest) -> StockAnalysisResponse:
     )
 
 
+@app.post("/train", response_model=TrainResponse)
+def train() -> TrainResponse:
+    return train_response(MODEL_NAME, MODEL_VERSION)
+
+
+@app.post("/explain", response_model=dict)
+def explain(request: StockAnalysisRequest) -> dict:
+    analysis = analyze_stock(request)
+    return {"symbol": analysis.symbol, "summary": analysis.summary, "warnings": analysis.warnings}
+
+
 @app.post("/predict", response_model=CategoryPrediction)
 def predict(requests: list[PredictRequest]) -> CategoryPrediction:
-    predictions = [build_mock_prediction(item, MODEL_NAME, MODEL_VERSION) for item in requests]
+    predictions = [_prediction(item) for item in requests]
     return build_category("TradingAgents", "Stock", predictions, MODEL_NAME, MODEL_VERSION)
+
+
+def _prediction(request: PredictRequest):
+    prediction = build_mock_prediction(request, MODEL_NAME, MODEL_VERSION)
+    return prediction.model_copy(update={"rawDecision": {"source": "mock-tradingagents-adapter"}})

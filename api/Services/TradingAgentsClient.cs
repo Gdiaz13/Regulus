@@ -36,6 +36,13 @@ public sealed class TradingAgentsClient
         }
     }
 
+    public async Task<TradingAgentsModelInfoResponse?> ModelInfoAsync()
+    {
+        using var response = await _httpClient.GetAsync("model-info");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<TradingAgentsModelInfoResponse>(JsonOptions);
+    }
+
     public static bool IsAiException(Exception exception)
     {
         return exception is HttpRequestException or TaskCanceledException;

@@ -61,13 +61,7 @@ public static class PredictionAccuracyStore
         return BuildResponse(prediction, actual, targetDate, actualPercent, error);
     }
 
-    private static PredictionAccuracyResponse BuildResponse(
-        Prediction prediction,
-        PriceHistory actual,
-        DateOnly targetDate,
-        double actualPercent,
-        double error
-    )
+    private static PredictionAccuracyResponse BuildResponse(Prediction prediction, PriceHistory actual, DateOnly targetDate, double actualPercent, double error)
     {
         return new PredictionAccuracyResponse(
             prediction.Id, prediction.AssetId, prediction.AssetName, prediction.AssetType.ToString(),

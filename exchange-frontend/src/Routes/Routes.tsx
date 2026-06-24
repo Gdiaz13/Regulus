@@ -9,6 +9,7 @@ const SearchPage = lazy(() => import("../Pages/SearchPage/SearchPage"));
 const PortfolioPage = lazy(() => import("../Pages/PortfolioPage/PortfolioPage"));
 const PredictionsPage = lazy(() => import("../Pages/PredictionsPage/PredictionsPage"));
 const PriceHistoryPage = lazy(() => import("../Pages/PriceHistoryPage/PriceHistoryPage"));
+const TradingAgentsPage = lazy(() => import("../Pages/TradingAgentsPage/TradingAgentsPage"));
 const CompanyPage = lazy(() => import("../Pages/CompanyPage/CompanyPage"));
 const CompanyProfile = lazy(() => import("../Components/CompanyProfile/CompanyProfile"));
 const IncomeStatement = lazy(() => import("../Components/IncomeStatement/IncomeStatement"));
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "portfolio", element: page(<PortfolioPage />) },
       { path: "predictions", element: page(<PredictionsPage />) },
       { path: "price-history", element: page(<PriceHistoryPage />) },
+      { path: "trading-agents", element: page(<TradingAgentsPage />) },
       {
         path: "company/:ticker",
         element: page(<CompanyPage />),

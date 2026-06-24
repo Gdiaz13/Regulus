@@ -34,6 +34,6 @@ internal static class TestData
 
     // A camelCase overview exactly as the Python services send it on the wire.
     public const string OverviewJson = """
-        {"summary":"ov","categories":[{"category":"Technology","assetType":"Stock","summary":"s","averageConfidence":0.6,"averageRisk":0.4,"predictions":[{"assetId":"AMD","assetName":"AMD","assetType":"Stock","category":"Technology","currentPrice":100,"predictedPrice":110,"predictedPercentChange":10,"confidenceScore":0.6,"riskScore":0.4,"bullishScore":0.7,"bearishScore":0.3,"timeHorizonDays":90,"reasons":["r"],"warnings":["w"],"modelName":"m","modelVersion":"0.1.0","createdAt":"2026-01-01T00:00:00Z"}],"warnings":[],"modelName":"StockAI","modelVersion":"0.1.0","createdAt":"2026-01-01T00:00:00Z"}],"modelName":"RegulasCoreAI","modelVersion":"0.1.0","createdAt":"2026-01-01T00:00:00Z"}
+        {"summary":"ov","categories":[{"category":"Technology","assetType":"Stock","summary":"s","averageConfidence":0.6,"averageRisk":0.4,"predictions":[{"assetId":"AMD","assetName":"AMD","assetType":"Stock","category":"Technology","currentPrice":100,"predictedPrice":110,"predictedPercentChange":10,"confidenceScore":0.6,"riskScore":0.4,"bullishScore":0.7,"bearishScore":0.3,"timeHorizonDays":90,"reasons":["r"],"warnings":["w"],"rawDecision":null,"modelName":"m","modelVersion":"0.1.0","createdAt":"2026-01-01T00:00:00Z"}],"warnings":[],"modelName":"StockAI","modelVersion":"0.1.0","createdAt":"2026-01-01T00:00:00Z"}],"modelName":"RegulasCoreAI","modelVersion":"0.1.0","createdAt":"2026-01-01T00:00:00Z"}
         """;
 }

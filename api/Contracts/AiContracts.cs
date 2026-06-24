@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace api.Contracts;
 
 // These records mirror the shared Python AI contract in ai/regulas_ai_core.
@@ -65,7 +67,8 @@ public sealed record AiOverview(
     List<AiCategoryPrediction> Categories,
     string ModelName,
     string ModelVersion,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    JsonElement? RawDecision = null
 );
 
 // A saved prediction as the API serves it back for history and review screens.

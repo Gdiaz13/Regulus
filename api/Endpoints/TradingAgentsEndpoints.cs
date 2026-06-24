@@ -12,6 +12,7 @@ public static class TradingAgentsEndpoints
         var group = app.MapGroup("/api/trading-agents");
         group.MapPost("stock/analyze", AnalyzeStock);
         group.MapGet("stock/health", StockHealth);
+        group.MapGet("stock/model-info", StockModelInfo);
     }
 
     private static async Task<IResult> AnalyzeStock(
@@ -49,6 +50,18 @@ public static class TradingAgentsEndpoints
     private static async Task<IResult> StockHealth(TradingAgentsClient client)
     {
         return Results.Ok(new TradingAgentsHealthResponse(await client.IsHealthyAsync()));
+    }
+
+    private static async Task<IResult> StockModelInfo(TradingAgentsClient client)
+    {
+        try
+        {
+            return Results.Ok(await client.ModelInfoAsync());
+        }
+        catch (Exception exception) when (TradingAgentsClient.IsAiException(exception))
+        {
+            return Unavailable();
+        }
     }
 
     private static IResult Unavailable()

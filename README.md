@@ -68,6 +68,9 @@ npm.cmd run dev
 - `/` is the landing page.
 - `/search` searches companies and can add them to the portfolio.
 - `/portfolio` shows saved stocks and notes.
+- `/predictions` stages assets and asks the mock AI hierarchy for research signals.
+- `/trading-agents` runs stock TradingAgents research through the C# gateway.
+- `/price-history` captures and reads stored price history.
 - `/company/:ticker` opens the company dashboard.
 - `/company/:ticker/company-profile` shows key metrics.
 - `/company/:ticker/income-statement` shows income statement data.
@@ -155,6 +158,7 @@ Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (reques
 - `GET /api/predict/health` (is the AI service reachable?)
 - `POST /api/trading-agents/stock/analyze`
 - `GET /api/trading-agents/stock/health`
+- `GET /api/trading-agents/stock/model-info`
 
 ## What's Done, Mock, and Planned
 

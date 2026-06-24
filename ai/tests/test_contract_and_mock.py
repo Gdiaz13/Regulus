@@ -12,7 +12,7 @@ PREDICTION_FIELDS = {
     "assetId", "assetName", "assetType", "category", "currentPrice", "predictedPrice",
     "predictedPercentChange", "confidenceScore", "riskScore", "bullishScore",
     "bearishScore", "timeHorizonDays", "reasons", "warnings", "modelName",
-    "modelVersion", "createdAt",
+    "modelVersion", "createdAt", "rawDecision",
 }
 
 
@@ -34,6 +34,11 @@ def test_mock_is_deterministic():
 def test_mock_is_clearly_marked():
     prediction = build_mock_prediction(_request(), "StockTechAI", "0.1.0")
     assert MOCK_WARNING in prediction.warnings
+
+
+def test_mock_keeps_raw_decision_empty():
+    prediction = build_mock_prediction(_request(), "StockTechAI", "0.1.0")
+    assert prediction.rawDecision is None
 
 
 def test_scores_stay_in_range():

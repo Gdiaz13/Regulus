@@ -10,6 +10,8 @@ while keeping this FastAPI boundary:
 - `GET /model-info`
 - `POST /analyze-stock`
 - `POST /predict`
+- `POST /train`
+- `POST /explain`
 
 Upstream project: https://github.com/TauricResearch/TradingAgents
 

@@ -25,6 +25,7 @@ export interface IAiPrediction {
   timeHorizonDays: number;
   reasons: string[];
   warnings: string[];
+  rawDecision: unknown | null;
   modelName: string;
   modelVersion: string;
   createdAt: string;

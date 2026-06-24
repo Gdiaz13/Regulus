@@ -42,6 +42,7 @@ class Prediction(BaseModel):
     timeHorizonDays: int
     reasons: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    rawDecision: dict | None = None
     modelName: str
     modelVersion: str
     createdAt: datetime = Field(default_factory=_utc_now)

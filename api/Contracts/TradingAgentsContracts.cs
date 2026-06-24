@@ -12,6 +12,7 @@ public sealed record StockTradingAgentsRequest(
 public sealed record StockTradingAgentsResponse(
     string Symbol,
     DateOnly AnalysisDate,
+    decimal CurrentPrice,
     string Summary,
     string Recommendation,
     double ConfidenceScore,
@@ -24,4 +25,13 @@ public sealed record StockTradingAgentsResponse(
     string ModelVersion,
     bool IsMock,
     DateTime CreatedAt
+);
+
+public sealed record TradingAgentsModelInfoResponse(
+    string ModelName,
+    string ModelVersion,
+    string AssetType,
+    string Category,
+    string Purpose,
+    bool IsMock
 );
