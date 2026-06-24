@@ -1,7 +1,7 @@
 .portfolioList {
   border: none;
   border-radius: 1.25rem;
-  box-shadow: 0 8px 32px 0 rgba(99,102,241,0.12), 0 1.5px 8px 0 rgba(251,191,36,0.08);
+  box-shadow: 0 8px 32px 0 hsl(var(--primary) / 0.12), 0 1.5px 8px 0 hsl(var(--accent) / 0.08);
   padding: 2rem 2.5rem;
   margin: 1.5rem 0;
   transition: transform 0.3s, opacity 0.3s, box-shadow 0.2s, transform 0.2s;
@@ -13,7 +13,7 @@
   transform: translateX(120%);
   opacity: 0;
   pointer-events: none;
-  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
   background-size: 400% 400%;
   animation: portfolioGradientMove 8s ease-in-out infinite;
   color: #232336;
@@ -30,14 +30,14 @@
   opacity: 1;
   top: 5rem;
   pointer-events: auto;
-  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
   background-size: 400% 400%;
   animation: portfolioGradientMove 8s ease-in-out infinite;
   color: #232336;
 }
 
 .portfolioList:hover {
-  box-shadow: 0 4px 16px rgba(139,92,246,0.12);
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.12);
   transform: scale(1.01);
 }
 
@@ -132,19 +132,19 @@
 
 @media (max-width: 770px) {
   .portfolioList {
-    background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+    background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
     background-size: 400% 400%;
     animation: portfolioGradientMove 8s ease-in-out infinite;
     color: #232336;
-    box-shadow: 0 -4px 32px 0 rgba(99,102,241,0.12), 0 1.5px 8px 0 rgba(251,191,36,0.08);
+    box-shadow: 0 -4px 32px 0 hsl(var(--primary) / 0.12), 0 1.5px 8px 0 hsl(var(--accent) / 0.08);
     border: none;
   }
   .portfolioList.open {
-    background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+    background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
     background-size: 400% 400%;
     animation: portfolioGradientMove 8s ease-in-out infinite;
     color: #232336;
-    box-shadow: 0 -4px 32px 0 rgba(99,102,241,0.12), 0 1.5px 8px 0 rgba(251,191,36,0.08);
+    box-shadow: 0 -4px 32px 0 hsl(var(--primary) / 0.12), 0 1.5px 8px 0 hsl(var(--accent) / 0.08);
     border: none;
   }
 }
