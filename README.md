@@ -18,7 +18,8 @@ This is my market research and portfolio app. The goal is to keep it useful, rea
 - Notes hang off a portfolio stock through `/api/stocks/{stockId}/comments`.
 - Market data calls go to `/api/market-data/...`; the API adds the FMP key so the browser never gets it.
 - `/api/health` is the quick "is the app wired up?" check for the API, database, and FMP config.
-- Prediction calls go to `/api/predict`; the API asks RegulasCoreAI, saves the result, and returns it. The browser never calls the Python services directly.
+- Prediction calls go to `/api/predict`; the API asks RegulasCoreAI, saves the result, and returns it. Saved predictions can be read back from `/api/predict/history`.
+- TradingAgents-style stock research goes through `/api/trading-agents/stock/analyze`; the browser still only talks to the C# API.
 - Portfolio symbols are stored uppercase, capped at 32 characters, and kept unique in the database.
 
 ## What You Need
@@ -43,7 +44,7 @@ Or use an environment variable:
 $env:FMP_API_KEY="your_fmp_key"
 ```
 
-The default database points at SQL Server LocalDB in `api/appsettings.json`. If LocalDB is not running, the API still starts, `/api/health` shows the database as unavailable, and database-backed routes return `503`.
+The default database points at SQL Server LocalDB in `api/appsettings.json`. If LocalDB is not running, the API still starts, `/api/health` shows the database as unavailable, and database-backed routes return `503`. `TradingAgents:StockUrl` points at StockTradingAgentsAI (`http://localhost:8261` by default).
 
 ## Run It
 
@@ -94,12 +95,21 @@ The AI lives in `ai/` as separate Python (FastAPI) services, not inside the API.
 Predictions only ever flow upward:
 
 ```
-Specialist AI  ->  Category AI  ->  RegulasCoreAI  ->  C# gateway  ->  browser
+Specialist AI  ->  Category AI  ->  Market AI  ->  RegulasCoreAI  ->  C# gateway  ->  browser
 ```
 
-- Specialists own one slice each: `StockTechAI`, `PokemonAI`.
+- Specialists own one slice each: `StockTechAI`, `StockSemiconductorAI`,
+  `PokemonAI`, `MagicAI`, and `OnePieceAI`.
 - Category AIs (`StockAI`, `TCGAI`) route each asset to the right specialist and summarize them.
-- `RegulasCoreAI` is the commander and the only AI the backend calls. It routes each asset to the right category AI and returns one combined overview.
+- Market AIs (`FinanceAI`, `CollectiblesAI`) compare category AIs before anything reaches the commander.
+- `RegulasCoreAI` is the commander and the only AI the backend calls. It routes each asset to the right market AI and returns one combined overview.
+
+`StockTradingAgentsAI` is a separate research branch under FinanceAI. It is
+inspired by TauricResearch's TradingAgents project, which is Apache-2.0:
+https://github.com/TauricResearch/TradingAgents. I am not copying that code
+into the C# backend. The current service is a mock adapter with the boundary in
+place; a real fork/package can replace its internals later. It is research only,
+not financial advice.
 
 A service falls back to a local mock (with a warning) if the one below it is not running, so I can start just one and still get a response. Full run and port details are in `ai/README.md`. The backend finds RegulasCoreAI through `RegulasAi:CoreUrl` in `api/appsettings.json` (defaults to `http://localhost:8301`), or the `REGULAS_CORE_AI_URL` environment variable.
 
@@ -116,7 +126,7 @@ dotnet build --no-restore
 dotnet test ..\api.Tests
 ```
 
-Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (request mapping, saving predictions, the RegulasCoreAI client) and price-history capture (find-or-create asset, dedupe by day). The Python AI services have their own tests - see `ai/README.md`.
+Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (request mapping, saving and reading prediction history, the RegulasCoreAI client) and price-history capture (find-or-create asset, dedupe by day). The Python AI services have their own tests - see `ai/README.md`.
 
 `npm.cmd run lint:functions` is there on purpose. It checks the frontend, frontend scripts, and API code so functions stay short, focused, and easy to read.
 
@@ -140,11 +150,16 @@ Backend tests live in `api.Tests` (xUnit) and cover the prediction layer (reques
 - `POST /api/price-history/{symbol}/capture` (pull EOD history from FMP, store it, and find-or-create the asset)
 - `GET /api/price-history/{symbol}` (read stored history for a symbol)
 - `POST /api/predict` (send a list of assets, get back the RegulasCoreAI overview)
+- `GET /api/predict/history` (read recently saved predictions)
+- `GET /api/predict/accuracy` (score saved predictions against stored prices)
 - `GET /api/predict/health` (is the AI service reachable?)
+- `POST /api/trading-agents/stock/analyze`
+- `GET /api/trading-agents/stock/health`
 
 ## What's Done, Mock, and Planned
 
-- **Done and real:** the portfolio (stocks + notes), basic asset endpoints, market-data proxy, health check, the flexible asset/category tables, the prediction tables, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set) shown on a **Prices** page with a simple SVG chart.
-- **Done but mock:** the whole AI layer. `POST /api/predict` returns real-shaped predictions with fake numbers, every one flagged with a `MOCK DATA` warning and `IsMock = true` when saved.
-- **Planned next:** asset endpoints, more specialists (energy, semiconductor, memory, dividend; magic, one piece), and real models behind the specialists.
+- **Done and real:** the portfolio (stocks + notes), basic asset endpoints, market-data proxy, health check, the flexible asset/category tables, the prediction tables, saved prediction history, and price-history capture (`/api/price-history` stores EOD prices per asset; needs the FMP key set) shown on a **Prices** page with a simple SVG chart.
+- **Done but mock:** the whole AI layer from specialists to category AIs to market AIs to `RegulasCoreAI`, plus the first StockTradingAgentsAI adapter. `POST /api/predict` returns real-shaped predictions with fake numbers, every one flagged with a `MOCK DATA` warning and `IsMock = true` when saved.
+- **Planned next:** more specialists (energy, memory, dividend), model
+  accuracy checks, and real models behind the specialists.
 - **Crypto** (Bitcoin, Ethereum, etc.) is designed for but not built. The asset types and AI hierarchy already leave room for it.

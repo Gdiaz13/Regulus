@@ -10,14 +10,19 @@ are not. Real models drop in later without changing the wiring.
 Predictions flow one way only, from the bottom up:
 
 ```
-Specialist AI  ->  Category AI  ->  RegulasCoreAI  ->  C# gateway
+Specialist AI  ->  Category AI  ->  Market AI  ->  RegulasCoreAI  ->  C# gateway
 ```
 
-- **Specialists** each own one slice: `StockTechAI` (tech stocks), `PokemonAI`
-  (Pokemon cards). They are the only ones that actually score an asset.
+- **Specialists** each own one slice: `StockTechAI` and
+  `StockSemiconductorAI` for stocks, plus `PokemonAI`, `MagicAI`, and
+  `OnePieceAI` for TCG cards. They are the only ones that actually score an
+  asset.
 - **Category AIs** (`StockAI`, `TCGAI`) route each asset to the right specialist
   and summarize the group.
-- **RegulasCoreAI** is the commander. It routes each asset to the right category
+- **Market AIs** (`FinanceAI`, `CollectiblesAI`) compare category AIs under one
+  market. Finance has `StockAI` and `StockTradingAgentsAI` now, plus a crypto
+  slot later; Collectibles has `TCGAI` now and room for more categories.
+- **RegulasCoreAI** is the commander. It routes each asset to the right market
   AI and returns one combined overview. The C# backend only ever calls this one.
 
 If a service below is not running, the one above falls back to a local mock and
@@ -32,8 +37,13 @@ adds a warning, so you can start just one service and still get a response.
 - `mock.py` - the fake-but-deterministic prediction generator (clearly marked).
 - `training.py` - the mock training response; training stays separate from prediction.
 - `service.py` - builds a specialist app from a small config.
-- `manager.py` - builds the category and commander apps.
+- `manager.py` - builds the category, market, and commander apps.
 - `aggregate.py` / `upstream.py` - summarizing and calling downstream services.
+
+`regulas.ai.tradingagents.stock/` is the TradingAgents-style stock research
+branch. It is a mock adapter right now, not a vendored copy of upstream
+TradingAgents. The upstream project is Apache-2.0:
+https://github.com/TauricResearch/TradingAgents
 
 ## Endpoints
 
@@ -67,8 +77,13 @@ calls instead of fallbacks:
 uvicorn main:app --app-dir "regulas.ai.stocks.tech"          --port 8101   # StockTechAI
 uvicorn main:app --app-dir "regulas.ai.stocks.semiconductor" --port 8102   # StockSemiconductorAI
 uvicorn main:app --app-dir "regulas.ai.tcg.pokemon"          --port 8111   # PokemonAI
+uvicorn main:app --app-dir "regulas.ai.tcg.magic"            --port 8112   # MagicAI
+uvicorn main:app --app-dir "regulas.ai.tcg.onepiece"         --port 8113   # OnePieceAI
 uvicorn main:app --app-dir "regulas.ai.stocks.core"  --port 8201   # StockAI
 uvicorn main:app --app-dir "regulas.ai.tcg.core"     --port 8202   # TCGAI
+uvicorn main:app --app-dir "regulas.ai.finance.core"      --port 8251   # FinanceAI
+uvicorn main:app --app-dir "regulas.ai.collectibles.core" --port 8252   # CollectiblesAI
+uvicorn main:app --app-dir "regulas.ai.tradingagents.stock" --port 8261   # StockTradingAgentsAI
 uvicorn main:app --app-dir "regulas.ai.core"         --port 8301   # RegulasCoreAI
 ```
 
@@ -89,10 +104,13 @@ pytest
 | StockTechAI      | 8101 | mock          |
 | StockSemiconductorAI | 8102 | mock      |
 | PokemonAI        | 8111 | mock          |
-| MagicAI          | 8112 | not built yet |
-| OnePieceAI       | 8113 | not built yet |
+| MagicAI          | 8112 | mock          |
+| OnePieceAI       | 8113 | mock          |
 | StockAI          | 8201 | mock          |
 | TCGAI            | 8202 | mock          |
+| FinanceAI        | 8251 | mock          |
+| CollectiblesAI   | 8252 | mock          |
+| StockTradingAgentsAI | 8261 | mock      |
 | RegulasCoreAI    | 8301 | mock          |
 
 ## Adding a new specialist later

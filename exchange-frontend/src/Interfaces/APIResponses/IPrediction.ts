@@ -54,3 +54,25 @@ export interface IAiOverview {
 export interface IPredictionHealth {
   aiAvailable: boolean;
 }
+
+export interface IPredictionHistoryItem {
+  id: number;
+  assetId: string;
+  assetName: string;
+  assetType: string;
+  category: string;
+  currentPrice: number;
+  predictedPrice: number;
+  predictedPercentChange: number;
+  confidenceScore: number;
+  riskScore: number;
+  bullishScore: number;
+  bearishScore: number;
+  timeHorizonDays: number;
+  reasons: string[];
+  warnings: string[];
+  modelName: string;
+  modelVersion: string;
+  isMock: boolean;
+  createdOn: string;
+}

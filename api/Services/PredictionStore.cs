@@ -1,6 +1,7 @@
 using api.Contracts;
 using api.Data;
 using api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Services;
 
@@ -36,9 +37,63 @@ public static class PredictionStore
         return predictions.Count;
     }
 
+    public static async Task<List<SavedPredictionResponse>> ListHistoryAsync(
+        ApplicationDBContext db,
+        string? assetId,
+        int? take
+    )
+    {
+        var query = HistoryQuery(db, CleanAssetId(assetId));
+        var rows = await query.Take(ClampTake(take)).ToListAsync();
+        return rows.Select(ToHistoryResponse).ToList();
+    }
+
     private static IEnumerable<AiPrediction> Flatten(AiOverview overview)
     {
         return overview.Categories.SelectMany(category => category.Predictions);
+    }
+
+    private static IQueryable<Prediction> HistoryQuery(ApplicationDBContext db, string cleanAssetId)
+    {
+        var query = db.Predictions.Include(prediction => prediction.Reasons).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(cleanAssetId))
+        {
+            query = query.Where(prediction => prediction.AssetId == cleanAssetId);
+        }
+        return query.OrderByDescending(prediction => prediction.CreatedOn).ThenByDescending(prediction => prediction.Id);
+    }
+
+    private static string CleanAssetId(string? assetId)
+    {
+        return assetId?.Trim().ToUpperInvariant() ?? string.Empty;
+    }
+
+    private static int ClampTake(int? take)
+    {
+        return Math.Clamp(take ?? 25, 1, 100);
+    }
+
+    private static SavedPredictionResponse ToHistoryResponse(Prediction prediction)
+    {
+        return new SavedPredictionResponse(
+            prediction.Id, prediction.AssetId, prediction.AssetName,
+            prediction.AssetType.ToString(), prediction.Category,
+            prediction.CurrentPrice, prediction.PredictedPrice,
+            prediction.PredictedPercentChange, prediction.ConfidenceScore,
+            prediction.RiskScore, prediction.BullishScore, prediction.BearishScore,
+            prediction.TimeHorizonDays, ReasonText(prediction, PredictionReasonKind.Reason),
+            ReasonText(prediction, PredictionReasonKind.Warning), prediction.ModelName,
+            prediction.ModelVersion, prediction.IsMock, prediction.CreatedOn
+        );
+    }
+
+    private static List<string> ReasonText(Prediction prediction, PredictionReasonKind kind)
+    {
+        return prediction.Reasons
+            .Where(reason => reason.Kind == kind)
+            .OrderBy(reason => reason.Id)
+            .Select(reason => reason.Text)
+            .ToList();
     }
 
     private static Prediction ToEntity(AiPrediction prediction)

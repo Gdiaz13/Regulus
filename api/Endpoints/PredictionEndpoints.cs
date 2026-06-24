@@ -14,6 +14,8 @@ public static class PredictionEndpoints
     {
         var group = app.MapGroup("/api/predict");
         group.MapPost("", Predict);
+        group.MapGet("history", History);
+        group.MapGet("accuracy", Accuracy);
         group.MapGet("health", PredictHealth);
     }
 
@@ -78,6 +80,24 @@ public static class PredictionEndpoints
     {
         var healthy = await client.IsHealthyAsync();
         return Results.Ok(new AiHealthResponse(healthy));
+    }
+
+    private static Task<IResult> History(string? assetId, int? take, ApplicationDBContext db)
+    {
+        return DatabaseRequest.Run(async () =>
+        {
+            var history = await PredictionStore.ListHistoryAsync(db, assetId, take);
+            return Results.Ok(history);
+        });
+    }
+
+    private static Task<IResult> Accuracy(string? assetId, int? take, ApplicationDBContext db)
+    {
+        return DatabaseRequest.Run(async () =>
+        {
+            var accuracy = await PredictionAccuracyStore.ListAsync(db, assetId, take);
+            return Results.Ok(accuracy);
+        });
     }
 
     private static bool IsEmpty(PredictBatchRequest request)

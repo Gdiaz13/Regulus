@@ -1,7 +1,7 @@
-"""FastAPI app factories for the manager layers: category AIs and RegulasCoreAI.
+"""FastAPI app factories for the manager layers.
 
 Category AIs route each asset to the right specialist and summarize the group.
-RegulasCoreAI routes each asset to the right category AI and summarizes those.
+Market AIs compare category AIs, and RegulasCoreAI compares market AIs.
 Managers only ever talk to the layer directly below them.
 """
 
@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from fastapi import FastAPI
 
-from .aggregate import build_category, build_overview
+from .aggregate import build_category, build_market, build_overview
 from .contract import (
     CategoryPrediction,
     HealthResponse,
@@ -49,6 +49,15 @@ class CategoryRef:
 
 
 @dataclass(frozen=True)
+class MarketConfig:
+    model_name: str
+    model_version: str
+    market: str
+    asset_type: str
+    categories: dict[str, list[CategoryRef]]
+
+
+@dataclass(frozen=True)
 class CommanderConfig:
     model_name: str
     model_version: str
@@ -56,8 +65,12 @@ class CommanderConfig:
 
 
 def _pick_specialist(config: CategoryConfig, request: PredictRequest) -> SpecialistRef:
-    key = request.category.strip().lower()
+    key = _specialist_key(request.category)
     return config.specialists.get(key) or next(iter(config.specialists.values()))
+
+
+def _specialist_key(category: str) -> str:
+    return category.strip().lower().replace(" ", "").replace("-", "")
 
 
 def _category_prediction(config: CategoryConfig, request: PredictRequest) -> Prediction:
@@ -119,8 +132,73 @@ def _group_by_type(requests: list[PredictRequest]) -> dict[str, list[PredictRequ
     return groups
 
 
+def create_market_app(config: MarketConfig) -> FastAPI:
+    """Build a market AI that compares category AIs below it."""
+    app = FastAPI(title=config.model_name)
+    _register_market_common(app, config)
+    _register_market_predict(app, config)
+    return app
+
+
+def _register_market_predict(app: FastAPI, config: MarketConfig) -> None:
+    def predict(requests: list[PredictRequest]) -> CategoryPrediction:
+        categories = _market_categories(config, requests)
+        return build_market(
+            config.market,
+            config.asset_type,
+            categories,
+            config.model_name,
+            config.model_version,
+        )
+
+    app.add_api_route("/predict", predict, methods=["POST"], response_model=CategoryPrediction)
+
+
+def _market_categories(config: MarketConfig, requests: list[PredictRequest]) -> list[CategoryPrediction]:
+    groups = _group_by_type(requests)
+    pairs = _market_pairs(config, groups)
+    return [_market_category(ref, items) for ref, items in pairs]
+
+
+def _market_pairs(config: MarketConfig, groups: dict[str, list[PredictRequest]]):
+    return [
+        (ref, items)
+        for asset_type, items in groups.items()
+        for ref in config.categories.get(asset_type, [])
+    ]
+
+
+def _market_category(ref: CategoryRef, requests: list[PredictRequest]) -> CategoryPrediction:
+    return fetch_category(ref.url, requests) or _local_category(ref, requests)
+
+
+def _register_market_common(app: FastAPI, config: MarketConfig) -> None:
+    _register_manager_health(app, config.model_name)
+    _register_train(app, config.model_name, config.model_version)
+    _register_market_info(app, config)
+    _register_market_explain(app, config)
+
+
+def _register_market_info(app: FastAPI, config: MarketConfig) -> None:
+    def model_info() -> ModelInfo:
+        return _model_info(config.model_name, config.model_version, config.asset_type, config.market)
+
+    app.add_api_route("/model-info", model_info, methods=["GET"], response_model=ModelInfo)
+
+
+def _register_market_explain(app: FastAPI, config: MarketConfig) -> None:
+    def explain(requests: list[PredictRequest]) -> dict:
+        return {
+            "modelName": config.model_name,
+            "summary": "Compares category AIs under one market.",
+            "requestCount": len(requests),
+        }
+
+    app.add_api_route("/explain", explain, methods=["POST"], response_model=dict)
+
+
 def create_commander_app(config: CommanderConfig) -> FastAPI:
-    """Build RegulasCoreAI: route assets to category AIs, then summarize all of them."""
+    """Build RegulasCoreAI: route assets to market AIs, then summarize them."""
     app = FastAPI(title=config.model_name)
     _register_commander_common(app, config)
     _register_commander_predict(app, config)
@@ -129,7 +207,11 @@ def create_commander_app(config: CommanderConfig) -> FastAPI:
 
 def _commander_categories(config: CommanderConfig, requests: list[PredictRequest]) -> list[CategoryPrediction]:
     groups = _group_by_type(requests)
-    refs = ((config.categories[asset_type], items) for asset_type, items in groups.items() if asset_type in config.categories)
+    refs = (
+        (config.categories[asset_type], items)
+        for asset_type, items in groups.items()
+        if asset_type in config.categories
+    )
     return [_commander_category(ref, items) for ref, items in refs]
 
 
@@ -159,7 +241,7 @@ def _register_commander_explain(app: FastAPI, config: CommanderConfig) -> None:
     def explain(requests: list[PredictRequest]) -> dict:
         return {
             "modelName": config.model_name,
-            "summary": "Routes assets upward through category AIs.",
+            "summary": "Routes assets upward through market AIs.",
             "requestCount": len(requests),
         }
 

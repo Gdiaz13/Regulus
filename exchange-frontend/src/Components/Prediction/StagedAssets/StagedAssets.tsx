@@ -28,14 +28,14 @@ function StagedItem({ asset, onRemove }: { asset: IPredictAsset; onRemove: () =>
   return (
     <li className={styles.item}>
       <span className={styles.symbol}>{asset.symbol}</span>
-      <span className={styles.meta}>{asset.assetType}{asset.category ? ` · ${asset.category}` : ''} · {formatCurrency(asset.currentPrice)}</span>
-      <button type="button" className={styles.remove} onClick={onRemove} aria-label={`Remove ${asset.symbol}`}>×</button>
+      <span className={styles.meta}>{asset.assetType}{asset.category ? ` - ${asset.category}` : ''} - {formatCurrency(asset.currentPrice)}</span>
+      <button type="button" className={styles.remove} onClick={onRemove} aria-label={`Remove ${asset.symbol}`}>x</button>
     </li>
   );
 }
 
 function runLabel(running: boolean, count: number) {
-  return running ? 'Predicting…' : `Run prediction (${count})`;
+  return running ? 'Predicting...' : `Run prediction (${count})`;
 }
 
 function itemKey(asset: IPredictAsset, index: number) {
