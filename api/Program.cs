@@ -1,7 +1,5 @@
-using api.Data;
 using api.Endpoints;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,20 +8,23 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<PostgresConnectionFactory>();
+builder.Services.AddSingleton<IDatabaseConnectionFactory>(provider => provider.GetRequiredService<PostgresConnectionFactory>());
+builder.Services.AddSingleton<PostgresMigrationRunner>();
+builder.Services.AddSingleton<PostgresHealthCheck>();
+builder.Services.AddSingleton<AssetStore>();
+builder.Services.AddSingleton<PortfolioStockStore>();
+builder.Services.AddSingleton<PriceHistoryStore>();
+builder.Services.AddSingleton<PredictionAccuracyStore>();
+builder.Services.AddSingleton<PredictionStore>();
+builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 
-builder
-    .Services
-    .AddDbContext<ApplicationDBContext>(
-        options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    );
-
 var app = builder.Build();
 
-await DatabaseStartup.InitializeAsync(app);
+await PostgresDatabaseStartup.InitializeAsync(app);
 
 if (app.Environment.IsDevelopment())
 {

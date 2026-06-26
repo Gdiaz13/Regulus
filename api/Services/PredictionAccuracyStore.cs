@@ -1,58 +1,49 @@
 using api.Contracts;
-using api.Data;
-using api.Models;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
+using System.Data.Common;
 
 namespace api.Services;
 
-// Scores saved predictions against stored prices. It is computed for now, so
-// the app can start measuring model quality before adding accuracy tables.
-public static class PredictionAccuracyStore
+// Scores saved predictions against stored prices without loading the full price
+// history table. Each limited prediction asks for its first matching future price.
+public sealed class PredictionAccuracyStore
 {
-    public static async Task<List<PredictionAccuracyResponse>> ListAsync(
-        ApplicationDBContext db,
-        string? assetId,
-        int? take
-    )
+    private readonly IDatabaseConnectionFactory _factory;
+
+    public PredictionAccuracyStore(IDatabaseConnectionFactory factory)
     {
-        var predictions = await LoadPredictions(db, CleanAssetId(assetId), ClampTake(take));
-        var prices = await LoadPrices(db);
-        return predictions.Select(prediction => Score(prediction, prices)).OfType<PredictionAccuracyResponse>().ToList();
+        _factory = factory;
     }
 
-    private static Task<List<Prediction>> LoadPredictions(ApplicationDBContext db, string assetId, int take)
+    public async Task<List<PredictionAccuracyResponse>> ListAsync(string? assetId, int? take)
     {
-        var query = db.Predictions.AsQueryable();
-        if (!string.IsNullOrWhiteSpace(assetId))
-        {
-            query = query.Where(prediction => prediction.AssetId == assetId);
-        }
-        return query.OrderByDescending(prediction => prediction.CreatedOn).Take(take).ToListAsync();
+        await using var connection = await _factory.OpenDatabaseConnectionAsync();
+        var predictions = await LoadPredictions(connection, assetId, take);
+        var scored = await Task.WhenAll(predictions.Select(prediction => Score(connection, prediction)));
+        return scored.OfType<PredictionAccuracyResponse>().ToList();
     }
 
-    private static Task<List<PriceHistory>> LoadPrices(ApplicationDBContext db)
+    private static async Task<List<PredictionRow>> LoadPredictions(DbConnection connection, string? assetId, int? take)
     {
-        return db.PriceHistories.Include(price => price.Asset).ToListAsync();
+        var rows = await connection.QueryAsync<PredictionRow>(Sql.Predictions, Params(assetId, take));
+        return rows.ToList();
     }
 
-    private static PredictionAccuracyResponse? Score(Prediction prediction, List<PriceHistory> prices)
+    private static async Task<PredictionAccuracyResponse?> Score(DbConnection connection, PredictionRow prediction)
     {
         var targetDate = TargetDate(prediction);
-        var actual = ActualPrice(prediction, prices, targetDate);
+        var actual = await ActualPrice(connection, prediction, targetDate);
         return actual is null ? null : Response(prediction, actual, targetDate);
     }
 
-    private static PriceHistory? ActualPrice(Prediction prediction, List<PriceHistory> prices, DateOnly targetDate)
+    private static Task<ActualPriceRow?> ActualPrice(DbConnection connection, PredictionRow prediction, DateOnly targetDate)
     {
-        return prices
-            .Where(price => MatchesPrediction(price, prediction) && price.Date >= targetDate)
-            .OrderBy(price => price.Date)
-            .FirstOrDefault();
+        return connection.QuerySingleOrDefaultAsync<ActualPriceRow>(Sql.ActualPrice, ActualParams(prediction, targetDate));
     }
 
     private static PredictionAccuracyResponse Response(
-        Prediction prediction,
-        PriceHistory actual,
+        PredictionRow prediction,
+        ActualPriceRow actual,
         DateOnly targetDate
     )
     {
@@ -61,23 +52,30 @@ public static class PredictionAccuracyStore
         return BuildResponse(prediction, actual, targetDate, actualPercent, error);
     }
 
-    private static PredictionAccuracyResponse BuildResponse(Prediction prediction, PriceHistory actual, DateOnly targetDate, double actualPercent, double error)
+    private static PredictionAccuracyResponse BuildResponse(
+        PredictionRow prediction, ActualPriceRow actual, DateOnly targetDate, double actualPercent, double error)
     {
         return new PredictionAccuracyResponse(
-            prediction.Id, prediction.AssetId, prediction.AssetName, prediction.AssetType.ToString(),
+            (int)prediction.Id, prediction.AssetId, prediction.AssetName, prediction.AssetType,
             prediction.ModelName, prediction.ModelVersion, prediction.CurrentPrice, prediction.PredictedPrice,
             actual.Close, prediction.PredictedPercentChange, actualPercent, error,
             Direction(prediction.PredictedPercentChange) == Direction(actualPercent),
-            prediction.TimeHorizonDays, prediction.CreatedOn, targetDate, actual.Date, prediction.IsMock
+            prediction.TimeHorizonDays, prediction.CreatedOn, targetDate, DateOnly.FromDateTime(actual.Date),
+            prediction.IsMock
         );
     }
 
-    private static bool MatchesPrediction(PriceHistory price, Prediction prediction)
+    private static object Params(string? assetId, int? take)
     {
-        return price.Asset?.Symbol == prediction.AssetId && price.Asset.AssetType == prediction.AssetType;
+        return new { AssetId = CleanAssetId(assetId), Take = ClampTake(take) };
     }
 
-    private static DateOnly TargetDate(Prediction prediction)
+    private static object ActualParams(PredictionRow prediction, DateOnly targetDate)
+    {
+        return new { prediction.AssetId, prediction.AssetType, TargetDate = targetDate.ToDateTime(TimeOnly.MinValue) };
+    }
+
+    private static DateOnly TargetDate(PredictionRow prediction)
     {
         return DateOnly.FromDateTime(prediction.CreatedOn.Date).AddDays(prediction.TimeHorizonDays);
     }
@@ -100,5 +98,52 @@ public static class PredictionAccuracyStore
     private static int ClampTake(int? take)
     {
         return Math.Clamp(take ?? 25, 1, 100);
+    }
+
+    private sealed class PredictionRow
+    {
+        public long Id { get; init; }
+        public string AssetId { get; init; } = string.Empty;
+        public string AssetName { get; init; } = string.Empty;
+        public string AssetType { get; init; } = string.Empty;
+        public decimal CurrentPrice { get; init; }
+        public decimal PredictedPrice { get; init; }
+        public double PredictedPercentChange { get; init; }
+        public int TimeHorizonDays { get; init; }
+        public string ModelName { get; init; } = string.Empty;
+        public string ModelVersion { get; init; } = string.Empty;
+        public bool IsMock { get; init; }
+        public DateTime CreatedOn { get; init; }
+    }
+
+    private sealed class ActualPriceRow
+    {
+        public DateTime Date { get; init; }
+        public decimal Close { get; init; }
+    }
+
+    private static class Sql
+    {
+        public const string Predictions = """
+            select id as "Id", asset_id as "AssetId", asset_name as "AssetName",
+                   asset_type as "AssetType", current_price as "CurrentPrice",
+                   predicted_price as "PredictedPrice",
+                   predicted_percent_change as "PredictedPercentChange",
+                   time_horizon_days as "TimeHorizonDays", model_name as "ModelName",
+                   model_version as "ModelVersion", is_mock as "IsMock", created_on as "CreatedOn"
+            from predictions
+            where @AssetId = '' or asset_id = @AssetId
+            order by created_on desc, id desc
+            limit @Take;
+            """;
+
+        public const string ActualPrice = """
+            select p.date as "Date", p.close_price as "Close"
+            from price_history p
+            join assets a on a.id = p.asset_id
+            where a.symbol = @AssetId and a.asset_type = @AssetType and p.date >= @TargetDate
+            order by p.date
+            limit 1;
+            """;
     }
 }

@@ -1,8 +1,6 @@
 using api.Contracts;
-using api.Data;
 using api.Models;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
 
@@ -24,14 +22,14 @@ public static class PriceHistoryEndpoints
         string? assetType,
         string? name,
         FinancialModelingPrepClient client,
-        ApplicationDBContext db
+        PriceHistoryStore store
     )
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
             return Results.BadRequest("A symbol is required.");
         }
-        return await RunCapture(symbol, assetType, name, client, db);
+        return await RunCapture(symbol, assetType, name, client, store);
     }
 
     private static async Task<IResult> RunCapture(
@@ -39,7 +37,7 @@ public static class PriceHistoryEndpoints
         string? assetType,
         string? name,
         FinancialModelingPrepClient client,
-        ApplicationDBContext db
+        PriceHistoryStore store
     )
     {
         var prices = await TryFetch(client, symbol);
@@ -47,7 +45,7 @@ public static class PriceHistoryEndpoints
         {
             return MarketDataUnavailable();
         }
-        return await Store(db, symbol, ParseType(assetType), name, prices);
+        return await Store(store, symbol, ParseType(assetType), name, prices);
     }
 
     private static async Task<List<FmpHistoricalPrice>?> TryFetch(FinancialModelingPrepClient client, string symbol)
@@ -63,34 +61,25 @@ public static class PriceHistoryEndpoints
     }
 
     private static async Task<IResult> Store(
-        ApplicationDBContext db,
+        PriceHistoryStore store,
         string symbol,
         AssetType type,
         string? name,
         List<FmpHistoricalPrice> prices
     )
     {
-        var asset = await PriceHistoryStore.EnsureAssetAsync(db, symbol, type, name);
-        var captured = await PriceHistoryStore.SaveAsync(db, asset.Id, prices);
-        var result = new CaptureResult(asset.Symbol, type.ToString(), asset.Id, captured, prices.Count - captured);
+        var asset = await store.EnsureAssetAsync(symbol, type, name);
+        var captured = await store.SaveAsync(asset.Id, prices);
+        var result = new CaptureResult(asset.Symbol, type.ToString(), (int)asset.Id, captured, prices.Count - captured);
         return Results.Ok(result);
     }
 
-    private static async Task<IResult> GetHistory(string symbol, string? assetType, ApplicationDBContext db)
+    private static async Task<IResult> GetHistory(string symbol, string? assetType, PriceHistoryStore store)
     {
         var type = ParseType(assetType);
         var clean = symbol.Trim().ToUpperInvariant();
-        var points = await LoadPoints(db, clean, type);
+        var points = await store.ListPointsAsync(clean, type);
         return Results.Ok(new PriceHistoryResponse(clean, type.ToString(), points.Count, points));
-    }
-
-    private static Task<List<PricePoint>> LoadPoints(ApplicationDBContext db, string symbol, AssetType type)
-    {
-        return db.PriceHistories
-            .Where(price => price.Asset!.Symbol == symbol && price.Asset.AssetType == type)
-            .OrderBy(price => price.Date)
-            .Select(price => new PricePoint(price.Date, price.Open, price.High, price.Low, price.Close, price.Volume))
-            .ToListAsync();
     }
 
     private static AssetType ParseType(string? value)

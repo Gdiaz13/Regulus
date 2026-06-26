@@ -1,6 +1,6 @@
 using api.Contracts;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Xunit;
 
 namespace api.Tests;
@@ -10,7 +10,7 @@ public class PredictionStoreHistoryTests
     [Fact]
     public async Task ListHistoryAsync_returns_newest_predictions_first()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await Save(factory, TestData.Prediction("AMD"));
         await Save(factory, TestData.Prediction("NVDA"));
         await Touch(factory, "AMD", DateTime.UtcNow.AddDays(-1));
@@ -21,7 +21,7 @@ public class PredictionStoreHistoryTests
     [Fact]
     public async Task ListHistoryAsync_filters_by_asset_id()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await Save(factory, TestData.Prediction("AMD"));
         await Save(factory, TestData.Prediction("NVDA"));
         var history = await List(factory, " amd ");
@@ -32,47 +32,46 @@ public class PredictionStoreHistoryTests
     [Fact]
     public async Task ListHistoryAsync_includes_reasons_and_warnings()
     {
-        using var factory = new SqliteDbContextFactory();
-        var prediction = TestData.Prediction("AMD", reasons: new[] { "r" }, warnings: new[] { "w" });
+        using var factory = new SqliteDapperConnectionFactory();
+        var prediction = TestData.Prediction("AMD", reasons: ["r"], warnings: ["w"]);
         await Save(factory, prediction);
         var saved = (await List(factory)).Single();
-        Assert.Equal(new[] { "r" }, saved.Reasons);
-        Assert.Equal(new[] { "w" }, saved.Warnings);
+        Assert.Equal(["r"], saved.Reasons);
+        Assert.Equal(["w"], saved.Warnings);
     }
 
     [Fact]
     public async Task ListHistoryAsync_caps_large_take_values()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await SaveMany(factory, 105);
         Assert.Equal(100, (await List(factory, take: 500)).Count);
     }
 
-    private static async Task Save(SqliteDbContextFactory factory, AiPrediction prediction)
+    private static Task Save(SqliteDapperConnectionFactory factory, AiPrediction prediction)
     {
-        using var db = factory.Create();
-        await PredictionStore.SaveAsync(db, TestData.Overview(prediction));
+        return new PredictionStore(factory).SaveAsync(TestData.Overview(prediction));
     }
 
-    private static async Task<List<SavedPredictionResponse>> List(
-        SqliteDbContextFactory factory,
+    private static Task<List<SavedPredictionResponse>> List(
+        SqliteDapperConnectionFactory factory,
         string? assetId = null,
         int? take = null
     )
     {
-        using var db = factory.Create();
-        return await PredictionStore.ListHistoryAsync(db, assetId, take);
+        return new PredictionStore(factory).ListHistoryAsync(assetId, take);
     }
 
-    private static async Task Touch(SqliteDbContextFactory factory, string assetId, DateTime createdOn)
+    private static async Task Touch(SqliteDapperConnectionFactory factory, string assetId, DateTime createdOn)
     {
-        using var db = factory.Create();
-        var prediction = await db.Predictions.SingleAsync(item => item.AssetId == assetId);
-        prediction.CreatedOn = createdOn;
-        await db.SaveChangesAsync();
+        await using var connection = await factory.OpenDatabaseConnectionAsync();
+        await connection.ExecuteAsync(
+            "update predictions set created_on = @CreatedOn where asset_id = @AssetId;",
+            new { AssetId = assetId, CreatedOn = createdOn }
+        );
     }
 
-    private static async Task SaveMany(SqliteDbContextFactory factory, int count)
+    private static async Task SaveMany(SqliteDapperConnectionFactory factory, int count)
     {
         foreach (var index in Enumerable.Range(0, count))
         {

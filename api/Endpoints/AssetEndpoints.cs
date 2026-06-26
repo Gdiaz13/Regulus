@@ -1,5 +1,4 @@
 using api.Contracts;
-using api.Data;
 using api.Models;
 using api.Services;
 
@@ -15,39 +14,39 @@ public static class AssetEndpoints
         assets.MapPost("", CreateAsset);
     }
 
-    private static Task<IResult> ListAssets(string? assetType, ApplicationDBContext db)
+    private static Task<IResult> ListAssets(string? assetType, AssetStore store)
     {
         if (!TryOptionalType(assetType, out var type))
         {
             return BadAssetType();
         }
-        return DatabaseRequest.Run(async () => Results.Ok(await AssetStore.ListAsync(db, type)));
+        return DatabaseRequest.Run(async () => Results.Ok(await store.ListAsync(type)));
     }
 
-    private static Task<IResult> GetAsset(int id, ApplicationDBContext db)
+    private static Task<IResult> GetAsset(int id, AssetStore store)
     {
-        return DatabaseRequest.Run(() => GetAssetCore(id, db));
+        return DatabaseRequest.Run(() => GetAssetCore(id, store));
     }
 
-    private static async Task<IResult> GetAssetCore(int id, ApplicationDBContext db)
+    private static async Task<IResult> GetAssetCore(int id, AssetStore store)
     {
-        var asset = await AssetStore.FindAsync(db, id);
+        var asset = await store.FindAsync(id);
         return asset is null ? Results.NotFound($"Asset with id {id} was not found.") : Results.Ok(asset);
     }
 
-    private static Task<IResult> CreateAsset(CreateAssetRequest request, ApplicationDBContext db)
+    private static Task<IResult> CreateAsset(CreateAssetRequest request, AssetStore store)
     {
-        return DatabaseRequest.Run(() => CreateAssetCore(request, db));
+        return DatabaseRequest.Run(() => CreateAssetCore(request, store));
     }
 
-    private static async Task<IResult> CreateAssetCore(CreateAssetRequest request, ApplicationDBContext db)
+    private static async Task<IResult> CreateAssetCore(CreateAssetRequest request, AssetStore store)
     {
         var validation = Validate(request);
         if (validation is not null)
         {
             return validation;
         }
-        var result = await AssetStore.CreateAsync(db, ToCommand(request));
+        var result = await store.CreateAsync(ToCommand(request));
         return CreatedResult(result);
     }
 

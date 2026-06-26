@@ -1,74 +1,85 @@
+using System.Data.Common;
 using api.Contracts;
-using api.Data;
 using api.Models;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
 
 namespace api.Services;
 
-// Generic assets live here so stocks, cards, ETFs, and crypto can share one path.
-public static class AssetStore
+// Generic assets live here so stocks, cards, ETFs, and crypto share one
+// Dapper/PostgreSQL path.
+public sealed class AssetStore
 {
-    public static Task<List<AssetResponse>> ListAsync(ApplicationDBContext db, AssetType? type)
+    private readonly IDatabaseConnectionFactory _factory;
+
+    public AssetStore(IDatabaseConnectionFactory factory)
     {
-        var query = db.Assets.AsNoTracking().Include(asset => asset.Category);
-        return SelectResponse(FilterByType(query, type)).ToListAsync();
+        _factory = factory;
     }
 
-    public static Task<AssetResponse?> FindAsync(ApplicationDBContext db, int id)
+    public async Task<List<AssetResponse>> ListAsync(AssetType? type)
     {
-        var query = db.Assets.AsNoTracking().Include(asset => asset.Category);
-        return SelectResponse(query.Where(asset => asset.Id == id)).FirstOrDefaultAsync();
+        await using var connection = await _factory.OpenDatabaseConnectionAsync();
+        var rows = await connection.QueryAsync<AssetRow>(Sql.List, new { AssetType = type?.ToString() });
+        return rows.Select(ToResponse).ToList();
     }
 
-    public static async Task<AssetCreateResult> CreateAsync(ApplicationDBContext db, AssetCommand command)
+    public async Task<AssetResponse?> FindAsync(int id)
+    {
+        await using var connection = await _factory.OpenDatabaseConnectionAsync();
+        return await FindAsync(connection, id);
+    }
+
+    public async Task<AssetCreateResult> CreateAsync(AssetCommand command)
     {
         var clean = Normalize(command);
-        if (await Exists(db, clean))
+        await using var connection = await _factory.OpenDatabaseConnectionAsync();
+        if (await Exists(connection, clean))
         {
             return Duplicate(clean);
         }
-        var category = await EnsureCategoryAsync(db, clean);
-        var asset = NewAsset(clean, category);
-        db.Assets.Add(asset);
-        await db.SaveChangesAsync();
-        return Created(asset);
+        var categoryId = await CategoryId(connection, clean);
+        var id = await InsertAsset(connection, clean, categoryId);
+        return Created((await FindAsync(connection, id))!);
     }
 
-    private static IQueryable<Asset> FilterByType(IQueryable<Asset> query, AssetType? type)
+    private static async Task<AssetResponse?> FindAsync(DbConnection connection, int id)
     {
-        return type is null ? query : query.Where(asset => asset.AssetType == type);
+        var row = await connection.QuerySingleOrDefaultAsync<AssetRow>(Sql.Find, new { Id = id });
+        return row is null ? null : ToResponse(row);
     }
 
-    private static IQueryable<AssetResponse> SelectResponse(IQueryable<Asset> query)
+    private static Task<bool> Exists(DbConnection connection, AssetCommand command)
     {
-        return query
-            .OrderBy(asset => asset.AssetType)
-            .ThenBy(asset => asset.Symbol)
-            .Select(asset => new AssetResponse(
-                asset.Id,
-                asset.Symbol,
-                asset.Name,
-                asset.AssetType.ToString(),
-                asset.Category == null ? null : asset.Category.Name,
-                asset.CreatedOn
-            ));
+        return connection.ExecuteScalarAsync<bool>(Sql.Exists, Params(command));
     }
 
-    private static AssetResponse Response(Asset asset)
+    private static async Task<int?> CategoryId(DbConnection connection, AssetCommand command)
     {
-        return new AssetResponse(
-            asset.Id,
-            asset.Symbol,
-            asset.Name,
-            asset.AssetType.ToString(),
-            asset.Category == null ? null : asset.Category.Name,
-            asset.CreatedOn
-        );
+        if (string.IsNullOrWhiteSpace(command.Category))
+        {
+            return null;
+        }
+        return await FindCategoryId(connection, command) ?? await InsertCategory(connection, command);
     }
 
-    private static Task<bool> Exists(ApplicationDBContext db, AssetCommand command)
+    private static Task<int?> FindCategoryId(DbConnection connection, AssetCommand command)
     {
-        return db.Assets.AnyAsync(asset => asset.Symbol == command.Symbol && asset.AssetType == command.AssetType);
+        return connection.ExecuteScalarAsync<int?>(Sql.FindCategoryId, CategoryParams(command));
+    }
+
+    private static Task<int> InsertCategory(DbConnection connection, AssetCommand command)
+    {
+        return connection.ExecuteScalarAsync<int>(Sql.InsertCategory, CategoryParams(command));
+    }
+
+    private static Task<int> InsertAsset(DbConnection connection, AssetCommand command, int? categoryId)
+    {
+        return connection.ExecuteScalarAsync<int>(Sql.InsertAsset, Params(command, categoryId));
+    }
+
+    private static AssetCreateResult Created(AssetResponse asset)
+    {
+        return new AssetCreateResult(asset, null, false);
     }
 
     private static AssetCreateResult Duplicate(AssetCommand command)
@@ -76,44 +87,26 @@ public static class AssetStore
         return new AssetCreateResult(null, $"{command.Symbol} is already tracked as {command.AssetType}.", true);
     }
 
-    private static async Task<AssetCategory?> EnsureCategoryAsync(ApplicationDBContext db, AssetCommand command)
-    {
-        if (string.IsNullOrWhiteSpace(command.Category))
-        {
-            return null;
-        }
-        return await FindOrCreateCategoryAsync(db, command);
-    }
-
-    private static async Task<AssetCategory> FindOrCreateCategoryAsync(ApplicationDBContext db, AssetCommand command)
-    {
-        var slug = Slug(command.Category!);
-        return await db.AssetCategories.FirstOrDefaultAsync(category => category.Slug == slug)
-            ?? CreateCategory(db, command, slug);
-    }
-
-    private static AssetCategory CreateCategory(ApplicationDBContext db, AssetCommand command, string slug)
-    {
-        var category = new AssetCategory { Name = Clean(command.Category), Slug = slug, AssetType = command.AssetType };
-        db.AssetCategories.Add(category);
-        return category;
-    }
-
-    private static Asset NewAsset(AssetCommand command, AssetCategory? category)
-    {
-        return new Asset { Symbol = command.Symbol, Name = command.Name, AssetType = command.AssetType, Category = category };
-    }
-
-    private static AssetCreateResult Created(Asset asset)
-    {
-        return new AssetCreateResult(Response(asset), null, false);
-    }
-
     private static AssetCommand Normalize(AssetCommand command)
     {
         var symbol = command.Symbol.Trim().ToUpperInvariant();
         var name = string.IsNullOrWhiteSpace(command.Name) ? symbol : command.Name.Trim();
         return new AssetCommand(symbol, name, command.AssetType, Clean(command.Category));
+    }
+
+    private static object Params(AssetCommand command, int? categoryId = null)
+    {
+        return new { command.Symbol, command.Name, AssetType = command.AssetType.ToString(), CategoryId = categoryId };
+    }
+
+    private static object CategoryParams(AssetCommand command)
+    {
+        return new { Name = Clean(command.Category), Slug = Slug(command.Category!), AssetType = command.AssetType.ToString() };
+    }
+
+    private static AssetResponse ToResponse(AssetRow row)
+    {
+        return new AssetResponse(row.Id, row.Symbol, row.Name, row.AssetType, row.Category, row.CreatedOn);
     }
 
     private static string Slug(string value)
@@ -124,5 +117,59 @@ public static class AssetStore
     private static string Clean(string? value)
     {
         return value?.Trim() ?? string.Empty;
+    }
+
+    private sealed class AssetRow
+    {
+        public int Id { get; init; }
+        public string Symbol { get; init; } = string.Empty;
+        public string Name { get; init; } = string.Empty;
+        public string AssetType { get; init; } = string.Empty;
+        public string? Category { get; init; }
+        public DateTime CreatedOn { get; init; }
+    }
+
+    private static class Sql
+    {
+        private const string Columns = """
+            a.id as "Id", a.symbol as "Symbol", a.name as "Name",
+            a.asset_type as "AssetType", c.name as "Category",
+            a.created_on as "CreatedOn"
+            """;
+
+        public const string List = $"""
+            select {Columns}
+            from assets a
+            left join asset_categories c on c.id = a.category_id
+            where @AssetType is null or a.asset_type = @AssetType
+            order by a.asset_type, a.symbol;
+            """;
+
+        public const string Find = $"""
+            select {Columns}
+            from assets a
+            left join asset_categories c on c.id = a.category_id
+            where a.id = @Id;
+            """;
+
+        public const string Exists = """
+            select exists(select 1 from assets where symbol = @Symbol and asset_type = @AssetType);
+            """;
+
+        public const string FindCategoryId = """
+            select id from asset_categories where slug = @Slug;
+            """;
+
+        public const string InsertCategory = """
+            insert into asset_categories (name, slug, asset_type)
+            values (@Name, @Slug, @AssetType)
+            returning id;
+            """;
+
+        public const string InsertAsset = """
+            insert into assets (symbol, name, asset_type, category_id)
+            values (@Symbol, @Name, @AssetType, @CategoryId)
+            returning id;
+            """;
     }
 }

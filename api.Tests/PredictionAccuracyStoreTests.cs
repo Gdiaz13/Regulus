@@ -1,7 +1,7 @@
 using api.Contracts;
 using api.Models;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
+using Dapper;
 using Xunit;
 
 namespace api.Tests;
@@ -11,7 +11,7 @@ public class PredictionAccuracyStoreTests
     [Fact]
     public async Task ListAsync_scores_prediction_against_later_price()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await SaveReadyPrediction(factory, "AMD");
         await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
         var accuracy = await List(factory);
@@ -22,7 +22,7 @@ public class PredictionAccuracyStoreTests
     [Fact]
     public async Task ListAsync_filters_by_asset_id()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await SaveReadyPrediction(factory, "AMD");
         await SaveReadyPrediction(factory, "NVDA");
         await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
@@ -34,7 +34,7 @@ public class PredictionAccuracyStoreTests
     [Fact]
     public async Task ListAsync_uses_first_price_on_or_after_target_date()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await SaveReadyPrediction(factory, "AMD");
         await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1), 120m);
         await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
@@ -44,26 +44,28 @@ public class PredictionAccuracyStoreTests
     [Fact]
     public async Task ListAsync_skips_predictions_without_matching_price()
     {
-        using var factory = new SqliteDbContextFactory();
+        using var factory = new SqliteDapperConnectionFactory();
         await SaveReadyPrediction(factory, "AMD");
         Assert.Empty(await List(factory));
     }
 
-    private static async Task SaveReadyPrediction(SqliteDbContextFactory factory, string symbol)
+    private static async Task SaveReadyPrediction(SqliteDapperConnectionFactory factory, string symbol)
     {
-        using var db = factory.Create();
-        await PredictionStore.SaveAsync(db, TestData.Overview(TestData.Prediction(symbol)));
-        var prediction = await db.Predictions.SingleAsync(item => item.AssetId == symbol);
-        prediction.CreatedOn = DateTime.UtcNow.AddDays(-2);
-        prediction.TimeHorizonDays = 1;
-        await db.SaveChangesAsync();
+        await new PredictionStore(factory).SaveAsync(TestData.Overview(TestData.Prediction(symbol)));
+        await TouchPrediction(factory, symbol);
     }
 
-    private static async Task SavePrice(SqliteDbContextFactory factory, string symbol, DateOnly date, decimal close)
+    private static async Task TouchPrediction(SqliteDapperConnectionFactory factory, string symbol)
     {
-        using var db = factory.Create();
-        var asset = await PriceHistoryStore.EnsureAssetAsync(db, symbol, AssetType.Stock, symbol);
-        await PriceHistoryStore.SaveAsync(db, asset.Id, new[] { Price(symbol, date, close) });
+        await using var connection = await factory.OpenDatabaseConnectionAsync();
+        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, CreatedOn = DateTime.UtcNow.AddDays(-2) });
+    }
+
+    private static async Task SavePrice(SqliteDapperConnectionFactory factory, string symbol, DateOnly date, decimal close)
+    {
+        var store = new PriceHistoryStore(factory);
+        var asset = await store.EnsureAssetAsync(symbol, AssetType.Stock, symbol);
+        await store.SaveAsync(asset.Id, [Price(symbol, date, close)]);
     }
 
     private static FmpHistoricalPrice Price(string symbol, DateOnly date, decimal close)
@@ -71,12 +73,17 @@ public class PredictionAccuracyStoreTests
         return new FmpHistoricalPrice(symbol, date, close, close, close, close, 1000);
     }
 
-    private static async Task<List<PredictionAccuracyResponse>> List(
-        SqliteDbContextFactory factory,
+    private static Task<List<PredictionAccuracyResponse>> List(
+        SqliteDapperConnectionFactory factory,
         string? assetId = null
     )
     {
-        using var db = factory.Create();
-        return await PredictionAccuracyStore.ListAsync(db, assetId, null);
+        return new PredictionAccuracyStore(factory).ListAsync(assetId, null);
     }
+
+    private const string SqlTouch = """
+        update predictions
+        set created_on = @CreatedOn, time_horizon_days = 1
+        where asset_id = @Symbol;
+        """;
 }

@@ -1,7 +1,5 @@
-using api.Data;
 using api.Models;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
 
@@ -16,94 +14,71 @@ public static class CommentEndpoints
         comments.MapDelete("comments/{id:int}", DeleteComment);
     }
 
-    private static Task<IResult> GetStockComments(int stockId, ApplicationDBContext db)
+    private static Task<IResult> GetStockComments(int stockId, StockCommentStore store)
     {
-        return DatabaseRequest.Run(async () => Results.Ok(await ListStockComments(stockId, db)));
+        return DatabaseRequest.Run(async () => Results.Ok(await ListResponses(stockId, store)));
     }
 
-    private static Task<List<CommentResponse>> ListStockComments(int stockId, ApplicationDBContext db)
+    private static async Task<List<CommentResponse>> ListResponses(int stockId, StockCommentStore store)
     {
-        return db.Comments
-            .AsNoTracking()
-            .Where(comment => comment.StockId == stockId)
-            .OrderByDescending(comment => comment.CreatedOn)
-            .Select(comment => new CommentResponse(
-                comment.Id,
-                comment.Title,
-                comment.Content,
-                comment.CreatedOn,
-                comment.StockId
-            ))
-            .ToListAsync();
+        var comments = await store.ListAsync(stockId);
+        return comments.Select(ToResponse).ToList();
     }
 
     private static Task<IResult> CreateStockComment(
         int stockId,
         CreateCommentRequest request,
-        ApplicationDBContext db
+        StockCommentStore store
     )
     {
-        return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, db));
+        return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, store));
     }
 
     private static async Task<IResult> CreateStockCommentCore(
         int stockId,
         CreateCommentRequest request,
-        ApplicationDBContext db
+        StockCommentStore store
     )
     {
-        var validation = await ValidateCreateRequest(stockId, request, db);
+        var validation = await ValidateCreateRequest(stockId, request, store);
         if (validation is not null)
         {
             return validation;
         }
-        return await SaveComment(stockId, request, db);
+        var comment = await store.CreateAsync(NewComment(stockId, request));
+        return Results.Created($"/api/comments/{comment.Id}", ToResponse(comment));
     }
 
-    private static Task<IResult> DeleteComment(int id, ApplicationDBContext db)
+    private static Task<IResult> UpdateComment(int id, CreateCommentRequest request, StockCommentStore store)
     {
-        return DatabaseRequest.Run(() => DeleteCommentCore(id, db));
+        return DatabaseRequest.Run(() => UpdateCommentCore(id, request, store));
     }
 
-    private static Task<IResult> UpdateComment(
-        int id,
-        CreateCommentRequest request,
-        ApplicationDBContext db
-    )
-    {
-        return DatabaseRequest.Run(() => UpdateCommentCore(id, request, db));
-    }
-
-    private static async Task<IResult> UpdateCommentCore(
-        int id,
-        CreateCommentRequest request,
-        ApplicationDBContext db
-    )
+    private static async Task<IResult> UpdateCommentCore(int id, CreateCommentRequest request, StockCommentStore store)
     {
         var validation = ValidateCommentBody(request);
         if (validation is not null)
         {
             return validation;
         }
-        return await SaveUpdatedComment(id, request, db);
+        var comment = await store.UpdateAsync(id, Clean(request.Title), Clean(request.Content));
+        return comment is null ? CommentMissing(id) : Results.Ok(ToResponse(comment));
     }
 
-    private static async Task<IResult> DeleteCommentCore(int id, ApplicationDBContext db)
+    private static Task<IResult> DeleteComment(int id, StockCommentStore store)
     {
-        var comment = await db.Comments.FindAsync(id);
-        if (comment is null)
-        {
-            return Results.NotFound($"Comment with id {id} was not found.");
-        }
-        db.Comments.Remove(comment);
-        await db.SaveChangesAsync();
-        return Results.NoContent();
+        return DatabaseRequest.Run(async () => await DeleteCommentCore(id, store));
+    }
+
+    private static async Task<IResult> DeleteCommentCore(int id, StockCommentStore store)
+    {
+        return await store.DeleteAsync(id) ? Results.NoContent() : CommentMissing(id);
     }
 
     private static async Task<IResult?> ValidateCreateRequest(
         int stockId,
         CreateCommentRequest request,
-        ApplicationDBContext db
+        StockCommentStore store
     )
     {
         var validation = ValidateCommentBody(request);
@@ -111,38 +86,10 @@ public static class CommentEndpoints
         {
             return validation;
         }
-        return await StockExists(stockId, db) ? null : Results.NotFound($"Stock with id {stockId} was not found.");
+        return await store.StockExistsAsync(stockId) ? null : Results.NotFound($"Stock with id {stockId} was not found.");
     }
 
-    private static async Task<IResult> SaveComment(
-        int stockId,
-        CreateCommentRequest request,
-        ApplicationDBContext db
-    )
-    {
-        var comment = CreateComment(stockId, request);
-        db.Comments.Add(comment);
-        await db.SaveChangesAsync();
-        return Results.Created($"/api/comments/{comment.Id}", ToResponse(comment));
-    }
-
-    private static async Task<IResult> SaveUpdatedComment(
-        int id,
-        CreateCommentRequest request,
-        ApplicationDBContext db
-    )
-    {
-        var comment = await db.Comments.FindAsync(id);
-        if (comment is null)
-        {
-            return Results.NotFound($"Comment with id {id} was not found.");
-        }
-        ApplyCommentUpdate(comment, request);
-        await db.SaveChangesAsync();
-        return Results.Ok(ToResponse(comment));
-    }
-
-    private static Comment CreateComment(int stockId, CreateCommentRequest request)
+    private static Comment NewComment(int stockId, CreateCommentRequest request)
     {
         return new Comment
         {
@@ -151,12 +98,6 @@ public static class CommentEndpoints
             Content = Clean(request.Content),
             CreatedOn = DateTime.UtcNow,
         };
-    }
-
-    private static void ApplyCommentUpdate(Comment comment, CreateCommentRequest request)
-    {
-        comment.Title = Clean(request.Title);
-        comment.Content = Clean(request.Content);
     }
 
     private static IResult? ValidateCommentBody(CreateCommentRequest request)
@@ -171,9 +112,9 @@ public static class CommentEndpoints
         return new CommentResponse(comment.Id, comment.Title, comment.Content, comment.CreatedOn, comment.StockId);
     }
 
-    private static Task<bool> StockExists(int stockId, ApplicationDBContext db)
+    private static IResult CommentMissing(int id)
     {
-        return db.Stocks.AnyAsync(stock => stock.Id == stockId);
+        return Results.NotFound($"Comment with id {id} was not found.");
     }
 
     private static bool IsBlank(string? value)
