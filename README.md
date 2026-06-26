@@ -8,6 +8,11 @@ This is my market research and portfolio app. The goal is to keep it useful, rea
 - `api/` is the .NET API and the gateway for everything else.
 - `ai/` is the Python AI services (mock for now). See `ai/README.md`.
 - `Exchange.sln` opens the API project in Visual Studio or Rider.
+- `design/` holds the shared design tokens (`design-tokens.json` + `branding.md`) — the one place colors live for both frontends.
+
+## Shared design system
+
+Colors live once, in `design/design-tokens.json`, so the web app and the future .NET MAUI app stay visually in sync. The web app generates its CSS variables from that file (`exchange-frontend/scripts/generate-tokens.mjs` → `src/styles/tokens.generated.css`, imported by `index.css`). It runs automatically on `npm run dev` / `npm run build`, or manually with `npm run tokens`. Change a color in `design-tokens.json`, not in the components. `design/branding.md` describes the palette and the overall look.
 
 ## How It Connects
 

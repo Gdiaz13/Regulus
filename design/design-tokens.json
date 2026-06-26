@@ -1,0 +1,44 @@
+{
+  "name": "Regulas",
+  "description": "Shared design tokens for Regulas.WebApp and the future Regulas.MauiApp. Single source of truth for colors. The web app generates its CSS variables from here (exchange-frontend/scripts/generate-tokens.mjs -> src/styles/tokens.generated.css). MAUI will map the hex values into its Color resources. If a color changes, change it here.",
+  "color": {
+    "light": {
+      "background": { "hsl": "250 60% 95%", "hex": "#edebfa" },
+      "foreground": { "hsl": "0 0% 0%", "hex": "#000000" },
+      "card": { "hsl": "220 100% 65%", "hex": "#4c88ff" },
+      "primary": { "hsl": "220 100% 65%", "hex": "#4c88ff" },
+      "primaryForeground": { "hsl": "60 100% 98%", "hex": "#fffff5" },
+      "border": { "hsl": "220 30% 30%", "hex": "#364563" },
+      "accent": { "hsl": "48 100% 50%", "hex": "#ffcc00" },
+      "portfolioCardBg": { "hex": "#ede9fe" }
+    },
+    "dark": {
+      "background": { "hsl": "222 47% 4%", "hex": "#05080f" },
+      "foreground": { "hsl": "213 31% 91%", "hex": "#e1e7ef" },
+      "card": { "hsl": "222 47% 8%", "hex": "#0b111e" },
+      "primary": { "hsl": "220 100% 65%", "hex": "#4c88ff" },
+      "primaryForeground": { "hsl": "60 100% 98%", "hex": "#fffff5" },
+      "border": { "hsl": "217 33% 20%", "hex": "#222f44" },
+      "accent": { "hsl": "48 100% 50%", "hex": "#ffcc00" },
+      "portfolioCardBg": { "hex": "#181926" }
+    }
+  },
+  "semantic": {
+    "success": "#2ecc71",
+    "warning": "#ffb347",
+    "danger": "#e74c3c",
+    "mutedText": "foreground at ~60% opacity"
+  },
+  "chart": {
+    "line": "accent",
+    "area": "accent at ~12% opacity",
+    "up": "#2ecc71",
+    "down": "#e74c3c"
+  },
+  "radius": { "sm": "0.5rem", "md": "0.75rem", "lg": "1rem", "pill": "999px" },
+  "spacing": {
+    "scale": "4px base",
+    "pageMaxWidth": "min(1080px, 100% - 2rem)",
+    "cardPadding": "1rem to 1.5rem"
+  }
+}
