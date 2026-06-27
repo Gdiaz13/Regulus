@@ -1,7 +1,7 @@
 import { type ICompanyIncomeStatement } from "../../Interfaces/APIResponses/ICompanyIncomeStatement";
-import { requestFmp } from "../fmpClient";
+import { requestMarketData } from "../marketDataClient";
 import type { ApiResult } from "../types";
 
 export const getIncomeStatement = async (ticker: string): Promise<ApiResult<ICompanyIncomeStatement[]>> => {
-    return requestFmp<ICompanyIncomeStatement[]>("income-statement", { symbol: ticker });
+    return requestMarketData<ICompanyIncomeStatement[]>("income-statement", { symbol: ticker });
 };

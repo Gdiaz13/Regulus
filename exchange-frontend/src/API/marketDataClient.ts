@@ -2,8 +2,8 @@ import { apiPathWithQuery, requestApi } from "./apiClient";
 import type { QueryParams } from "./apiClient";
 import type { ApiResult } from "./types";
 
-// The browser calls our API proxy; the .NET API adds the real FMP key.
-export async function requestFmp<T>(
+// The browser talks only to Regulas.Api; the API adds provider keys server-side.
+export async function requestMarketData<T>(
   path: string,
   params: QueryParams,
 ): Promise<ApiResult<T>> {

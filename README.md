@@ -223,6 +223,7 @@ Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
 - C# backend gateway for market data, portfolio routes, assets, prices, predictions, and TradingAgents.
+- Browser market-data calls go through `/api/market-data`, so provider keys stay server-side.
 - Shared design tokens for web and future MAUI styling.
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
