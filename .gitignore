@@ -19,3 +19,6 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
+
+# Graphify knowledge graph (generated; rebuild with `graphify update .`)
+graphify-out/
