@@ -61,20 +61,20 @@ $env:FMP_API_KEY="your_fmp_key"
 The default PostgreSQL connection is:
 
 ```text
-Host=localhost;Port=5432;Database=regulas;Username=regulas;Password=regulas
+Host=localhost;Port=5433;Database=regulas;Username=regulas;Password=regulas
 ```
 
 Override it with:
 
 ```powershell
-$env:DATABASE_CONNECTION_STRING="Host=localhost;Port=5432;Database=regulas;Username=regulas;Password=regulas"
+$env:DATABASE_CONNECTION_STRING="Host=localhost;Port=5433;Database=regulas;Username=regulas;Password=regulas"
 ```
 
 Or set the individual pieces:
 
 ```powershell
 $env:POSTGRES_HOST="localhost"
-$env:POSTGRES_PORT="5432"
+$env:POSTGRES_PORT="5433"
 $env:POSTGRES_DB="regulas"
 $env:POSTGRES_USER="regulas"
 $env:POSTGRES_PASSWORD="regulas"
