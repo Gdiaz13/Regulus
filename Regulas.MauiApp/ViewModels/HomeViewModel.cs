@@ -49,6 +49,12 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         {
             return;
         }
+        await RunLoadAsync();
+    }
+
+    // Wraps the load so IsBusy is always reset, even when a request throws.
+    private async Task RunLoadAsync()
+    {
         IsBusy = true;
         try
         {
