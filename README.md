@@ -8,6 +8,7 @@ The current app is still mid-migration. The web app and API run, the AI services
 
 - `exchange-frontend/` is the React/Vite web app.
 - `api/` is the .NET API and the gateway for data, market providers, and AI services.
+- `Regulas.MauiApp/` is the .NET MAUI installed app shell.
 - `api/Database/Migrations/` is the new plain-SQL PostgreSQL migration path.
 - `ai/` is the separate Python AI service workspace. See `ai/README.md`.
 - `design/` holds shared design tokens for the web app and future MAUI app.
@@ -17,6 +18,7 @@ The current app is still mid-migration. The web app and API run, the AI services
 
 ```text
 Regulas.WebApp -> Regulas.Api -> PostgreSQL
+Regulas.MauiApp -> Regulas.Api -> PostgreSQL
 Regulas.WebApp -> Regulas.Api -> RegulasCoreAI -> Market AIs -> Category AIs -> Specialist AIs
 Regulas.WebApp -> Regulas.Api -> StockTradingAgentsAI
 ```
@@ -26,6 +28,7 @@ No frontend should call Python services, TradingAgents, PostgreSQL, or external 
 ## Current Stack
 
 - Web frontend: Vite, React, TypeScript
+- Installed app frontend: .NET MAUI on .NET 10
 - Backend: ASP.NET Core on .NET 10
 - Database: PostgreSQL
 - Database access: Dapper with plain SQL migrations
@@ -41,7 +44,7 @@ cd exchange-frontend
 npm.cmd run tokens
 ```
 
-`npm.cmd run dev` and `npm.cmd run build` also regenerate the tokens. The future `Regulas.MauiApp` should use the same values so the installed app feels like the same product, not a separate skin.
+`npm.cmd run dev` and `npm.cmd run build` also regenerate the tokens. `Regulas.MauiApp` maps the same values into MAUI color resources so the installed app feels like the same product, not a separate skin.
 
 ## Setup
 
@@ -106,6 +109,14 @@ cd exchange-frontend
 npm.cmd install
 npm.cmd run dev
 ```
+
+Start the MAUI app on Windows:
+
+```powershell
+dotnet build Regulas.MauiApp\Regulas.MauiApp.csproj -f net10.0-windows10.0.19041.0
+```
+
+The MAUI app defaults to `http://localhost:5052` on desktop and `http://10.0.2.2:5052` on Android emulators. The Settings tab can change that API URL without putting secrets or provider keys in the app. It needs the matching .NET MAUI workloads installed for the target you build.
 
 Run the mock RegulasCoreAI service:
 
@@ -222,9 +233,11 @@ cd ..\ai
 Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
+- Initial MAUI app shell with shared colors, API health, and portfolio list.
+- MAUI Settings tab for the Regulas.Api base URL.
 - C# backend gateway for market data, portfolio routes, assets, prices, predictions, and TradingAgents.
 - Browser market-data calls go through `/api/market-data`, so provider keys stay server-side.
-- Shared design tokens for web and future MAUI styling.
+- Shared design tokens for web and MAUI styling.
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 
@@ -236,7 +249,7 @@ Done but mock:
 
 Still planned:
 
-- Add `Regulas.MauiApp` as the installed app frontend.
+- Expand `Regulas.MauiApp` with search, predictions, and settings screens.
 - Add background jobs for price snapshots, prediction scoring, and training.
 - Add more stock specialists, TCG detail screens, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.

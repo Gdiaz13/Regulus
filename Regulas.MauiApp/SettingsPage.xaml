@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.SettingsPage"
+             Title="Settings">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="760"
+                             HorizontalOptions="Center">
+            <Label Text="Settings"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Regulas.Api URL"
+                           FontAttributes="Bold" />
+                    <Entry Text="{Binding ApiBaseUrlText}"
+                           Keyboard="Url"
+                           Placeholder="http://localhost:5052"
+                           ReturnType="Done" />
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Save"
+                                Command="{Binding SaveCommand}" />
+                        <Button Text="Reset"
+                                Command="{Binding ResetCommand}"
+                                BackgroundColor="{StaticResource Secondary}"
+                                TextColor="{StaticResource MidnightBlue}" />
+                    </HorizontalStackLayout>
+                    <Label Text="{Binding StatusText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
