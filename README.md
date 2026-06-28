@@ -7,11 +7,12 @@ The current app is still mid-migration. The web app and API run, the AI services
 ## Quick Map
 
 - `exchange-frontend/` is the React/Vite web app.
+- `Regulas.MauiApp/` is the .NET MAUI installed-app frontend (Windows/Android/iOS/macOS). It shares the `design/` tokens and talks only to `api/`.
 - `api/` is the .NET API and the gateway for data, market providers, and AI services.
 - `Regulas.MauiApp/` is the .NET MAUI installed app shell.
 - `api/Database/Migrations/` is the new plain-SQL PostgreSQL migration path.
 - `ai/` is the separate Python AI service workspace. See `ai/README.md`.
-- `design/` holds shared design tokens for the web app and future MAUI app.
+- `design/` holds shared design tokens for the web app and the MAUI app.
 - `Exchange.sln` opens the C# projects in Visual Studio or Rider.
 
 ## How It Connects
@@ -117,6 +118,14 @@ dotnet build Regulas.MauiApp\Regulas.MauiApp.csproj -f net10.0-windows10.0.19041
 ```
 
 The MAUI app defaults to `http://localhost:5052` on desktop and `http://10.0.2.2:5052` on Android emulators. The Settings tab can change that API URL without putting secrets or provider keys in the app. It needs the matching .NET MAUI workloads installed for the target you build.
+
+Build the MAUI app (Windows):
+
+```powershell
+dotnet build Regulas.MauiApp -f net10.0-windows10.0.19041.0
+```
+
+It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal), and the Apple targets only build on a paired Mac.
 
 Run the mock RegulasCoreAI service:
 
@@ -249,7 +258,7 @@ Done but mock:
 
 Still planned:
 
-- Expand `Regulas.MauiApp` with search, predictions, and settings screens.
+- Expand `Regulas.MauiApp` with search, predictions, and asset-detail screens.
 - Add background jobs for price snapshots, prediction scoring, and training.
 - Add more stock specialists, TCG detail screens, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
