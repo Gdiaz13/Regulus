@@ -10,7 +10,9 @@ public class AuthMigrationSchemaTests
     public void Auth_migration_creates_users_foundation()
     {
         var sql = ReadMigration("002_auth_user_tables.sql");
+        Assert.Contains("create extension if not exists pgcrypto", sql);
         Assert.Contains("create table if not exists users", sql);
+        Assert.Contains("id uuid primary key default gen_random_uuid()", sql);
         Assert.Contains("normalized_email varchar(256) not null", sql);
         Assert.Contains("password_hash text not null", sql);
         Assert.Contains("is_active boolean not null default true", sql);
@@ -22,10 +24,20 @@ public class AuthMigrationSchemaTests
     {
         var sql = ReadMigration("002_auth_user_tables.sql");
         Assert.Contains("create table if not exists refresh_tokens", sql);
-        Assert.Contains("user_id integer not null references users (id) on delete cascade", sql);
+        Assert.Contains("id uuid primary key default gen_random_uuid()", sql);
+        Assert.Contains("user_id uuid not null references users (id) on delete cascade", sql);
         Assert.Contains("token_hash text not null", sql);
         Assert.Contains("revoked_at timestamptz null", sql);
         Assert.Contains("create unique index if not exists ux_refresh_tokens_token_hash", sql);
+    }
+
+    [Fact]
+    public void Auth_migration_creates_user_settings_for_uuid_users()
+    {
+        var sql = ReadMigration("002_auth_user_tables.sql");
+        Assert.Contains("create table if not exists user_settings", sql);
+        Assert.Contains("user_id uuid primary key references users (id) on delete cascade", sql);
+        Assert.Contains("settings_json jsonb not null default '{}'::jsonb", sql);
     }
 
     private static string ReadMigration(string name, [CallerFilePath] string sourceFile = "")
