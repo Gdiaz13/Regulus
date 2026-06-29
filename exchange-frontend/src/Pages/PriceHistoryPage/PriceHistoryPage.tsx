@@ -6,26 +6,33 @@ import { usePriceHistory } from '../../hooks/usePriceHistory';
 import styles from './PriceHistoryPage.module.css';
 
 const assetTypes = ['Stock', 'Etf', 'TcgCard', 'Crypto', 'Collectible'];
+const historyTakeOptions = ['30', '90', '365', '1000'];
 
 type History = ReturnType<typeof usePriceHistory>;
-type Fields = { symbol: string; setSymbol: SetText; assetType: string; setAssetType: SetText };
+type Fields = { symbol: string; setSymbol: SetText; assetType: string; setAssetType: SetText; historyTake: string; setHistoryTake: SetText };
 type SetText = (value: string) => void;
 
 // Pick a symbol, then read stored end-of-day prices or capture them from the provider.
 const PriceHistoryPage = () => {
-  const [symbol, setSymbol] = useState('');
-  const [assetType, setAssetType] = useState('Stock');
+  const fields = useHistoryFields();
   const history = usePriceHistory();
-  const fields = { symbol, setSymbol, assetType, setAssetType };
-  const clean = symbol.trim();
+  const clean = fields.symbol.trim();
+  const take = Number(fields.historyTake);
   return (
     <main className={styles.page}>
       <Header />
-      <Controls fields={fields} onLoad={() => history.load(clean, assetType)} onCapture={() => history.capture(clean, assetType)} enabled={clean.length > 0} busy={history.status === 'loading'} />
+      <Controls fields={fields} onLoad={() => history.load(clean, fields.assetType, take)} onCapture={() => history.capture(clean, fields.assetType, take)} enabled={clean.length > 0} busy={history.status === 'loading'} />
       <Results history={history} />
     </main>
   );
 };
+
+function useHistoryFields(): Fields {
+  const [symbol, setSymbol] = useState('');
+  const [assetType, setAssetType] = useState('Stock');
+  const [historyTake, setHistoryTake] = useState('365');
+  return { symbol, setSymbol, assetType, setAssetType, historyTake, setHistoryTake };
+}
 
 function Header() {
   return (
@@ -42,6 +49,7 @@ function Controls({ fields, onLoad, onCapture, enabled, busy }: ControlsProps) {
     <div className={styles.controls}>
       <input className={styles.symbolInput} value={fields.symbol} maxLength={32} placeholder="Symbol e.g. AMD" onChange={(event) => fields.setSymbol(event.target.value)} />
       <TypeSelect value={fields.assetType} onChange={fields.setAssetType} />
+      <HistoryTakeSelect value={fields.historyTake} onChange={fields.setHistoryTake} />
       <button onClick={onLoad} disabled={!enabled || busy}>Load stored</button>
       <button onClick={onCapture} disabled={!enabled || busy}>Capture from FMP</button>
     </div>
@@ -52,6 +60,14 @@ function TypeSelect({ value, onChange }: { value: string; onChange: SetText }) {
   return (
     <select value={value} onChange={(event) => onChange(event.target.value)}>
       {assetTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+    </select>
+  );
+}
+
+function HistoryTakeSelect({ value, onChange }: { value: string; onChange: SetText }) {
+  return (
+    <select value={value} onChange={(event) => onChange(event.target.value)} aria-label="History range">
+      {historyTakeOptions.map((take) => <option key={take} value={take}>Latest {take} days</option>)}
     </select>
   );
 }

@@ -7,8 +7,8 @@ import type { ApiResult } from './types';
 // only thing that holds the market-data key and calls the provider.
 const base = '/api/price-history';
 
-export function getPriceHistory(symbol: string, assetType: string): Promise<ApiResult<IPriceHistory>> {
-  return requestApi<IPriceHistory>(apiPath(base, `/${encodeURIComponent(symbol)}`, { assetType }), {
+export function getPriceHistory(symbol: string, assetType: string, take?: number): Promise<ApiResult<IPriceHistory>> {
+  return requestApi<IPriceHistory>(apiPath(base, `/${encodeURIComponent(symbol)}`, { assetType, take }), {
     failureMessage: 'Price history request failed',
     connectionMessage: 'Unable to connect to the price history API.',
   });

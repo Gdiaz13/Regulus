@@ -19,24 +19,24 @@ type Setter = Dispatch<SetStateAction<State>>;
 export function usePriceHistory() {
   const [state, setState] = useState<State>(initialState);
   const active = useActiveFlag();
-  const load = (symbol: string, assetType: string) => runLoad(symbol, assetType, active, setState);
-  const capture = (symbol: string, assetType: string) => runCapture(symbol, assetType, active, setState);
+  const load = (symbol: string, assetType: string, take?: number) => runLoad(symbol, assetType, take, active, setState);
+  const capture = (symbol: string, assetType: string, take?: number) => runCapture(symbol, assetType, take, active, setState);
   return { ...state, load, capture };
 }
 
-async function runLoad(symbol: string, assetType: string, active: ActiveFlag, setState: Setter) {
+async function runLoad(symbol: string, assetType: string, take: number | undefined, active: ActiveFlag, setState: Setter) {
   setIfActive(active, setState, loadingState());
-  applyResult(await getPriceHistory(symbol, assetType), active, setState);
+  applyResult(await getPriceHistory(symbol, assetType, take), active, setState);
 }
 
-async function runCapture(symbol: string, assetType: string, active: ActiveFlag, setState: Setter) {
+async function runCapture(symbol: string, assetType: string, take: number | undefined, active: ActiveFlag, setState: Setter) {
   setIfActive(active, setState, loadingState());
   const captured = await capturePriceHistory(symbol, assetType);
   if (!captured.ok) {
     setIfActive(active, setState, errorState(captured.message));
     return;
   }
-  applyResult(await getPriceHistory(symbol, assetType), active, setState);
+  applyResult(await getPriceHistory(symbol, assetType, take), active, setState);
 }
 
 function applyResult(result: ApiResult<IPriceHistory>, active: ActiveFlag, setState: Setter) {
