@@ -161,6 +161,7 @@ Regulas needs to track more than stocks. The schema is shaped around flexible as
 
 - `assets` holds stocks, ETFs, TCG cards, crypto, and collectibles through Dapper.
 - `asset_categories` groups assets into markets or segments like Technology or Pokemon through Dapper.
+- `users`, `refresh_tokens`, and `user_settings` are the auth foundation for future user-owned data.
 - `price_history` stores end-of-day prices and source metadata through Dapper.
 - `predictions` stores every AI prediction so accuracy can be checked later.
 - `prediction_reasons` stores reasons and warnings separately from the main row.
