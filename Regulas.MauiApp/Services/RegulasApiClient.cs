@@ -32,6 +32,19 @@ public sealed class RegulasApiClient : IRegulasApiClient
             : ApiClientResult<IReadOnlyList<PortfolioStock>>.Failure(result.Message);
     }
 
+    public async Task<ApiClientResult<IReadOnlyList<CompanySearchResult>>> SearchCompaniesAsync(string query, CancellationToken token)
+    {
+        var result = await GetAsync<List<CompanySearchResult>>(SearchPath(query), token);
+        return result.Ok && result.Data is not null
+            ? ApiClientResult<IReadOnlyList<CompanySearchResult>>.Success(result.Data)
+            : ApiClientResult<IReadOnlyList<CompanySearchResult>>.Failure(result.Message);
+    }
+
+    public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
+    {
+        return PostAsync<PortfolioStock>("api/stocks", request, token);
+    }
+
     public Task<ApiClientResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken token)
     {
         return PostAsync<AuthResponse>("api/v1/auth/login", request, token);
@@ -55,6 +68,11 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private async Task<ApiClientResult<T>> GetAsync<T>(string path, CancellationToken cancellationToken)
     {
         return await SendAsync<T>(HttpMethod.Get, path, null, cancellationToken);
+    }
+
+    private static string SearchPath(string query)
+    {
+        return $"api/market-data/search-name?query={Uri.EscapeDataString(query.Trim())}";
     }
 
     private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)
