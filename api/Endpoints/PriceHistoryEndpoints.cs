@@ -70,8 +70,13 @@ public static class PriceHistoryEndpoints
     {
         var asset = await store.EnsureAssetAsync(symbol, type, name);
         var captured = await store.SaveAsync(asset.Id, prices);
-        var result = new CaptureResult(asset.Symbol, type.ToString(), (int)asset.Id, captured, prices.Count - captured);
-        return Results.Ok(result);
+        return Results.Ok(BuildCaptureResult(asset, type, captured, prices.Count));
+    }
+
+    private static CaptureResult BuildCaptureResult(PriceHistoryAsset asset, AssetType type, int captured, int total)
+    {
+        var skipped = total - captured;
+        return new CaptureResult(asset.Symbol, type.ToString(), (int)asset.Id, captured, skipped, PriceHistoryStore.ProviderSource);
     }
 
     private static async Task<IResult> GetHistory(string symbol, string? assetType, int? take, PriceHistoryStore store)
