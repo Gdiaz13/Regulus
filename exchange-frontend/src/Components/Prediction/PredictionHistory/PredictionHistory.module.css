@@ -1,0 +1,85 @@
+.history {
+  margin-top: 2rem;
+}
+
+.header {
+  border-bottom: 1px solid hsl(var(--border) / 0.45);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+}
+
+.eyebrow {
+  color: hsl(var(--accent));
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: 1.35rem;
+  margin: 0;
+}
+
+.list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.item {
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 0.5rem;
+  background: hsl(var(--foreground) / 0.025);
+  padding: 1rem;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.itemHeader h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.itemHeader span {
+  color: hsl(var(--accent));
+  font-size: 0.8rem;
+}
+
+.itemHeader p,
+.price,
+.scores,
+.reason {
+  margin: 0.45rem 0 0;
+}
+
+.price,
+.scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.up {
+  color: hsl(145 70% 45%);
+  font-weight: 800;
+}
+
+.down {
+  color: hsl(0 70% 58%);
+  font-weight: 800;
+}
+
+.reason {
+  opacity: 0.82;
+}
+
+@media (max-width: 640px) {
+  .itemHeader {
+    flex-direction: column;
+  }
+}

@@ -1,7 +1,5 @@
-using api.Data;
 using api.Endpoints;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,19 +8,23 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<PostgresConnectionFactory>();
+builder.Services.AddSingleton<IDatabaseConnectionFactory>(provider => provider.GetRequiredService<PostgresConnectionFactory>());
+builder.Services.AddSingleton<PostgresMigrationRunner>();
+builder.Services.AddSingleton<PostgresHealthCheck>();
+builder.Services.AddSingleton<AssetStore>();
+builder.Services.AddSingleton<PortfolioStockStore>();
+builder.Services.AddSingleton<PriceHistoryStore>();
+builder.Services.AddSingleton<PredictionAccuracyStore>();
+builder.Services.AddSingleton<PredictionStore>();
+builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
-
-builder
-    .Services
-    .AddDbContext<ApplicationDBContext>(
-        options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    );
+builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 
 var app = builder.Build();
 
-await DatabaseStartup.InitializeAsync(app);
+await PostgresDatabaseStartup.InitializeAsync(app);
 
 if (app.Environment.IsDevelopment())
 {
@@ -36,11 +38,14 @@ else
 app.MapGet("/", () => "Exchange API running");
 
 // Endpoint groups stay in api/Endpoints so Program.cs only wires the app together.
+app.MapAssetEndpoints();
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
 app.MapMarketDataEndpoints();
+app.MapPriceHistoryEndpoints();
 app.MapPredictionEndpoints();
 app.MapStockEndpoints();
+app.MapTradingAgentsEndpoints();
 
 app.Run();
 
@@ -55,4 +60,11 @@ static void ConfigureRegulasAiClient(IServiceProvider services, HttpClient clien
     var configuration = services.GetRequiredService<IConfiguration>();
     client.BaseAddress = RegulasAiConfiguration.CoreUrl(configuration);
     client.Timeout = TimeSpan.FromSeconds(15);
+}
+
+static void ConfigureTradingAgentsClient(IServiceProvider services, HttpClient client)
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    client.BaseAddress = TradingAgentsConfiguration.StockUrl(configuration);
+    client.Timeout = TimeSpan.FromSeconds(20);
 }

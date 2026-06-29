@@ -1,12 +1,20 @@
+.env
 exchange-frontend/.env
 
 .fake
+
+# Local assistant/tooling files
+.claude/
+CLAUDE.md
 
 # Build outputs and generated files
 api/bin/
 api/obj/
 api.Tests/bin/
 api.Tests/obj/
+Regulas.MauiApp/bin/
+Regulas.MauiApp/obj/
+*.SdkResolver.*.Backup.tmp
 exchange-frontend/dist/
 exchange-frontend/node_modules/
 exchange-frontend/*.tsbuildinfo
@@ -18,3 +26,6 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
+
+# Graphify knowledge graph (generated; rebuild with `graphify update .`)
+graphify-out/

@@ -5,6 +5,28 @@ Accept: application/json
 
 ###
 
+GET {{api_HostAddress}}/api/assets
+Accept: application/json
+
+###
+
+GET {{api_HostAddress}}/api/assets?assetType=Stock
+Accept: application/json
+
+###
+
+POST {{api_HostAddress}}/api/assets
+Content-Type: application/json
+
+{
+  "symbol": "AMD",
+  "name": "Advanced Micro Devices",
+  "assetType": "Stock",
+  "category": "Technology"
+}
+
+###
+
 GET {{api_HostAddress}}/api/stocks
 Accept: application/json
 
@@ -54,6 +76,55 @@ Accept: application/json
 ###
 
 GET {{api_HostAddress}}/api/market-data/search-name?query=AAPL
+Accept: application/json
+
+###
+
+POST {{api_HostAddress}}/api/predict
+Content-Type: application/json
+
+{
+  "assets": [
+    {
+      "symbol": "AMD",
+      "name": "Advanced Micro Devices",
+      "assetType": "Stock",
+      "category": "Technology",
+      "currentPrice": 100,
+      "timeHorizonDays": 90
+    }
+  ]
+}
+
+###
+
+GET {{api_HostAddress}}/api/predict/history?take=10
+Accept: application/json
+
+###
+
+GET {{api_HostAddress}}/api/predict/accuracy?take=10
+Accept: application/json
+
+###
+
+POST {{api_HostAddress}}/api/trading-agents/stock/analyze
+Content-Type: application/json
+
+{
+  "symbol": "AMD",
+  "companyName": "Advanced Micro Devices",
+  "currentPrice": 100
+}
+
+###
+
+GET {{api_HostAddress}}/api/trading-agents/stock/health
+Accept: application/json
+
+###
+
+GET {{api_HostAddress}}/api/trading-agents/stock/model-info
 Accept: application/json
 
 ###

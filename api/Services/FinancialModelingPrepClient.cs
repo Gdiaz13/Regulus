@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 
 namespace api.Services;
 
@@ -21,6 +22,20 @@ public sealed class FinancialModelingPrepClient
             return MissingApiKey();
         }
         return await TrySendAsync(path, query, apiKey);
+    }
+
+    // Typed fetch for internal callers that work with the data (e.g. storing
+    // price history) instead of proxying the raw JSON on to the browser.
+    public async Task<T?> GetJsonAsync<T>(string path, IReadOnlyDictionary<string, string?> query)
+    {
+        var apiKey = GetApiKey();
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new InvalidOperationException("Missing Financial Modeling Prep API key.");
+        }
+        using var response = await _httpClient.GetAsync(BuildPath(path, query, apiKey));
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<T>();
     }
 
     private async Task<IResult> TrySendAsync(string path, IReadOnlyDictionary<string, string?> query, string apiKey)

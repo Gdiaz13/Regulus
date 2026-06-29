@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: regulas-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-regulas}
+      POSTGRES_USER: ${POSTGRES_USER:-regulas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-regulas}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - regulas_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-regulas} -d ${POSTGRES_DB:-regulas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  regulas_postgres_data:

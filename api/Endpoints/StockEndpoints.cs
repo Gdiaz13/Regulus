@@ -1,7 +1,5 @@
-using api.Data;
 using api.Models;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
 
@@ -17,171 +15,105 @@ public static class StockEndpoints
         stocks.MapDelete("{id:int}", DeleteStock);
     }
 
-    private static Task<IResult> GetStocks(ApplicationDBContext db)
+    private static Task<IResult> GetStocks(PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(async () => Results.Ok(await ListStocks(db)));
+        return DatabaseRequest.Run(async () => Results.Ok(await store.ListAsync()));
     }
 
-    private static Task<IResult> GetStock(string symbol, ApplicationDBContext db)
+    private static Task<IResult> GetStock(string symbol, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(() => GetStockCore(symbol, db));
+        return DatabaseRequest.Run(() => GetStockCore(symbol, store));
     }
 
-    private static async Task<IResult> GetStockCore(string symbol, ApplicationDBContext db)
+    private static async Task<IResult> GetStockCore(string symbol, PortfolioStockStore store)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        var stock = await FindStockBySymbol(db, normalizedSymbol);
-        return stock is null
-            ? Results.NotFound($"Stock {normalizedSymbol} was not found.")
-            : Results.Ok(stock);
+        var stock = await store.FindBySymbolAsync(normalizedSymbol);
+        return stock is null ? Results.NotFound($"Stock {normalizedSymbol} was not found.") : Results.Ok(stock);
     }
 
-    private static Task<IResult> CreateStock(CreateStockRequest request, ApplicationDBContext db)
+    private static Task<IResult> CreateStock(CreateStockRequest request, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(() => CreateStockCore(request, db));
+        return DatabaseRequest.Run(() => CreateStockCore(request, store));
     }
 
-    private static async Task<IResult> CreateStockCore(CreateStockRequest request, ApplicationDBContext db)
+    private static async Task<IResult> CreateStockCore(CreateStockRequest request, PortfolioStockStore store)
     {
-        var normalizedSymbol = NormalizeSymbol(request.Symbol);
-        var validationResult = await ValidateStockRequest(db, request, normalizedSymbol);
-        if (validationResult is not null)
+        var symbol = NormalizeSymbol(request.Symbol);
+        var validation = await ValidateCreate(store, request, symbol);
+        if (validation is not null)
         {
-            return validationResult;
+            return validation;
         }
-        var stock = CreateStockEntity(request, normalizedSymbol);
-        db.Stocks.Add(stock);
-        await db.SaveChangesAsync();
+        var stock = await store.CreateAsync(ToStock(request, symbol));
         return Results.Created($"/api/stocks/{stock.Symbol}", stock);
     }
 
-    private static Task<IResult> DeleteStock(int id, ApplicationDBContext db)
+    private static Task<IResult> UpdateStock(int id, CreateStockRequest request, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(() => DeleteStockCore(id, db));
+        return DatabaseRequest.Run(() => UpdateStockCore(id, request, store));
     }
 
-    private static Task<IResult> UpdateStock(
-        int id,
-        CreateStockRequest request,
-        ApplicationDBContext db
-    )
-    {
-        return DatabaseRequest.Run(() => UpdateStockCore(id, request, db));
-    }
-
-    private static async Task<IResult> UpdateStockCore(
-        int id,
-        CreateStockRequest request,
-        ApplicationDBContext db
-    )
+    private static async Task<IResult> UpdateStockCore(int id, CreateStockRequest request, PortfolioStockStore store)
     {
         var symbol = NormalizeSymbol(request.Symbol);
-        var validation = await ValidateStockUpdate(db, id, request, symbol);
+        var validation = await ValidateUpdate(store, id, request, symbol);
         if (validation is not null)
         {
             return validation;
         }
-        return await SaveUpdatedStock(id, request, symbol, db);
+        var stock = await store.UpdateAsync(id, ToStock(request, symbol));
+        return stock is null ? StockMissing(id) : Results.Ok(stock);
     }
 
-    private static async Task<IResult> DeleteStockCore(int id, ApplicationDBContext db)
+    private static Task<IResult> DeleteStock(int id, PortfolioStockStore store)
     {
-        var stock = await db.Stocks.FindAsync(id);
-        if (stock is null)
-        {
-            return Results.NotFound($"Stock with id {id} was not found.");
-        }
-        db.Stocks.Remove(stock);
-        await db.SaveChangesAsync();
-        return Results.NoContent();
+        return DatabaseRequest.Run(async () => await DeleteStockCore(id, store));
     }
 
-    private static async Task<IResult> SaveUpdatedStock(
+    private static async Task<IResult> DeleteStockCore(int id, PortfolioStockStore store)
+    {
+        return await store.DeleteAsync(id) ? Results.NoContent() : StockMissing(id);
+    }
+
+    private static async Task<IResult?> ValidateCreate(
+        PortfolioStockStore store,
+        CreateStockRequest request,
+        string symbol
+    )
+    {
+        var validation = ValidateRequest(request, symbol);
+        if (validation is not null)
+        {
+            return validation;
+        }
+        return await store.ExistsAsync(symbol) ? Results.Conflict($"{symbol} is already in your portfolio.") : null;
+    }
+
+    private static async Task<IResult?> ValidateUpdate(
+        PortfolioStockStore store,
         int id,
         CreateStockRequest request,
-        string symbol,
-        ApplicationDBContext db
+        string symbol
     )
     {
-        var stock = await db.Stocks.FindAsync(id);
-        if (stock is null)
-        {
-            return StockMissing(id);
-        }
-        return await SaveStockUpdate(stock, request, symbol, db);
-    }
-
-    private static async Task<IResult> SaveStockUpdate(
-        Stock stock,
-        CreateStockRequest request,
-        string symbol,
-        ApplicationDBContext db
-    )
-    {
-        ApplyStockUpdate(stock, request, symbol);
-        await db.SaveChangesAsync();
-        return Results.Ok(stock);
-    }
-
-    private static IResult StockMissing(int id)
-    {
-        return Results.NotFound($"Stock with id {id} was not found.");
-    }
-
-    private static Stock CreateStockEntity(CreateStockRequest request, string symbol)
-    {
-        return new Stock
-        {
-            Symbol = symbol,
-            CompanyName = request.CompanyName?.Trim() ?? symbol,
-            PurchasePrice = request.PurchasePrice ?? 0,
-            LastDividend = request.LastDividend ?? 0,
-            Industry = request.Industry?.Trim() ?? string.Empty,
-            MarketCap = request.MarketCap ?? 0,
-        };
-    }
-
-    private static void ApplyStockUpdate(Stock stock, CreateStockRequest request, string symbol)
-    {
-        stock.Symbol = symbol;
-        stock.CompanyName = request.CompanyName?.Trim() ?? symbol;
-        stock.PurchasePrice = request.PurchasePrice ?? 0;
-        stock.LastDividend = request.LastDividend ?? 0;
-        stock.Industry = request.Industry?.Trim() ?? string.Empty;
-        stock.MarketCap = request.MarketCap ?? 0;
-    }
-
-    private static Task<List<Stock>> ListStocks(ApplicationDBContext db)
-    {
-        return db.Stocks.AsNoTracking().OrderBy(stock => stock.Symbol).ToListAsync();
-    }
-
-    private static async Task<IResult?> ValidateStockRequest(ApplicationDBContext db, CreateStockRequest request, string symbol)
-    {
-        var validation = ValidateSymbol(symbol);
+        var validation = ValidateRequest(request, symbol);
         if (validation is not null)
         {
             return validation;
         }
-        if (await StockExists(db, symbol))
-        {
-            return Results.Conflict($"{symbol} is already in your portfolio.");
-        }
-        return ValidateStockNumbers(request);
+        return await DuplicateUpdate(store, id, symbol) ? Results.Conflict($"{symbol} is already in your portfolio.") : null;
     }
 
-    private static async Task<IResult?> ValidateStockUpdate(ApplicationDBContext db, int id, CreateStockRequest request, string symbol)
+    private static Task<bool> DuplicateUpdate(PortfolioStockStore store, int id, string symbol)
+    {
+        return store.SymbolBelongsToAnotherAsync(id, symbol);
+    }
+
+    private static IResult? ValidateRequest(CreateStockRequest request, string symbol)
     {
         var validation = ValidateSymbol(symbol);
-        if (validation is not null)
-        {
-            return validation;
-        }
-        if (await SymbolBelongsToAnotherStock(db, id, symbol))
-        {
-            return Results.Conflict($"{symbol} is already in your portfolio.");
-        }
-        return ValidateStockNumbers(request);
+        return validation ?? ValidateStockNumbers(request);
     }
 
     private static IResult? ValidateStockNumbers(CreateStockRequest request)
@@ -204,11 +136,6 @@ public static class StockEndpoints
         return value < 0;
     }
 
-    private static IResult NegativeNumbers()
-    {
-        return Results.BadRequest("Portfolio numbers cannot be negative.");
-    }
-
     private static IResult? ValidateSymbol(string symbol)
     {
         if (string.IsNullOrWhiteSpace(symbol))
@@ -218,19 +145,27 @@ public static class StockEndpoints
         return SymbolIsTooLong(symbol) ? SymbolTooLong() : null;
     }
 
-    private static Task<Stock?> FindStockBySymbol(ApplicationDBContext db, string symbol)
+    private static Stock ToStock(CreateStockRequest request, string symbol)
     {
-        return db.Stocks.AsNoTracking().FirstOrDefaultAsync(stock => stock.Symbol == symbol);
+        return new Stock
+        {
+            Symbol = symbol,
+            CompanyName = request.CompanyName?.Trim() ?? symbol,
+            PurchasePrice = request.PurchasePrice ?? 0,
+            LastDividend = request.LastDividend ?? 0,
+            Industry = request.Industry?.Trim() ?? string.Empty,
+            MarketCap = request.MarketCap ?? 0,
+        };
     }
 
-    private static Task<bool> StockExists(ApplicationDBContext db, string symbol)
+    private static IResult StockMissing(int id)
     {
-        return db.Stocks.AnyAsync(stock => stock.Symbol == symbol);
+        return Results.NotFound($"Stock with id {id} was not found.");
     }
 
-    private static Task<bool> SymbolBelongsToAnotherStock(ApplicationDBContext db, int id, string symbol)
+    private static IResult NegativeNumbers()
     {
-        return db.Stocks.AnyAsync(stock => stock.Id != id && stock.Symbol == symbol);
+        return Results.BadRequest("Portfolio numbers cannot be negative.");
     }
 
     private static bool SymbolIsTooLong(string symbol)

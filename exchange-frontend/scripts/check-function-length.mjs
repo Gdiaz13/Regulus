@@ -7,7 +7,7 @@ const maxLines = 15;
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptRoot, '..');
 const workspaceRoot = path.resolve(frontendRoot, '..');
-const ignoredDirectories = new Set(['bin', 'dist', 'node_modules', 'obj']);
+const ignoredDirectories = new Set(['bin', 'dist', 'node_modules', 'obj', 'Platforms']);
 
 main();
 
@@ -35,7 +35,12 @@ function frontendRoots() {
 }
 
 function scanCSharpProject() {
-  return filesUnder(path.join(workspaceRoot, 'api'), isCSharpFile).flatMap(scanCSharpFile);
+  return cSharpRoots().flatMap((root) => filesUnder(root, isCSharpFile)).flatMap(scanCSharpFile);
+}
+
+// Both C# projects follow the same 15-line rule. Platforms/ heads are template-generated, so they are skipped.
+function cSharpRoots() {
+  return [path.join(workspaceRoot, 'api'), path.join(workspaceRoot, 'Regulas.MauiApp')];
 }
 
 function filesFrom(root, predicate) {

@@ -1,3 +1,4 @@
+import './generate-tokens.mjs';
 import { createServer } from 'vite';
 import { viteOptions } from './viteOptions.mjs';
 

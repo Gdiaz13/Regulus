@@ -28,9 +28,10 @@ async function runPrediction(assets: IPredictAsset[], active: ActiveFlag, setSta
   const result = await postPrediction(assets);
   if (!result.ok) {
     setIfActive(active, setState, errorState(result.message));
-    return;
+    return false;
   }
   setIfActive(active, setState, successState(result.data));
+  return true;
 }
 
 function loadingState(): PredictionState {

@@ -1,7 +1,7 @@
 .tableWrapper {
   border-radius: 0;
   background: hsl(var(--background));
-  box-shadow: 0 4px 24px 0 rgba(30,41,59,0.08);
+  box-shadow: 0 4px 24px 0 hsl(var(--primary) / 0.08);
   padding: 2rem 1.5rem;
   margin: 2rem 0;
   overflow-x: auto;
@@ -13,7 +13,7 @@
   border-spacing: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--foreground, #fff);
+  color: hsl(var(--foreground));
   font-family: inherit;
   font-size: 1rem;
   position: relative;
@@ -27,7 +27,7 @@
   z-index: 0;
   border-radius: 2px;
   padding: 2px;
-  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
   background-size: 400% 400%;
   animation: regulusDescBorderMove 18s ease-in-out infinite;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -41,14 +41,12 @@
   min-height: 2.5rem;
   vertical-align: middle;
   padding: 0.25rem 0.5rem;
-  border-right: 2px solid #6366f1;
-  border-bottom: 2px solid #fbbf24;
-
+  border-right: 2px solid hsl(var(--primary));
+  border-bottom: 2px solid hsl(var(--accent));
 }
 
 .tableCell:last-child {
   border-right: none;
- 
 }
 
 .tableHeader {
@@ -56,12 +54,12 @@
   min-height: 3rem;
   vertical-align: middle;
   padding: 0.5rem 0.75rem;
-  border-right: 2px solid #6366f1;
-  border-bottom: 2px solid #fbbf24;
-  background: rgba(99,102,241,0.1);
+  border-right: 2px solid hsl(var(--primary));
+  border-bottom: 2px solid hsl(var(--accent));
+  background: hsl(var(--primary) / 0.1);
   font-weight: 600;
   text-align: left;
-  color: var(--foreground, #fff);
+  color: hsl(var(--foreground));
   position: relative;
 }
 
@@ -70,11 +68,11 @@
 }
 
 .tableRow:nth-child(even) {
-  background: rgba(99,102,241,0.06);
+  background: hsl(var(--primary) / 0.06);
 }
 
 .tableRow:hover {
-  background: rgba(99,102,241,0.13);
+  background: hsl(var(--primary) / 0.13);
 }
 
 .tableRow:last-child .tableCell {

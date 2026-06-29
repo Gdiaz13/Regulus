@@ -39,7 +39,7 @@ function CategoryHeader({ category }: { category: IAiCategoryPrediction }) {
       <h2 className={styles.categoryTitle}>{category.category}</h2>
       <p className={styles.categorySummary}>{category.summary}</p>
       <p className={styles.categoryStats}>
-        Avg confidence {formatPercentage(category.averageConfidence * 100)} · Avg risk {formatPercentage(category.averageRisk * 100)}
+        Avg confidence {formatPercentage(category.averageConfidence * 100)} - Avg risk {formatPercentage(category.averageRisk * 100)}
       </p>
     </header>
   );

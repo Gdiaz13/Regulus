@@ -1,4 +1,4 @@
-import type { IAiOverview, IPredictAsset, IPredictionHealth } from '../Interfaces/APIResponses/IPrediction';
+import type { IAiOverview, IPredictAsset, IPredictionHealth, IPredictionHistoryItem } from '../Interfaces/APIResponses/IPrediction';
 import { apiPath, jsonInit, requestApi } from './apiClient';
 import type { ApiResult } from './types';
 
@@ -16,5 +16,12 @@ export function getPredictionHealth(): Promise<ApiResult<IPredictionHealth>> {
   return requestApi<IPredictionHealth>(apiPath('/api/predict', '/health'), {
     failureMessage: 'Prediction health request failed',
     connectionMessage: 'Unable to connect to the prediction API.',
+  });
+}
+
+export function getPredictionHistory(take = 10): Promise<ApiResult<IPredictionHistoryItem[]>> {
+  return requestApi<IPredictionHistoryItem[]>(apiPath('/api/predict', '/history', { take }), {
+    failureMessage: 'Prediction history request failed',
+    connectionMessage: 'Unable to connect to the prediction history API.',
   });
 }

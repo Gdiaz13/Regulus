@@ -1,0 +1,136 @@
+.page {
+  width: min(980px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  color: hsl(var(--accent));
+  font-weight: 800;
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1;
+  margin: 0;
+}
+
+.status {
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 0.8rem;
+  align-items: end;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.field input {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.4rem;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 0.75rem;
+}
+
+.form button {
+  border: 0;
+  border-radius: 0.4rem;
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.8rem 1rem;
+}
+
+.form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.hint,
+.result {
+  margin-top: 1.5rem;
+}
+
+.hint {
+  border: 1px dashed hsl(var(--border));
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.result {
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 0.5rem;
+  background: hsl(var(--foreground) / 0.025);
+  padding: 1.25rem;
+}
+
+.resultHeader p,
+.resultHeader h2 {
+  margin: 0 0 0.5rem;
+}
+
+.scores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.scores div {
+  border: 1px solid hsl(var(--border) / 0.45);
+  border-radius: 0.4rem;
+  padding: 0.75rem;
+}
+
+.scores dt {
+  opacity: 0.7;
+}
+
+.scores dd {
+  font-weight: 800;
+  margin: 0.25rem 0 0;
+}
+
+.arguments h3 {
+  font-size: 1rem;
+  margin: 1rem 0 0.4rem;
+}
+
+.arguments ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.raw {
+  border: 1px solid hsl(var(--border) / 0.45);
+  border-radius: 0.4rem;
+  margin: 1rem 0 0;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+@media (max-width: 840px) {
+  .form,
+  .scores {
+    grid-template-columns: 1fr;
+  }
+}
