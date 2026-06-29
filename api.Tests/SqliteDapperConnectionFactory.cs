@@ -75,16 +75,19 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
 
         create table stocks (
             id integer primary key autoincrement,
-            symbol text not null unique,
+            user_id text not null,
+            symbol text not null,
             company_name text not null,
             purchase_price numeric not null,
             last_dividend numeric not null,
             industry text not null,
-            market_cap integer not null
+            market_cap integer not null,
+            unique(user_id, symbol)
         );
 
         create table comments (
             id integer primary key autoincrement,
+            user_id text not null,
             title text not null,
             content text not null,
             created_on text not null,
@@ -123,6 +126,7 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
 
         create table predictions (
             id integer primary key autoincrement,
+            user_id text not null,
             asset_id text not null,
             asset_name text not null,
             asset_type text not null,

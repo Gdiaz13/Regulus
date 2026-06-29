@@ -49,9 +49,25 @@ public class PredictionAccuracyStoreTests
         Assert.Empty(await List(factory));
     }
 
-    private static async Task SaveReadyPrediction(SqliteDapperConnectionFactory factory, string symbol)
+    [Fact]
+    public async Task ListAsync_only_scores_current_user_predictions()
     {
-        await new PredictionStore(factory).SaveAsync(TestData.Overview(TestData.Prediction(symbol)));
+        using var factory = new SqliteDapperConnectionFactory();
+        await SaveReadyPrediction(factory, "AMD", TestUsers.AliceId);
+        await SaveReadyPrediction(factory, "NVDA", TestUsers.BobId);
+        await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
+        await SavePrice(factory, "NVDA", DateOnly.FromDateTime(DateTime.UtcNow), 115m);
+        var accuracy = await List(factory, userId: TestUsers.BobId);
+        Assert.Equal(["NVDA"], accuracy.Select(item => item.AssetId));
+    }
+
+    private static async Task SaveReadyPrediction(
+        SqliteDapperConnectionFactory factory,
+        string symbol,
+        Guid? userId = null
+    )
+    {
+        await new PredictionStore(factory).SaveAsync(userId ?? TestUsers.AliceId, TestData.Overview(TestData.Prediction(symbol)));
         await TouchPrediction(factory, symbol);
     }
 
@@ -75,10 +91,11 @@ public class PredictionAccuracyStoreTests
 
     private static Task<List<PredictionAccuracyResponse>> List(
         SqliteDapperConnectionFactory factory,
-        string? assetId = null
+        string? assetId = null,
+        Guid? userId = null
     )
     {
-        return new PredictionAccuracyStore(factory).ListAsync(assetId, null);
+        return new PredictionAccuracyStore(factory).ListAsync(userId ?? TestUsers.AliceId, assetId, null);
     }
 
     private const string SqlTouch = """

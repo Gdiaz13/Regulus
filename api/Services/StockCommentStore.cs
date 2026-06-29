@@ -14,35 +14,47 @@ public sealed class StockCommentStore
         _factory = factory;
     }
 
-    public async Task<List<Comment>> ListAsync(int stockId)
+    public async Task<List<Comment>> ListAsync(Guid userId, int stockId)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        var rows = await connection.QueryAsync<Comment>(Sql.List, new { StockId = stockId });
+        var rows = await connection.QueryAsync<Comment>(Sql.List, new { UserId = userId, StockId = stockId });
         return rows.ToList();
     }
 
-    public async Task<Comment> CreateAsync(Comment comment)
+    public async Task<Comment> CreateAsync(Guid userId, Comment comment)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.QuerySingleAsync<Comment>(Sql.Insert, comment);
+        return await connection.QuerySingleAsync<Comment>(Sql.Insert, Params(userId, comment));
     }
 
-    public async Task<Comment?> UpdateAsync(int id, string title, string content)
+    public async Task<Comment?> UpdateAsync(Guid userId, int id, string title, string content)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.QuerySingleOrDefaultAsync<Comment>(Sql.Update, new { Id = id, Title = title, Content = content });
+        return await connection.QuerySingleOrDefaultAsync<Comment>(Sql.Update, new { UserId = userId, Id = id, Title = title, Content = content });
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(Guid userId, int id)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.ExecuteAsync(Sql.Delete, new { Id = id }) > 0;
+        return await connection.ExecuteAsync(Sql.Delete, new { UserId = userId, Id = id }) > 0;
     }
 
-    public async Task<bool> StockExistsAsync(int stockId)
+    public async Task<bool> StockExistsAsync(Guid userId, int stockId)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.ExecuteScalarAsync<bool>(Sql.StockExists, new { StockId = stockId });
+        return await connection.ExecuteScalarAsync<bool>(Sql.StockExists, new { UserId = userId, StockId = stockId });
+    }
+
+    private static object Params(Guid userId, Comment comment)
+    {
+        return new
+        {
+            UserId = userId,
+            comment.Title,
+            comment.Content,
+            comment.CreatedOn,
+            comment.StockId,
+        };
     }
 
     private static class Sql
@@ -55,27 +67,27 @@ public sealed class StockCommentStore
         public const string List = $"""
             select {Columns}
             from comments
-            where stock_id = @StockId
+            where user_id = @UserId and stock_id = @StockId
             order by created_on desc;
             """;
 
         public const string Insert = $"""
-            insert into comments (title, content, created_on, stock_id)
-            values (@Title, @Content, @CreatedOn, @StockId)
+            insert into comments (user_id, title, content, created_on, stock_id)
+            values (@UserId, @Title, @Content, @CreatedOn, @StockId)
             returning {Columns};
             """;
 
         public const string Update = $"""
             update comments
             set title = @Title, content = @Content
-            where id = @Id
+            where user_id = @UserId and id = @Id
             returning {Columns};
             """;
 
-        public const string Delete = "delete from comments where id = @Id;";
+        public const string Delete = "delete from comments where user_id = @UserId and id = @Id;";
 
         public const string StockExists = """
-            select exists(select 1 from stocks where id = @StockId);
+            select exists(select 1 from stocks where user_id = @UserId and id = @StockId);
             """;
     }
 }

@@ -125,7 +125,7 @@ Build the MAUI app (Windows):
 dotnet build Regulas.MauiApp -f net10.0-windows10.0.19041.0
 ```
 
-It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal), and the Apple targets only build on a paired Mac.
+It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal). Apple packaging, signing, and device runs still need the Apple toolchain.
 
 Run the mock RegulasCoreAI service:
 
@@ -161,11 +161,11 @@ Regulas needs to track more than stocks. The schema is shaped around flexible as
 
 - `assets` holds stocks, ETFs, TCG cards, crypto, and collectibles through Dapper.
 - `asset_categories` groups assets into markets or segments like Technology or Pokemon through Dapper.
-- `users`, `refresh_tokens`, and `user_settings` are the auth foundation for future user-owned data.
+- `users`, `refresh_tokens`, and `user_settings` are the auth foundation for user-owned app data.
 - `price_history` stores end-of-day prices and source metadata through Dapper.
-- `predictions` stores every AI prediction so accuracy can be checked later.
+- `predictions` stores every user-owned AI prediction so accuracy can be checked later.
 - `prediction_reasons` stores reasons and warnings separately from the main row.
-- `stocks` and `comments` keep the current portfolio feature working through Dapper.
+- `stocks` and `comments` keep each user's portfolio and notes working through Dapper.
 
 The first PostgreSQL baseline is `api/Database/Migrations/001_initial_regulas_schema.sql`. It includes source fields such as provider, external asset id, source timestamp, collection time, and raw provider reference where useful. The API runs these SQL files at startup and records applied migrations in `regulas_schema_migrations`.
 
@@ -198,25 +198,29 @@ Current mock services include:
 ## API Routes
 
 - `GET /api/health`
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
 - `GET /api/assets`
 - `GET /api/assets?assetType=Stock`
 - `GET /api/assets/{id}`
 - `POST /api/assets`
-- `GET /api/stocks`
-- `GET /api/stocks/{symbol}`
-- `POST /api/stocks`
-- `PUT /api/stocks/{id}`
-- `DELETE /api/stocks/{id}`
-- `GET /api/stocks/{stockId}/comments`
-- `POST /api/stocks/{stockId}/comments`
-- `PUT /api/comments/{id}`
-- `DELETE /api/comments/{id}`
+- `GET /api/stocks` requires auth and returns only the current user's stocks.
+- `GET /api/stocks/{symbol}` requires auth.
+- `POST /api/stocks` requires auth.
+- `PUT /api/stocks/{id}` requires auth.
+- `DELETE /api/stocks/{id}` requires auth.
+- `GET /api/stocks/{stockId}/comments` requires auth.
+- `POST /api/stocks/{stockId}/comments` requires auth.
+- `PUT /api/comments/{id}` requires auth.
+- `DELETE /api/comments/{id}` requires auth.
 - `GET /api/market-data/{providerPath}`
 - `POST /api/price-history/{symbol}/capture` stores provider history and returns capture counts plus source metadata.
 - `GET /api/price-history/{symbol}` defaults to the latest 365 stored points, accepts `?take=` up to 1000, and returns source metadata per point.
-- `POST /api/predict`
-- `GET /api/predict/history`
-- `GET /api/predict/accuracy`
+- `POST /api/predict` requires auth and saves predictions for the current user.
+- `GET /api/predict/history` requires auth.
+- `GET /api/predict/accuracy` requires auth.
 - `GET /api/predict/health`
 - `POST /api/trading-agents/stock/analyze`
 - `GET /api/trading-agents/stock/health`
@@ -247,6 +251,8 @@ Done and real:
 - MAUI Settings tab for the Regulas.Api base URL.
 - C# backend gateway for market data, portfolio routes, assets, prices, predictions, and TradingAgents.
 - Browser market-data calls go through `/api/market-data`, so provider keys stay server-side.
+- Register, login, logout, and current-user auth routes.
+- Portfolio stocks, stock notes, and saved predictions are scoped to the authenticated user.
 - Shared design tokens for web and MAUI styling.
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
