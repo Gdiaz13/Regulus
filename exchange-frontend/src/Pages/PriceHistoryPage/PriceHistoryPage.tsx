@@ -3,9 +3,9 @@ import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import PriceChart from '../../Components/PriceChart/PriceChart';
 import type { IPriceHistory } from '../../Interfaces/APIResponses/IPriceHistory';
 import { usePriceHistory } from '../../hooks/usePriceHistory';
+import { assetTypes } from '../../lib/assetTypes';
 import styles from './PriceHistoryPage.module.css';
 
-const assetTypes = ['Stock', 'Etf', 'TcgCard', 'Crypto', 'Collectible'];
 const historyTakeOptions = ['30', '90', '365', '1000'];
 
 type History = ReturnType<typeof usePriceHistory>;

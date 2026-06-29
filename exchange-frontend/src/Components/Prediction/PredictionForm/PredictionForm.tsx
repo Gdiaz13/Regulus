@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import type { IPredictAsset } from '../../../Interfaces/APIResponses/IPrediction';
+import { assetTypes } from '../../../lib/assetTypes';
 import styles from './PredictionForm.module.css';
-
-const assetTypes = ['Stock', 'Etf', 'TcgCard', 'Crypto', 'Collectible'];
 
 type FormState = ReturnType<typeof useFormState>;
 type SetText = (value: string) => void;
