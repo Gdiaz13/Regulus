@@ -111,5 +111,15 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             kind text not null,
             text text not null
         );
+
+        create table background_job_runs (
+            id integer primary key autoincrement,
+            job_name text not null,
+            status text not null,
+            detail text null,
+            items_processed integer not null default 0,
+            started_at text not null default current_timestamp,
+            finished_at text null
+        );
         """;
 }

@@ -18,9 +18,11 @@ builder.Services.AddSingleton<PriceHistoryStore>();
 builder.Services.AddSingleton<PredictionAccuracyStore>();
 builder.Services.AddSingleton<PredictionStore>();
 builder.Services.AddSingleton<StockCommentStore>();
+builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
+builder.Services.AddHostedService<PriceSnapshotService>();
 
 var app = builder.Build();
 
@@ -41,6 +43,7 @@ app.MapGet("/", () => "Exchange API running");
 app.MapAssetEndpoints();
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
+app.MapJobEndpoints();
 app.MapMarketDataEndpoints();
 app.MapPriceHistoryEndpoints();
 app.MapPredictionEndpoints();
