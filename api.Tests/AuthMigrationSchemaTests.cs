@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace api.Tests;
@@ -27,15 +28,30 @@ public class AuthMigrationSchemaTests
         Assert.Contains("create unique index if not exists ux_refresh_tokens_token_hash", sql);
     }
 
-    private static string ReadMigration(string name)
+    private static string ReadMigration(string name, [CallerFilePath] string sourceFile = "")
     {
-        var path = Path.Combine(ProjectRoot(), "api", "Database", "Migrations", name);
+        var path = Path.Combine(ProjectRoot(sourceFile), "api", "Database", "Migrations", name);
         Assert.True(File.Exists(path), $"Missing migration {name}.");
         return File.ReadAllText(path).ToLowerInvariant();
     }
 
-    private static string ProjectRoot()
+    private static string ProjectRoot(string sourceFile)
     {
-        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+        return FindProjectRoot(Path.GetDirectoryName(sourceFile) ?? string.Empty)
+            ?? throw new DirectoryNotFoundException("Could not locate Exchange.sln.");
+    }
+
+    private static string? FindProjectRoot(string start)
+    {
+        var directory = new DirectoryInfo(start);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Exchange.sln")))
+            {
+                return directory.FullName;
+            }
+            directory = directory.Parent;
+        }
+        return null;
     }
 }
