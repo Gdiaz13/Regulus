@@ -144,6 +144,8 @@ cd ai
 ## Main Screens
 
 - `/` is the landing page.
+- `/login` signs into the Regulas account used for portfolio and predictions.
+- `/register` creates a Regulas account.
 - `/search` searches companies and can add them to the portfolio.
 - `/portfolio` shows saved stocks and notes.
 - `/predictions` stages assets and asks the mock AI hierarchy for research signals.
@@ -252,6 +254,7 @@ Done and real:
 - C# backend gateway for market data, portfolio routes, assets, prices, predictions, and TradingAgents.
 - Browser market-data calls go through `/api/market-data`, so provider keys stay server-side.
 - Register, login, logout, and current-user auth routes.
+- Web login/register screens and protected web routes for user-owned flows.
 - Portfolio stocks, stock notes, and saved predictions are scoped to the authenticated user.
 - Shared design tokens for web and MAUI styling.
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.

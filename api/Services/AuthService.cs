@@ -104,20 +104,11 @@ public sealed class AuthService
 
 public sealed record AuthResult(AuthResultStatus Status, AuthResponse? Response)
 {
-    public static AuthResult Ok(AuthResponse response)
-    {
-        return new AuthResult(AuthResultStatus.Ok, response);
-    }
+    public static AuthResult Ok(AuthResponse response) => new(AuthResultStatus.Ok, response);
 
-    public static AuthResult EmailTaken()
-    {
-        return new AuthResult(AuthResultStatus.EmailTaken, null);
-    }
+    public static AuthResult EmailTaken() => new(AuthResultStatus.EmailTaken, null);
 
-    public static AuthResult InvalidLogin()
-    {
-        return new AuthResult(AuthResultStatus.InvalidLogin, null);
-    }
+    public static AuthResult InvalidLogin() => new(AuthResultStatus.InvalidLogin, null);
 }
 
 public enum AuthResultStatus

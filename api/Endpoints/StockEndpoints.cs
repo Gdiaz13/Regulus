@@ -37,11 +37,7 @@ public static class StockEndpoints
         return DatabaseRequest.Run(() => CreateStockCore(request, context, store));
     }
 
-    private static async Task<IResult> CreateStockCore(
-        CreateStockRequest request,
-        HttpContext context,
-        PortfolioStockStore store
-    )
+    private static async Task<IResult> CreateStockCore(CreateStockRequest request, HttpContext context, PortfolioStockStore store)
     {
         var symbol = NormalizeSymbol(request.Symbol);
         var userId = UserId(context);
@@ -64,12 +60,7 @@ public static class StockEndpoints
         return DatabaseRequest.Run(() => UpdateStockCore(id, request, context, store));
     }
 
-    private static async Task<IResult> UpdateStockCore(
-        int id,
-        CreateStockRequest request,
-        HttpContext context,
-        PortfolioStockStore store
-    )
+    private static async Task<IResult> UpdateStockCore(int id, CreateStockRequest request, HttpContext context, PortfolioStockStore store)
     {
         var symbol = NormalizeSymbol(request.Symbol);
         var userId = UserId(context);

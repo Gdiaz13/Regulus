@@ -35,12 +35,7 @@ public static class CommentEndpoints
         return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, context, store));
     }
 
-    private static async Task<IResult> CreateStockCommentCore(
-        int stockId,
-        CreateCommentRequest request,
-        HttpContext context,
-        StockCommentStore store
-    )
+    private static async Task<IResult> CreateStockCommentCore(int stockId, CreateCommentRequest request, HttpContext context, StockCommentStore store)
     {
         var userId = UserId(context);
         var validation = await ValidateCreateRequest(userId, stockId, request, store);

@@ -32,13 +32,7 @@ public static class PredictionEndpoints
         return await RunPrediction(request, UserId(context), client, store, loggers);
     }
 
-    private static async Task<IResult> RunPrediction(
-        PredictBatchRequest request,
-        Guid userId,
-        RegulasAiClient client,
-        PredictionStore store,
-        ILoggerFactory loggers
-    )
+    private static async Task<IResult> RunPrediction(PredictBatchRequest request, Guid userId, RegulasAiClient client, PredictionStore store, ILoggerFactory loggers)
     {
         var overview = await CallAi(request, client, loggers);
         if (overview is null)
