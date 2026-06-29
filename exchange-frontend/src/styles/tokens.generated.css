@@ -1,0 +1,23 @@
+/* Generated from design/design-tokens.json by scripts/generate-tokens.mjs. Do not edit by hand. */
+@layer base {
+  :root {
+    --background: 250 60% 95%;
+    --foreground: 0 0% 0%;
+    --card: 220 100% 65%;
+    --primary: 220 100% 65%;
+    --primary-foreground: 60 100% 98%;
+    --border: 220 30% 30%;
+    --accent: 48 100% 50%;
+    --portfolio-card-bg: #ede9fe;
+  }
+  .dark {
+    --background: 222 47% 4%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 8%;
+    --primary: 220 100% 65%;
+    --primary-foreground: 60 100% 98%;
+    --border: 217 33% 20%;
+    --accent: 48 100% 50%;
+    --portfolio-card-bg: #181926;
+  }
+}

@@ -10,8 +10,9 @@ from dataclasses import dataclass
 
 from fastapi import FastAPI
 
-from .contract import HealthResponse, ModelInfo, PredictRequest, Prediction
+from .contract import HealthResponse, ModelInfo, PredictRequest, Prediction, TrainResponse
 from .mock import build_mock_prediction
+from .training import train_response
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,7 @@ def _register_specialist_routes(app: FastAPI, config: SpecialistConfig) -> None:
     app.add_api_route("/health", _health(config), methods=["GET"], response_model=HealthResponse)
     app.add_api_route("/model-info", _model_info(config), methods=["GET"], response_model=ModelInfo)
     app.add_api_route("/predict", _predict(config), methods=["POST"], response_model=Prediction)
+    app.add_api_route("/train", _train(config), methods=["POST"], response_model=TrainResponse)
     app.add_api_route("/explain", _explain(config), methods=["POST"], response_model=dict)
 
 
@@ -66,6 +68,13 @@ def _predict(config: SpecialistConfig):
         return build_mock_prediction(request, config.model_name, config.model_version)
 
     return predict
+
+
+def _train(config: SpecialistConfig):
+    def train() -> TrainResponse:
+        return train_response(config.model_name, config.model_version, config.is_mock)
+
+    return train
 
 
 def _explain(config: SpecialistConfig):

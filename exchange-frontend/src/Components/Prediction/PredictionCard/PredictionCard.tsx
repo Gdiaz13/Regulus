@@ -29,7 +29,7 @@ function PriceRow({ prediction }: { prediction: IAiPrediction }) {
   return (
     <div className={styles.priceRow}>
       <span>{formatCurrency(prediction.currentPrice)}</span>
-      <span className={styles.arrow}>→</span>
+      <span className={styles.arrow}>-&gt;</span>
       <span className={styles.predicted}>{formatCurrency(prediction.predictedPrice)}</span>
       <span className={changeClass(prediction.predictedPercentChange)}>{formatPercentage(prediction.predictedPercentChange)}</span>
     </div>

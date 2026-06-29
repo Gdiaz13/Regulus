@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace api.Contracts;
 
 // These records mirror the shared Python AI contract in ai/regulas_ai_core.
@@ -65,5 +67,51 @@ public sealed record AiOverview(
     List<AiCategoryPrediction> Categories,
     string ModelName,
     string ModelVersion,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    JsonElement? RawDecision = null
+);
+
+// A saved prediction as the API serves it back for history and review screens.
+public sealed record SavedPredictionResponse(
+    int Id,
+    string AssetId,
+    string AssetName,
+    string AssetType,
+    string Category,
+    decimal CurrentPrice,
+    decimal PredictedPrice,
+    double PredictedPercentChange,
+    double ConfidenceScore,
+    double RiskScore,
+    double BullishScore,
+    double BearishScore,
+    int TimeHorizonDays,
+    List<string> Reasons,
+    List<string> Warnings,
+    string ModelName,
+    string ModelVersion,
+    bool IsMock,
+    DateTime CreatedOn
+);
+
+// A saved prediction scored against stored price history.
+public sealed record PredictionAccuracyResponse(
+    int PredictionId,
+    string AssetId,
+    string AssetName,
+    string AssetType,
+    string ModelName,
+    string ModelVersion,
+    decimal CurrentPrice,
+    decimal PredictedPrice,
+    decimal ActualPrice,
+    double PredictedPercentChange,
+    double ActualPercentChange,
+    double AbsolutePercentError,
+    bool DirectionMatched,
+    int TimeHorizonDays,
+    DateTime PredictedOn,
+    DateOnly TargetDate,
+    DateOnly ActualDate,
+    bool IsMock
 );

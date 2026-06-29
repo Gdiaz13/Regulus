@@ -1,5 +1,4 @@
 using System.Data.Common;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Services;
 
@@ -20,7 +19,7 @@ public static class DatabaseRequest
 
     private static bool IsDatabaseException(Exception exception)
     {
-        return exception is DbException or DbUpdateException or InvalidOperationException;
+        return exception is DbException or InvalidOperationException;
     }
 
     private static IResult Unavailable()

@@ -29,8 +29,8 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   border: none;
-  background: #181926;
-  color: #fff;
+  background: hsl(var(--foreground) / 0.08);
+  color: inherit;
   font-size: 1rem;
   transition: background 0.2s;
 }
@@ -45,7 +45,7 @@
   border: none;
   border-radius: 0.80rem;
   font-weight: 600;
-  background: linear-gradient(90deg, #6366f1 0%, #fbbf24 100%);
+  background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
   color: #232336;
   cursor: pointer;
   font-size: 1rem;
@@ -89,6 +89,6 @@
 .addToPortfolioButton:hover,
 .addToPortfolioButton:focus {
   transform: scale(1.04);
-  background: linear-gradient(90deg, #4f46e5 0%, #f59e42 100%);
-  color: #fff;
+  background: linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%);
+  color: hsl(var(--primary-foreground));
 }

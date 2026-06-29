@@ -8,7 +8,7 @@ namespace api.Models
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
         public int StockId { get; set; }
 
-        // EF uses StockId to connect each note back to one portfolio stock.
+        // StockId connects each note back to one portfolio stock.
         public Stock Stock { get; set; } = null!;
     }
 }

@@ -9,13 +9,13 @@
   padding: 0.45rem 1.3rem;
   border: none;
   border-radius: 0.5rem;
-  background: linear-gradient(90deg, #6366f1 0%, #fbbf24 100%);
+  background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
   color: #232336;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.1s;
-  box-shadow: 0 1px 4px rgba(99,102,241,0.10);
+  box-shadow: 0 1px 4px hsl(var(--primary) / 0.1);
   position: relative;
 }
 
@@ -31,8 +31,8 @@
 .deleteButton:hover,
 .deleteButton:focus {
   color: #fff;
-  background: linear-gradient(90deg, #4f46e5 0%, #f59e42 100%);
-  box-shadow: 0 2px 8px rgba(239,68,68,0.15);
+  background: linear-gradient(90deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
   transform: scale(1.04);
 }
 

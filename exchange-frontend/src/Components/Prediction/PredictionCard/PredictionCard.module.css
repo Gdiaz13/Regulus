@@ -1,10 +1,18 @@
 .card {
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.75rem;
+  padding: 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  background: hsl(var(--foreground) / 0.02);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: hsl(var(--accent) / 0.6);
+  box-shadow: 0 10px 26px hsl(var(--primary) / 0.1);
 }
 
 .header {
@@ -26,11 +34,12 @@
 }
 
 .mock {
-  background: #ffd700;
-  color: #1a1a1a;
+  background: hsl(var(--accent));
+  color: hsl(222 47% 10%);
   border-radius: 0.35rem;
   font-size: 0.7rem;
   font-weight: 800;
+  letter-spacing: 0.04em;
   padding: 0.15rem 0.45rem;
 }
 
@@ -67,9 +76,10 @@
 .score {
   display: flex;
   justify-content: space-between;
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.4rem;
-  padding: 0.3rem 0.55rem;
+  border: 1px solid hsl(var(--border) / 0.45);
+  border-radius: 0.45rem;
+  padding: 0.35rem 0.6rem;
+  background: hsl(var(--foreground) / 0.015);
 }
 
 .score dt {

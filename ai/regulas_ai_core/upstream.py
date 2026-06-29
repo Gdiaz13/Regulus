@@ -1,4 +1,4 @@
-"""Calling downstream services from a category or commander AI.
+"""Calling downstream services from one AI manager to the next layer.
 
 The hierarchy only ever flows one way: a manager calls the services directly
 beneath it. To keep development easy, if a downstream service is not running the

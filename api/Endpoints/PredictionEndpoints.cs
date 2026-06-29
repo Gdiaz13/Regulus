@@ -1,8 +1,6 @@
 using System.Data.Common;
 using api.Contracts;
-using api.Data;
 using api.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints;
 
@@ -14,13 +12,15 @@ public static class PredictionEndpoints
     {
         var group = app.MapGroup("/api/predict");
         group.MapPost("", Predict);
+        group.MapGet("history", History);
+        group.MapGet("accuracy", Accuracy);
         group.MapGet("health", PredictHealth);
     }
 
     private static async Task<IResult> Predict(
         PredictBatchRequest request,
         RegulasAiClient client,
-        ApplicationDBContext db,
+        PredictionStore store,
         ILoggerFactory loggers
     )
     {
@@ -28,13 +28,13 @@ public static class PredictionEndpoints
         {
             return Results.BadRequest("Send at least one asset to predict.");
         }
-        return await RunPrediction(request, client, db, loggers);
+        return await RunPrediction(request, client, store, loggers);
     }
 
     private static async Task<IResult> RunPrediction(
         PredictBatchRequest request,
         RegulasAiClient client,
-        ApplicationDBContext db,
+        PredictionStore store,
         ILoggerFactory loggers
     )
     {
@@ -43,7 +43,7 @@ public static class PredictionEndpoints
         {
             return AiUnavailable();
         }
-        await TrySave(db, overview, loggers);
+        await TrySave(store, overview, loggers);
         return Results.Ok(overview);
     }
 
@@ -62,11 +62,11 @@ public static class PredictionEndpoints
 
     // Saving must never lose the user's prediction response. If the database is
     // down we still return the prediction and just log that it was not stored.
-    private static async Task TrySave(ApplicationDBContext db, AiOverview overview, ILoggerFactory loggers)
+    private static async Task TrySave(PredictionStore store, AiOverview overview, ILoggerFactory loggers)
     {
         try
         {
-            await PredictionStore.SaveAsync(db, overview);
+            await store.SaveAsync(overview);
         }
         catch (Exception exception) when (IsDatabaseException(exception))
         {
@@ -78,6 +78,24 @@ public static class PredictionEndpoints
     {
         var healthy = await client.IsHealthyAsync();
         return Results.Ok(new AiHealthResponse(healthy));
+    }
+
+    private static Task<IResult> History(string? assetId, int? take, PredictionStore store)
+    {
+        return DatabaseRequest.Run(async () =>
+        {
+            var history = await store.ListHistoryAsync(assetId, take);
+            return Results.Ok(history);
+        });
+    }
+
+    private static Task<IResult> Accuracy(string? assetId, int? take, PredictionAccuracyStore store)
+    {
+        return DatabaseRequest.Run(async () =>
+        {
+            var accuracy = await store.ListAsync(assetId, take);
+            return Results.Ok(accuracy);
+        });
     }
 
     private static bool IsEmpty(PredictBatchRequest request)
@@ -92,7 +110,7 @@ public static class PredictionEndpoints
 
     private static bool IsDatabaseException(Exception exception)
     {
-        return exception is DbException or DbUpdateException or InvalidOperationException;
+        return exception is DbException or InvalidOperationException;
     }
 
     private static ILogger Logger(ILoggerFactory loggers)

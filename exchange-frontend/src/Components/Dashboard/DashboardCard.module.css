@@ -20,7 +20,7 @@
   z-index: -1;
   border-radius: 1rem;
   padding: 2px;
-  background: linear-gradient(270deg, #6366f1, #fbbf24, #6366f1, #fbbf24);
+  background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), hsl(var(--accent)));
   background-size: 400% 400%;
   animation: regulusDescBorderMove 18s ease-in-out infinite;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -38,7 +38,7 @@
 }
 
 .dashboardCardTitle {
-  color: #64748b;
+  color: hsl(var(--foreground) / 0.6);
   text-transform: uppercase;
   font-weight: bold;
   font-size: 0.8rem;
@@ -95,7 +95,7 @@
   }
   
   .dashboardCardTitle {
-    color: #64748b;
+    color: hsl(var(--foreground) / 0.6);
     text-transform: uppercase;
     font-weight: bold;
     font-size: 0.8rem;

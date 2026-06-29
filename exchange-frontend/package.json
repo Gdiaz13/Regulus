@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node scripts/dev.mjs",
     "dev": "node scripts/dev.mjs",
+    "tokens": "node scripts/generate-tokens.mjs",
     "build": "tsc -b && node scripts/build.mjs",
     "lint": "eslint src --ext .ts,.tsx --no-error-on-unmatched-pattern",
     "lint:functions": "node scripts/check-function-length.mjs",
