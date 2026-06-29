@@ -29,13 +29,30 @@ public static class MauiProgram
 
     private static void RegisterServices(IServiceCollection services)
     {
+        RegisterPages(services);
+        RegisterViewModels(services);
+        RegisterApiServices(services);
+    }
+
+    private static void RegisterPages(IServiceCollection services)
+    {
         services.AddSingleton<AppShell>();
         services.AddSingleton<MainPage>();
+        services.AddSingleton<SearchPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
+    }
+
+    private static void RegisterViewModels(IServiceCollection services)
+    {
         services.AddSingleton<HomeViewModel>();
+        services.AddSingleton<SearchViewModel>();
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
+    }
+
+    private static void RegisterApiServices(IServiceCollection services)
+    {
         services.AddSingleton<IAuthTokenStore, SecureAuthTokenStore>();
         services.AddSingleton<AuthSession>();
         services.AddSingleton<IRegulasApiClient, RegulasApiClient>();

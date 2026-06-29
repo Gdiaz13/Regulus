@@ -250,6 +250,7 @@ Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
+- MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI Settings tab for the Regulas.Api base URL.
 - MAUI Account tab for login/register, secure token storage, current-user refresh, and logout.
 - C# backend gateway for market data, portfolio routes, assets, prices, predictions, and TradingAgents.
@@ -269,7 +270,7 @@ Done but mock:
 
 Still planned:
 
-- Expand `Regulas.MauiApp` with search, predictions, and asset-detail screens.
+- Expand `Regulas.MauiApp` with predictions and asset-detail screens.
 - Add background jobs for price snapshots, prediction scoring, and training.
 - Add more stock specialists, TCG detail screens, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
