@@ -251,6 +251,7 @@ Done and real:
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Settings tab for the Regulas.Api base URL.
+- MAUI Account tab for login/register, secure token storage, current-user refresh, and logout.
 - C# backend gateway for market data, portfolio routes, assets, prices, predictions, and TradingAgents.
 - Browser market-data calls go through `/api/market-data`, so provider keys stay server-side.
 - Register, login, logout, and current-user auth routes.

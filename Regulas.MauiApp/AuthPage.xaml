@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Regulas.MauiApp.SettingsPage"
-             Title="Settings">
+             x:Class="Regulas.MauiApp.AuthPage"
+             Title="Account">
     <ScrollView>
         <VerticalStackLayout Padding="20"
                              Spacing="16"
-                             MaximumWidthRequest="760"
+                             MaximumWidthRequest="560"
                              HorizontalOptions="Center">
-            <Label Text="Settings"
+            <Label Text="Account"
                    FontSize="28"
                    FontAttributes="Bold"
                    TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
@@ -17,37 +17,37 @@
                     BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
                     StrokeShape="RoundRectangle 8"
                     Padding="16">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Account"
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{Binding ModeTitle}"
+                           FontSize="20"
                            FontAttributes="Bold" />
-                    <Label Text="{Binding AccountDetail}"
+                    <Label Text="{Binding CurrentUserText}"
                            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Entry IsVisible="{Binding IsRegisterMode}"
+                           Text="{Binding DisplayName}"
+                           Placeholder="Display name"
+                           ReturnType="Next" />
+                    <Entry Text="{Binding Email}"
+                           Keyboard="Email"
+                           Placeholder="Email"
+                           ReturnType="Next" />
+                    <Entry Text="{Binding Password}"
+                           IsPassword="True"
+                           Placeholder="Password"
+                           ReturnType="Done" />
+                    <Button Text="{Binding SubmitText}"
+                            Command="{Binding SubmitCommand}"
+                            IsEnabled="{Binding CanSubmit}" />
+                    <Button Text="{Binding SwitchText}"
+                            Command="{Binding SwitchModeCommand}"
+                            BackgroundColor="{StaticResource Secondary}"
+                            TextColor="{StaticResource MidnightBlue}" />
                     <Button Text="Sign out"
                             Command="{Binding LogoutCommand}"
                             IsVisible="{Binding IsAuthenticated}"
                             BackgroundColor="{StaticResource RegulasDanger}" />
-                </VerticalStackLayout>
-            </Border>
-
-            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
-                    StrokeShape="RoundRectangle 8"
-                    Padding="16">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Regulas.Api URL"
-                           FontAttributes="Bold" />
-                    <Entry Text="{Binding ApiBaseUrlText}"
-                           Keyboard="Url"
-                           Placeholder="http://localhost:5052"
-                           ReturnType="Done" />
-                    <HorizontalStackLayout Spacing="10">
-                        <Button Text="Save"
-                                Command="{Binding SaveCommand}" />
-                        <Button Text="Reset"
-                                Command="{Binding ResetCommand}"
-                                BackgroundColor="{StaticResource Secondary}"
-                                TextColor="{StaticResource MidnightBlue}" />
-                    </HorizontalStackLayout>
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}" />
                     <Label Text="{Binding StatusText}"
                            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
                 </VerticalStackLayout>

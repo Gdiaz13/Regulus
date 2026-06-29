@@ -31,9 +31,13 @@ public static class MauiProgram
     {
         services.AddSingleton<AppShell>();
         services.AddSingleton<MainPage>();
+        services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
         services.AddSingleton<HomeViewModel>();
+        services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
+        services.AddSingleton<IAuthTokenStore, SecureAuthTokenStore>();
+        services.AddSingleton<AuthSession>();
         services.AddSingleton<IRegulasApiClient, RegulasApiClient>();
         services.AddSingleton(CreateApiHttpClient);
     }

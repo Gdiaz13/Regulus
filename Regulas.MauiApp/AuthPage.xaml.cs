@@ -2,11 +2,11 @@ using Regulas.MauiApp.ViewModels;
 
 namespace Regulas.MauiApp;
 
-public partial class SettingsPage : ContentPage
+public partial class AuthPage : ContentPage
 {
-    private readonly SettingsViewModel _viewModel;
+    private readonly AuthViewModel _viewModel;
 
-    public SettingsPage(SettingsViewModel viewModel)
+    public AuthPage(AuthViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;
