@@ -216,6 +216,7 @@ Current mock services include:
 - `POST /api/predict`
 - `GET /api/predict/history`
 - `GET /api/predict/accuracy`
+- `GET /api/predict/accuracy/summary` rolls accuracy up per model (win rate, avg error, bull/bear lean)
 - `GET /api/predict/health`
 - `POST /api/trading-agents/stock/analyze`
 - `GET /api/trading-agents/stock/health`

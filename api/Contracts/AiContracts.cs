@@ -115,3 +115,14 @@ public sealed record PredictionAccuracyResponse(
     DateOnly ActualDate,
     bool IsMock
 );
+
+// Per-model accuracy rollup so Regulas can show which AI is most accurate and
+// whether it leans too bullish or too bearish.
+public sealed record ModelAccuracySummary(
+    string ModelName,
+    int ScoredCount,
+    double WinRate,
+    double AverageAbsolutePercentError,
+    double AveragePredictedPercentChange,
+    double AverageActualPercentChange
+);

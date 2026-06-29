@@ -14,6 +14,7 @@ public static class PredictionEndpoints
         group.MapPost("", Predict);
         group.MapGet("history", History);
         group.MapGet("accuracy", Accuracy);
+        group.MapGet("accuracy/summary", AccuracySummary);
         group.MapGet("health", PredictHealth);
     }
 
@@ -96,6 +97,11 @@ public static class PredictionEndpoints
             var accuracy = await store.ListAsync(assetId, take);
             return Results.Ok(accuracy);
         });
+    }
+
+    private static Task<IResult> AccuracySummary(string? assetId, int? take, PredictionAccuracyStore store)
+    {
+        return DatabaseRequest.Run(async () => Results.Ok(await store.SummaryAsync(assetId, take)));
     }
 
     private static bool IsEmpty(PredictBatchRequest request)

@@ -49,6 +49,35 @@ public class PredictionAccuracyStoreTests
         Assert.Empty(await List(factory));
     }
 
+    [Fact]
+    public async Task SummaryAsync_rolls_up_scored_predictions_per_model()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        await SaveReadyPrediction(factory, "AMD");
+        await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
+        var summary = (await Summary(factory)).Single();
+        Assert.Equal(1, summary.ScoredCount);
+        Assert.Equal(100d, summary.WinRate);
+        Assert.Equal(2d, summary.AverageAbsolutePercentError);
+        Assert.Equal(12d, summary.AverageActualPercentChange);
+    }
+
+    [Fact]
+    public async Task SummaryAsync_win_rate_drops_when_direction_is_wrong()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        await SaveReadyPrediction(factory, "AMD");
+        await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 90m);
+        var summary = (await Summary(factory)).Single();
+        Assert.Equal(0d, summary.WinRate);
+        Assert.Equal(-10d, summary.AverageActualPercentChange);
+    }
+
+    private static Task<List<ModelAccuracySummary>> Summary(SqliteDapperConnectionFactory factory)
+    {
+        return new PredictionAccuracyStore(factory).SummaryAsync(null, null);
+    }
+
     private static async Task SaveReadyPrediction(SqliteDapperConnectionFactory factory, string symbol)
     {
         await new PredictionStore(factory).SaveAsync(TestData.Overview(TestData.Prediction(symbol)));
