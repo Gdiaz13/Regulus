@@ -8,8 +8,6 @@ namespace api.Endpoints;
 // stores it, and serves it back; the browser never calls FMP for history.
 public static class PriceHistoryEndpoints
 {
-    private const int DefaultHistoryTake = 365;
-    private const int MaxHistoryTake = 1000;
     private const string FmpHistoryPath = "historical-price-eod/full";
 
     public static void MapPriceHistoryEndpoints(this WebApplication app)
@@ -80,13 +78,8 @@ public static class PriceHistoryEndpoints
     {
         var type = ParseType(assetType);
         var clean = symbol.Trim().ToUpperInvariant();
-        var points = await store.ListPointsAsync(clean, type, NormalizeTake(take));
+        var points = await store.ListPointsAsync(clean, type, PriceHistoryQueryOptions.NormalizeTake(take));
         return Results.Ok(new PriceHistoryResponse(clean, type.ToString(), points.Count, points));
-    }
-
-    private static int NormalizeTake(int? take)
-    {
-        return Math.Clamp(take ?? DefaultHistoryTake, 1, MaxHistoryTake);
     }
 
     private static AssetType ParseType(string? value)
