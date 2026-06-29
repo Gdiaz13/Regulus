@@ -54,13 +54,35 @@ public class PriceHistoryStoreTests
     }
 
     [Fact]
+    public async Task SaveAsync_ignores_duplicate_dates_inside_one_capture()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        var asset = await store.EnsureAssetAsync("AMD", AssetType.Stock, null);
+        var saved = await store.SaveAsync(asset.Id, [Price("2026-01-02"), Price("2026-01-02")]);
+        Assert.Equal(1, saved);
+        Assert.Equal(1, await Count(factory, "price_history"));
+    }
+
+    [Fact]
     public async Task ListPointsAsync_maps_fields_and_orders_by_date()
     {
         using var factory = new SqliteDapperConnectionFactory();
         var store = new PriceHistoryStore(factory);
         var asset = await store.EnsureAssetAsync("AMD", AssetType.Stock, null);
         await store.SaveAsync(asset.Id, [Price("2026-01-03", 13m), Price("2026-01-02", 12m)]);
-        var points = await store.ListPointsAsync("amd", AssetType.Stock);
+        var points = await store.ListPointsAsync("amd", AssetType.Stock, 365);
+        Assert.Equal([12m, 13m], points.Select(point => point.Close));
+    }
+
+    [Fact]
+    public async Task ListPointsAsync_returns_latest_points_with_limit()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        var asset = await store.EnsureAssetAsync("AMD", AssetType.Stock, null);
+        await store.SaveAsync(asset.Id, [Price("2026-01-01", 11m), Price("2026-01-02", 12m), Price("2026-01-03", 13m)]);
+        var points = await store.ListPointsAsync("amd", AssetType.Stock, 2);
         Assert.Equal([12m, 13m], points.Select(point => point.Close));
     }
 

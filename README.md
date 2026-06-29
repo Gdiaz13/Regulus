@@ -212,7 +212,7 @@ Current mock services include:
 - `DELETE /api/comments/{id}`
 - `GET /api/market-data/{providerPath}`
 - `POST /api/price-history/{symbol}/capture`
-- `GET /api/price-history/{symbol}`
+- `GET /api/price-history/{symbol}` defaults to the latest 365 stored points and accepts `?take=` up to 1000
 - `POST /api/predict`
 - `GET /api/predict/history`
 - `GET /api/predict/accuracy`
