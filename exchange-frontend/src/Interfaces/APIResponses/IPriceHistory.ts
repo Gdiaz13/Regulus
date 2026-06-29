@@ -6,6 +6,7 @@ export interface IPricePoint {
   low: number;
   close: number;
   volume: number;
+  source: string;
 }
 
 export interface IPriceHistory {

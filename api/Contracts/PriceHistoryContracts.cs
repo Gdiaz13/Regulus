@@ -29,7 +29,8 @@ public sealed record PricePoint(
     decimal High,
     decimal Low,
     decimal Close,
-    long Volume
+    long Volume,
+    string Source
 );
 
 // The GET history response for a symbol.

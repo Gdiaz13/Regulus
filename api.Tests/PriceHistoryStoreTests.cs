@@ -73,6 +73,7 @@ public class PriceHistoryStoreTests
         await store.SaveAsync(asset.Id, [Price("2026-01-03", 13m), Price("2026-01-02", 12m)]);
         var points = await store.ListPointsAsync("amd", AssetType.Stock, 365);
         Assert.Equal([12m, 13m], points.Select(point => point.Close));
+        Assert.All(points, point => Assert.Equal("FMP", point.Source));
     }
 
     [Fact]

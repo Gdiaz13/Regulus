@@ -76,7 +76,7 @@ public sealed class PriceHistoryStore
 
     private static PricePoint ToPoint(PricePointRow row)
     {
-        return new PricePoint(DateOnly.FromDateTime(row.Date), row.Open, row.High, row.Low, row.Close, row.Volume);
+        return new PricePoint(DateOnly.FromDateTime(row.Date), row.Open, row.High, row.Low, row.Close, row.Volume, row.Source);
     }
 
     private static string CleanName(string? name, string symbol)
@@ -97,6 +97,7 @@ public sealed class PriceHistoryStore
         public decimal Low { get; init; }
         public decimal Close { get; init; }
         public long Volume { get; init; }
+        public string Source { get; init; } = string.Empty;
     }
 
     private static class Sql
@@ -122,10 +123,11 @@ public sealed class PriceHistoryStore
             """;
 
         public const string ListPoints = """
-            select "Date", "Open", "High", "Low", "Close", "Volume"
+            select "Date", "Open", "High", "Low", "Close", "Volume", "Source"
             from (
                 select p.date as "Date", p.open_price as "Open", p.high_price as "High",
-                       p.low_price as "Low", p.close_price as "Close", p.volume as "Volume"
+                       p.low_price as "Low", p.close_price as "Close", p.volume as "Volume",
+                       p.source as "Source"
                 from price_history p
                 join assets a on a.id = p.asset_id
                 where a.symbol = @Symbol and a.asset_type = @AssetType

@@ -88,7 +88,7 @@ function Loaded({ history }: { history: IPriceHistory }) {
     <section className={styles.results}>
       <div className={styles.summary}>
         <span className={styles.symbol}>{history.symbol}</span>
-        <span className={styles.meta}>{history.count} days · {history.assetType}</span>
+        <span className={styles.meta}>{history.count} days · {history.assetType} · Source {latest.source}</span>
         <span className={styles.latest}>Latest close ${latest.close.toFixed(2)}</span>
       </div>
       <PriceChart points={history.points} />
