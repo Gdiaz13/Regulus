@@ -223,6 +223,7 @@ Current mock services include:
 - `POST /api/predict` requires auth and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
+- `GET /api/predict/accuracy/summary` requires auth and rolls the current user's accuracy up per model (win rate, avg error, bull/bear lean).
 - `GET /api/predict/health`
 - `POST /api/trading-agents/stock/analyze`
 - `GET /api/trading-agents/stock/health`
