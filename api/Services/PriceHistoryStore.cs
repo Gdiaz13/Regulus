@@ -9,7 +9,7 @@ namespace api.Services;
 // from PostgreSQL.
 public sealed class PriceHistoryStore
 {
-    private const string Source = "FMP";
+    public const string ProviderSource = "FMP";
     private readonly IDatabaseConnectionFactory _factory;
 
     public PriceHistoryStore(IDatabaseConnectionFactory factory)
@@ -60,7 +60,7 @@ public sealed class PriceHistoryStore
             price.Low,
             price.Close,
             price.Volume,
-            Source,
+            Source = ProviderSource,
         };
     }
 

@@ -22,4 +22,5 @@ export interface ICaptureResult {
   assetId: number;
   captured: number;
   skipped: number;
+  source: string;
 }

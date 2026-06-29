@@ -29,3 +29,7 @@ __pycache__/
 
 # Graphify knowledge graph (generated; rebuild with `graphify update .`)
 graphify-out/
+
+# Locally-installed agent skills (npx skills add); not part of the project
+.agents/
+skills-lock.json
