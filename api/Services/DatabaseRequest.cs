@@ -17,7 +17,7 @@ public static class DatabaseRequest
         }
     }
 
-    private static bool IsDatabaseException(Exception exception)
+    public static bool IsDatabaseException(Exception exception)
     {
         return exception is DbException or InvalidOperationException;
     }
