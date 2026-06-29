@@ -73,7 +73,7 @@ public class PredictionStoreSaveTests
 
     private static Task<int> Save(SqliteDapperConnectionFactory factory, AiOverview overview)
     {
-        return new PredictionStore(factory).SaveAsync(overview);
+        return new PredictionStore(factory).SaveAsync(TestUsers.AliceId, overview);
     }
 
     private static Task<int> ReasonCount(SqliteDapperConnectionFactory factory, string kind)

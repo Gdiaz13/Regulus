@@ -15,17 +15,22 @@ public sealed class PredictionAccuracyStore
         _factory = factory;
     }
 
-    public async Task<List<PredictionAccuracyResponse>> ListAsync(string? assetId, int? take)
+    public async Task<List<PredictionAccuracyResponse>> ListAsync(Guid userId, string? assetId, int? take)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        var predictions = await LoadPredictions(connection, assetId, take);
+        var predictions = await LoadPredictions(connection, userId, assetId, take);
         var scored = await Task.WhenAll(predictions.Select(prediction => Score(connection, prediction)));
         return scored.OfType<PredictionAccuracyResponse>().ToList();
     }
 
-    private static async Task<List<PredictionRow>> LoadPredictions(DbConnection connection, string? assetId, int? take)
+    private static async Task<List<PredictionRow>> LoadPredictions(
+        DbConnection connection,
+        Guid userId,
+        string? assetId,
+        int? take
+    )
     {
-        var rows = await connection.QueryAsync<PredictionRow>(Sql.Predictions, Params(assetId, take));
+        var rows = await connection.QueryAsync<PredictionRow>(Sql.Predictions, Params(userId, assetId, take));
         return rows.ToList();
     }
 
@@ -65,9 +70,9 @@ public sealed class PredictionAccuracyStore
         );
     }
 
-    private static object Params(string? assetId, int? take)
+    private static object Params(Guid userId, string? assetId, int? take)
     {
-        return new { AssetId = CleanAssetId(assetId), Take = ClampTake(take) };
+        return new { UserId = userId, AssetId = CleanAssetId(assetId), Take = ClampTake(take) };
     }
 
     private static object ActualParams(PredictionRow prediction, DateOnly targetDate)
@@ -132,7 +137,7 @@ public sealed class PredictionAccuracyStore
                    time_horizon_days as "TimeHorizonDays", model_name as "ModelName",
                    model_version as "ModelVersion", is_mock as "IsMock", created_on as "CreatedOn"
             from predictions
-            where @AssetId = '' or asset_id = @AssetId
+            where user_id = @UserId and (@AssetId = '' or asset_id = @AssetId)
             order by created_on desc, id desc
             limit @Take;
             """;

@@ -7,7 +7,7 @@ public static class StockEndpoints
 {
     public static void MapStockEndpoints(this WebApplication app)
     {
-        var stocks = app.MapGroup("/api/stocks");
+        var stocks = app.MapGroup("/api/stocks").RequireAuthorization();
         stocks.MapGet("", GetStocks);
         stocks.MapGet("{symbol}", GetStock);
         stocks.MapPost("", CreateStock);
@@ -15,68 +15,85 @@ public static class StockEndpoints
         stocks.MapDelete("{id:int}", DeleteStock);
     }
 
-    private static Task<IResult> GetStocks(PortfolioStockStore store)
+    private static Task<IResult> GetStocks(HttpContext context, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(async () => Results.Ok(await store.ListAsync()));
+        return DatabaseRequest.Run(async () => Results.Ok(await store.ListAsync(UserId(context))));
     }
 
-    private static Task<IResult> GetStock(string symbol, PortfolioStockStore store)
+    private static Task<IResult> GetStock(string symbol, HttpContext context, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(() => GetStockCore(symbol, store));
+        return DatabaseRequest.Run(() => GetStockCore(symbol, context, store));
     }
 
-    private static async Task<IResult> GetStockCore(string symbol, PortfolioStockStore store)
+    private static async Task<IResult> GetStockCore(string symbol, HttpContext context, PortfolioStockStore store)
     {
         var normalizedSymbol = NormalizeSymbol(symbol);
-        var stock = await store.FindBySymbolAsync(normalizedSymbol);
+        var stock = await store.FindBySymbolAsync(UserId(context), normalizedSymbol);
         return stock is null ? Results.NotFound($"Stock {normalizedSymbol} was not found.") : Results.Ok(stock);
     }
 
-    private static Task<IResult> CreateStock(CreateStockRequest request, PortfolioStockStore store)
+    private static Task<IResult> CreateStock(CreateStockRequest request, HttpContext context, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(() => CreateStockCore(request, store));
+        return DatabaseRequest.Run(() => CreateStockCore(request, context, store));
     }
 
-    private static async Task<IResult> CreateStockCore(CreateStockRequest request, PortfolioStockStore store)
+    private static async Task<IResult> CreateStockCore(
+        CreateStockRequest request,
+        HttpContext context,
+        PortfolioStockStore store
+    )
     {
         var symbol = NormalizeSymbol(request.Symbol);
-        var validation = await ValidateCreate(store, request, symbol);
+        var userId = UserId(context);
+        var validation = await ValidateCreate(userId, store, request, symbol);
         if (validation is not null)
         {
             return validation;
         }
-        var stock = await store.CreateAsync(ToStock(request, symbol));
+        var stock = await store.CreateAsync(userId, ToStock(request, symbol));
         return Results.Created($"/api/stocks/{stock.Symbol}", stock);
     }
 
-    private static Task<IResult> UpdateStock(int id, CreateStockRequest request, PortfolioStockStore store)
+    private static Task<IResult> UpdateStock(
+        int id,
+        CreateStockRequest request,
+        HttpContext context,
+        PortfolioStockStore store
+    )
     {
-        return DatabaseRequest.Run(() => UpdateStockCore(id, request, store));
+        return DatabaseRequest.Run(() => UpdateStockCore(id, request, context, store));
     }
 
-    private static async Task<IResult> UpdateStockCore(int id, CreateStockRequest request, PortfolioStockStore store)
+    private static async Task<IResult> UpdateStockCore(
+        int id,
+        CreateStockRequest request,
+        HttpContext context,
+        PortfolioStockStore store
+    )
     {
         var symbol = NormalizeSymbol(request.Symbol);
-        var validation = await ValidateUpdate(store, id, request, symbol);
+        var userId = UserId(context);
+        var validation = await ValidateUpdate(userId, store, id, request, symbol);
         if (validation is not null)
         {
             return validation;
         }
-        var stock = await store.UpdateAsync(id, ToStock(request, symbol));
+        var stock = await store.UpdateAsync(userId, id, ToStock(request, symbol));
         return stock is null ? StockMissing(id) : Results.Ok(stock);
     }
 
-    private static Task<IResult> DeleteStock(int id, PortfolioStockStore store)
+    private static Task<IResult> DeleteStock(int id, HttpContext context, PortfolioStockStore store)
     {
-        return DatabaseRequest.Run(async () => await DeleteStockCore(id, store));
+        return DatabaseRequest.Run(async () => await DeleteStockCore(id, context, store));
     }
 
-    private static async Task<IResult> DeleteStockCore(int id, PortfolioStockStore store)
+    private static async Task<IResult> DeleteStockCore(int id, HttpContext context, PortfolioStockStore store)
     {
-        return await store.DeleteAsync(id) ? Results.NoContent() : StockMissing(id);
+        return await store.DeleteAsync(UserId(context), id) ? Results.NoContent() : StockMissing(id);
     }
 
     private static async Task<IResult?> ValidateCreate(
+        Guid userId,
         PortfolioStockStore store,
         CreateStockRequest request,
         string symbol
@@ -87,10 +104,11 @@ public static class StockEndpoints
         {
             return validation;
         }
-        return await store.ExistsAsync(symbol) ? Results.Conflict($"{symbol} is already in your portfolio.") : null;
+        return await store.ExistsAsync(userId, symbol) ? Results.Conflict($"{symbol} is already in your portfolio.") : null;
     }
 
     private static async Task<IResult?> ValidateUpdate(
+        Guid userId,
         PortfolioStockStore store,
         int id,
         CreateStockRequest request,
@@ -102,12 +120,12 @@ public static class StockEndpoints
         {
             return validation;
         }
-        return await DuplicateUpdate(store, id, symbol) ? Results.Conflict($"{symbol} is already in your portfolio.") : null;
+        return await DuplicateUpdate(userId, store, id, symbol) ? Results.Conflict($"{symbol} is already in your portfolio.") : null;
     }
 
-    private static Task<bool> DuplicateUpdate(PortfolioStockStore store, int id, string symbol)
+    private static Task<bool> DuplicateUpdate(Guid userId, PortfolioStockStore store, int id, string symbol)
     {
-        return store.SymbolBelongsToAnotherAsync(id, symbol);
+        return store.SymbolBelongsToAnotherAsync(userId, id, symbol);
     }
 
     private static IResult? ValidateRequest(CreateStockRequest request, string symbol)
@@ -181,6 +199,11 @@ public static class StockEndpoints
     private static string NormalizeSymbol(string? symbol)
     {
         return symbol?.Trim().ToUpperInvariant() ?? string.Empty;
+    }
+
+    private static Guid UserId(HttpContext context)
+    {
+        return CurrentUser.Id(context.User);
     }
 }
 

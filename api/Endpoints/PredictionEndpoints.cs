@@ -10,15 +10,16 @@ public static class PredictionEndpoints
 {
     public static void MapPredictionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/api/predict");
+        var group = app.MapGroup("/api/predict").RequireAuthorization();
         group.MapPost("", Predict);
         group.MapGet("history", History);
         group.MapGet("accuracy", Accuracy);
-        group.MapGet("health", PredictHealth);
+        group.MapGet("health", PredictHealth).AllowAnonymous();
     }
 
     private static async Task<IResult> Predict(
         PredictBatchRequest request,
+        HttpContext context,
         RegulasAiClient client,
         PredictionStore store,
         ILoggerFactory loggers
@@ -28,11 +29,12 @@ public static class PredictionEndpoints
         {
             return Results.BadRequest("Send at least one asset to predict.");
         }
-        return await RunPrediction(request, client, store, loggers);
+        return await RunPrediction(request, UserId(context), client, store, loggers);
     }
 
     private static async Task<IResult> RunPrediction(
         PredictBatchRequest request,
+        Guid userId,
         RegulasAiClient client,
         PredictionStore store,
         ILoggerFactory loggers
@@ -43,7 +45,7 @@ public static class PredictionEndpoints
         {
             return AiUnavailable();
         }
-        await TrySave(store, overview, loggers);
+        await TrySave(store, userId, overview, loggers);
         return Results.Ok(overview);
     }
 
@@ -62,11 +64,11 @@ public static class PredictionEndpoints
 
     // Saving must never lose the user's prediction response. If the database is
     // down we still return the prediction and just log that it was not stored.
-    private static async Task TrySave(PredictionStore store, AiOverview overview, ILoggerFactory loggers)
+    private static async Task TrySave(PredictionStore store, Guid userId, AiOverview overview, ILoggerFactory loggers)
     {
         try
         {
-            await store.SaveAsync(overview);
+            await store.SaveAsync(userId, overview);
         }
         catch (Exception exception) when (IsDatabaseException(exception))
         {
@@ -80,20 +82,25 @@ public static class PredictionEndpoints
         return Results.Ok(new AiHealthResponse(healthy));
     }
 
-    private static Task<IResult> History(string? assetId, int? take, PredictionStore store)
+    private static Task<IResult> History(string? assetId, int? take, HttpContext context, PredictionStore store)
     {
         return DatabaseRequest.Run(async () =>
         {
-            var history = await store.ListHistoryAsync(assetId, take);
+            var history = await store.ListHistoryAsync(UserId(context), assetId, take);
             return Results.Ok(history);
         });
     }
 
-    private static Task<IResult> Accuracy(string? assetId, int? take, PredictionAccuracyStore store)
+    private static Task<IResult> Accuracy(
+        string? assetId,
+        int? take,
+        HttpContext context,
+        PredictionAccuracyStore store
+    )
     {
         return DatabaseRequest.Run(async () =>
         {
-            var accuracy = await store.ListAsync(assetId, take);
+            var accuracy = await store.ListAsync(UserId(context), assetId, take);
             return Results.Ok(accuracy);
         });
     }
@@ -116,6 +123,11 @@ public static class PredictionEndpoints
     private static ILogger Logger(ILoggerFactory loggers)
     {
         return loggers.CreateLogger("PredictionEndpoints");
+    }
+
+    private static Guid UserId(HttpContext context)
+    {
+        return CurrentUser.Id(context.User);
     }
 
     private sealed record AiHealthResponse(bool AiAvailable);
