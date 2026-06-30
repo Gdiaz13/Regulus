@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../Auth/useAuth';
 import HealthStatus from '../HealthStatus/HealthStatus';
 import { ThemeToggle } from '../Theme/ThemeToggle';
 import styles from './Navbar.module.css';
@@ -34,12 +35,26 @@ function SearchMenu() {
 }
 
 function NavActions() {
+  const auth = useAuth();
   return (
     <div className={styles.actions}>
       <HealthStatus />
+      <AuthAction auth={auth} />
       <ThemeToggle />
     </div>
   );
+}
+
+function AuthAction({ auth }: { auth: ReturnType<typeof useAuth> }) {
+  if (auth.user) {
+    return (
+      <div className={styles.userSession}>
+        <span className={styles.userName}>{auth.user.displayName}</span>
+        <button className={styles.authButton} type="button" onClick={auth.logout}>Sign out</button>
+      </div>
+    );
+  }
+  return <Link className={styles.authLink} to="/login">Sign in</Link>;
 }
 
 export default Navbar;

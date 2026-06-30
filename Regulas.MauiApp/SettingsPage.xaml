@@ -18,6 +18,22 @@
                     StrokeShape="RoundRectangle 8"
                     Padding="16">
                 <VerticalStackLayout Spacing="10">
+                    <Label Text="Account"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding AccountDetail}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Button Text="Sign out"
+                            Command="{Binding LogoutCommand}"
+                            IsVisible="{Binding IsAuthenticated}"
+                            BackgroundColor="{StaticResource RegulasDanger}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="10">
                     <Label Text="Regulas.Api URL"
                            FontAttributes="Bold" />
                     <Entry Text="{Binding ApiBaseUrlText}"
