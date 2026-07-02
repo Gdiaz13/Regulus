@@ -40,6 +40,20 @@ public sealed class RegulasApiClient : IRegulasApiClient
             : ApiClientResult<IReadOnlyList<CompanySearchResult>>.Failure(result.Message);
     }
 
+    // The provider returns profiles as a one-item list; unwrap it for the detail screen.
+    public async Task<ApiClientResult<CompanyProfile>> GetCompanyProfileAsync(string symbol, CancellationToken token)
+    {
+        var result = await GetAsync<List<CompanyProfile>>(ProfilePath(symbol), token);
+        if (!result.Ok || result.Data is null)
+        {
+            return ApiClientResult<CompanyProfile>.Failure(result.Message);
+        }
+        var profile = result.Data.FirstOrDefault();
+        return profile is null
+            ? ApiClientResult<CompanyProfile>.Failure($"No profile data for {symbol.Trim().ToUpperInvariant()}.")
+            : ApiClientResult<CompanyProfile>.Success(profile);
+    }
+
     public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
     {
         return PostAsync<PortfolioStock>("api/stocks", request, token);
@@ -73,6 +87,11 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static string SearchPath(string query)
     {
         return $"api/market-data/search-name?query={Uri.EscapeDataString(query.Trim())}";
+    }
+
+    private static string ProfilePath(string symbol)
+    {
+        return $"api/market-data/profile?symbol={Uri.EscapeDataString(symbol.Trim().ToUpperInvariant())}";
     }
 
     private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)
