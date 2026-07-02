@@ -31,6 +31,13 @@
                         StrokeShape="RoundRectangle 8"
                         Padding="16">
                     <VerticalStackLayout Spacing="8">
+                        <Label Text="{Binding AccountText}"
+                               FontAttributes="Bold" />
+                        <Button Text="Sign in"
+                                Command="{Binding OpenAccountCommand}"
+                                IsVisible="{Binding IsAnonymous}" />
+                        <BoxView HeightRequest="1"
+                                 BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}" />
                         <Label Text="{Binding StatusText}"
                                FontAttributes="Bold" />
                         <Label Text="{Binding DatabaseText}" />
@@ -51,10 +58,12 @@
 
                 <Label Text="Portfolio"
                        FontSize="20"
-                       FontAttributes="Bold" />
+                       FontAttributes="Bold"
+                       IsVisible="{Binding IsAuthenticated}" />
 
                 <CollectionView ItemsSource="{Binding Stocks}"
-                                SelectionMode="None">
+                                SelectionMode="None"
+                                IsVisible="{Binding IsAuthenticated}">
                     <CollectionView.EmptyView>
                         <Label Text="No saved stocks yet."
                                HorizontalTextAlignment="Center"
