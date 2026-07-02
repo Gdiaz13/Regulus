@@ -22,28 +22,28 @@ public sealed class PredictionStore
         return assets.Select(ToAiRequest).ToList();
     }
 
-    public async Task<int> SaveAsync(AiOverview overview)
+    public async Task<int> SaveAsync(Guid userId, AiOverview overview)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
         var predictions = Flatten(overview).ToList();
         foreach (var prediction in predictions)
         {
-            await SaveOneAsync(connection, prediction);
+            await SaveOneAsync(connection, userId, prediction);
         }
         return predictions.Count;
     }
 
-    public async Task<List<SavedPredictionResponse>> ListHistoryAsync(string? assetId, int? take)
+    public async Task<List<SavedPredictionResponse>> ListHistoryAsync(Guid userId, string? assetId, int? take)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        var rows = (await connection.QueryAsync<PredictionRow>(Sql.History, HistoryParams(assetId, take))).ToList();
+        var rows = (await connection.QueryAsync<PredictionRow>(Sql.History, HistoryParams(userId, assetId, take))).ToList();
         var reasons = await LoadReasons(connection, rows);
         return rows.Select(row => Response(row, reasons)).ToList();
     }
 
-    private static async Task SaveOneAsync(DbConnection connection, AiPrediction prediction)
+    private static async Task SaveOneAsync(DbConnection connection, Guid userId, AiPrediction prediction)
     {
-        var id = await connection.ExecuteScalarAsync<long>(Sql.InsertPrediction, Params(prediction));
+        var id = await connection.ExecuteScalarAsync<long>(Sql.InsertPrediction, Params(userId, prediction));
         await SaveReasonsAsync(connection, id, prediction);
     }
 
@@ -77,9 +77,10 @@ public sealed class PredictionStore
         return overview.Categories.SelectMany(category => category.Predictions);
     }
 
-    private static DynamicParameters Params(AiPrediction prediction)
+    private static DynamicParameters Params(Guid userId, AiPrediction prediction)
     {
         var parameters = new DynamicParameters();
+        parameters.Add("UserId", userId);
         AddAssetParams(parameters, prediction);
         AddScoreParams(parameters, prediction);
         AddModelParams(parameters, prediction);
@@ -114,9 +115,9 @@ public sealed class PredictionStore
         parameters.Add("CreatedOn", DateTime.UtcNow);
     }
 
-    private static object HistoryParams(string? assetId, int? take)
+    private static object HistoryParams(Guid userId, string? assetId, int? take)
     {
-        return new { AssetId = CleanAssetId(assetId), Take = ClampTake(take) };
+        return new { UserId = userId, AssetId = CleanAssetId(assetId), Take = ClampTake(take) };
     }
 
     private static IEnumerable<object> ReasonRows(long id, AiPrediction prediction)
@@ -212,11 +213,11 @@ public sealed class PredictionStore
 
         public const string InsertPrediction = """
             insert into predictions
-                (asset_id, asset_name, asset_type, category, current_price, predicted_price,
+                (user_id, asset_id, asset_name, asset_type, category, current_price, predicted_price,
                  predicted_percent_change, confidence_score, risk_score, bullish_score, bearish_score,
                  time_horizon_days, model_name, model_version, is_mock, created_on)
             values
-                (@AssetId, @AssetName, @AssetType, @Category, @CurrentPrice, @PredictedPrice,
+                (@UserId, @AssetId, @AssetName, @AssetType, @Category, @CurrentPrice, @PredictedPrice,
                  @PredictedPercentChange, @ConfidenceScore, @RiskScore, @BullishScore, @BearishScore,
                  @TimeHorizonDays, @ModelName, @ModelVersion, @IsMock, @CreatedOn)
             returning id;
@@ -230,7 +231,7 @@ public sealed class PredictionStore
         public const string History = $"""
             select {Columns}
             from predictions
-            where @AssetId = '' or asset_id = @AssetId
+            where user_id = @UserId and (@AssetId = '' or asset_id = @AssetId)
             order by created_on desc, id desc
             limit @Take;
             """;

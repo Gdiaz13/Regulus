@@ -2,12 +2,15 @@ import { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
+import ProtectedRoute from "../Auth/ProtectedRoute";
 import ResourceStatus from "../Components/AsyncResource/ResourceStatus";
 
 const HomePage = lazy(() => import("../Pages/HomePage/HomePage"));
 const SearchPage = lazy(() => import("../Pages/SearchPage/SearchPage"));
 const PortfolioPage = lazy(() => import("../Pages/PortfolioPage/PortfolioPage"));
 const PredictionsPage = lazy(() => import("../Pages/PredictionsPage/PredictionsPage"));
+const LoginPage = lazy(() => import("../Pages/AuthPage/LoginPage"));
+const RegisterPage = lazy(() => import("../Pages/AuthPage/RegisterPage"));
 const PriceHistoryPage = lazy(() => import("../Pages/PriceHistoryPage/PriceHistoryPage"));
 const TradingAgentsPage = lazy(() => import("../Pages/TradingAgentsPage/TradingAgentsPage"));
 const CompanyPage = lazy(() => import("../Pages/CompanyPage/CompanyPage"));
@@ -25,9 +28,11 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { path: "", element: page(<HomePage />) },
-      { path: "search", element: page(<SearchPage />) },
-      { path: "portfolio", element: page(<PortfolioPage />) },
-      { path: "predictions", element: page(<PredictionsPage />) },
+      { path: "login", element: page(<LoginPage />) },
+      { path: "register", element: page(<RegisterPage />) },
+      { path: "search", element: protectedPage(<SearchPage />) },
+      { path: "portfolio", element: protectedPage(<PortfolioPage />) },
+      { path: "predictions", element: protectedPage(<PredictionsPage />) },
       { path: "price-history", element: page(<PriceHistoryPage />) },
       { path: "trading-agents", element: page(<TradingAgentsPage />) },
       {
@@ -52,4 +57,8 @@ function page(element: ReactNode) {
       {element}
     </Suspense>
   );
+}
+
+function protectedPage(element: ReactNode) {
+  return page(<ProtectedRoute>{element}</ProtectedRoute>);
 }

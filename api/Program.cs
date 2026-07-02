@@ -1,5 +1,8 @@
 using api.Endpoints;
+using api.Models;
 using api.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,19 +11,28 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 builder.Services.AddOpenApi();
+builder.Services
+    .AddAuthentication(RegulasAuthDefaults.Scheme)
+    .AddScheme<AuthenticationSchemeOptions, RegulasBearerAuthenticationHandler>(RegulasAuthDefaults.Scheme, null);
+builder.Services.AddAuthorization();
 builder.Services.AddSingleton<PostgresConnectionFactory>();
 builder.Services.AddSingleton<IDatabaseConnectionFactory>(provider => provider.GetRequiredService<PostgresConnectionFactory>());
 builder.Services.AddSingleton<PostgresMigrationRunner>();
 builder.Services.AddSingleton<PostgresHealthCheck>();
+builder.Services.AddSingleton<IPasswordHasher<RegulasUser>, PasswordHasher<RegulasUser>>();
+builder.Services.AddSingleton<AuthStore>();
+builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<AssetStore>();
 builder.Services.AddSingleton<PortfolioStockStore>();
 builder.Services.AddSingleton<PriceHistoryStore>();
 builder.Services.AddSingleton<PredictionAccuracyStore>();
 builder.Services.AddSingleton<PredictionStore>();
 builder.Services.AddSingleton<StockCommentStore>();
+builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
+builder.Services.AddHostedService<PriceSnapshotService>();
 
 var app = builder.Build();
 
@@ -37,10 +49,15 @@ else
 
 app.MapGet("/", () => "Exchange API running");
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 // Endpoint groups stay in api/Endpoints so Program.cs only wires the app together.
 app.MapAssetEndpoints();
+app.MapAuthEndpoints();
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
+app.MapJobEndpoints();
 app.MapMarketDataEndpoints();
 app.MapPriceHistoryEndpoints();
 app.MapPredictionEndpoints();

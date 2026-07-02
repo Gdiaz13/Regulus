@@ -1,4 +1,5 @@
 import { responseMessage } from './responseMessage';
+import { clearAuthToken, getAuthToken } from './authTokenStore';
 import type { ApiResult } from './types';
 
 type QueryValue = string | number | boolean | undefined;
@@ -13,7 +14,7 @@ type ApiRequestOptions = {
 
 // All browser calls use this helper so every API returns the same ApiResult shape.
 export async function requestApi<T>(url: string, options: ApiRequestOptions): Promise<ApiResult<T>> {
-  const response = await fetchResponse(url, options);
+  const response = await fetchResponse(url, withAuth(options));
   return response.ok ? readApiResponse(response.data, options.failureMessage) : response;
 }
 
@@ -47,6 +48,7 @@ function hasBody(init?: RequestInit) {
 
 async function readApiResponse<T>(response: Response, fallback: string): Promise<ApiResult<T>> {
   if (!response.ok) {
+    clearInvalidSession(response);
     return apiFailure(await responseMessage(response, statusMessage(fallback, response.status)));
   }
   if (response.status === 204) {
@@ -88,6 +90,25 @@ function jsonHeaders(init?: RequestInit) {
   const headers = new Headers(init?.headers);
   headers.set('Content-Type', 'application/json');
   return headers;
+}
+
+function withAuth(options: ApiRequestOptions): ApiRequestOptions {
+  return { ...options, init: authorizedInit(options.init) };
+}
+
+function authorizedInit(init?: RequestInit): RequestInit {
+  const headers = new Headers(init?.headers);
+  const token = getAuthToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  return { ...init, headers };
+}
+
+function clearInvalidSession(response: Response) {
+  if (response.status === 401) {
+    clearAuthToken();
+  }
 }
 
 function statusMessage(message: string, status: number) {
