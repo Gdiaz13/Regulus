@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.SearchPage"
+             x:Name="SearchRoot"
+             Title="Search">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="760"
+                             HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Search"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                <Label Text="Find listed companies and save them to your portfolio."
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            </VerticalStackLayout>
+
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="10">
+                        <SearchBar Text="{Binding Query}"
+                                   Placeholder="Company name or ticker"
+                                   SearchCommand="{Binding SearchCommand}"
+                                   IsEnabled="{Binding IsAuthenticated}" />
+                        <Button Grid.Column="1"
+                                Text="Search"
+                                Command="{Binding SearchCommand}"
+                                IsEnabled="{Binding CanSearch}" />
+                    </Grid>
+                    <Button Text="Sign in"
+                            Command="{Binding OpenAccountCommand}"
+                            IsVisible="{Binding IsAnonymous}" />
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}" />
+                    <Label Text="{Binding MessageText}"
+                           IsVisible="{Binding ShowMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="Saving to portfolio..."
+                           IsVisible="{Binding IsAdding}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <CollectionView ItemsSource="{Binding Results}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasResults}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14"
+                                Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  RowDefinitions="Auto,Auto,Auto"
+                                  ColumnSpacing="12">
+                                <Label Text="{Binding Symbol}"
+                                       FontAttributes="Bold"
+                                       FontSize="18" />
+                                <VerticalStackLayout Grid.Column="1"
+                                                     Grid.RowSpan="3"
+                                                     Spacing="6">
+                                    <Button Text="Add"
+                                            Command="{Binding Source={x:Reference SearchRoot}, Path=BindingContext.AddToPortfolioCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Text="Details"
+                                            Command="{Binding Source={x:Reference SearchRoot}, Path=BindingContext.OpenDetailsCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="{StaticResource Secondary}"
+                                            TextColor="{StaticResource MidnightBlue}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Row="1"
+                                       Text="{Binding Name}"
+                                       LineBreakMode="TailTruncation"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Grid.Row="2"
+                                       Text="{Binding ExchangeFullName}"
+                                       LineBreakMode="TailTruncation"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
