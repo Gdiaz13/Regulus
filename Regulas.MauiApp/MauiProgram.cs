@@ -41,6 +41,8 @@ public static class MauiProgram
         services.AddSingleton<SearchPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
+        // Detail pages are transient: each navigation carries its own symbol.
+        services.AddTransient<AssetDetailPage>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
@@ -49,6 +51,7 @@ public static class MauiProgram
         services.AddSingleton<SearchViewModel>();
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
+        services.AddTransient<AssetDetailViewModel>();
     }
 
     private static void RegisterApiServices(IServiceCollection services)
