@@ -223,10 +223,12 @@ Current mock services include:
 - `POST /api/predict` requires auth and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
+- `GET /api/predict/accuracy/summary` requires auth and rolls the current user's accuracy up per model (win rate, avg error, bull/bear lean).
 - `GET /api/predict/health`
 - `POST /api/trading-agents/stock/analyze`
 - `GET /api/trading-agents/stock/health`
 - `GET /api/trading-agents/stock/model-info`
+- `GET /api/jobs/runs` lists recent background-job runs (newest first, `?take=` up to 100)
 
 ## Checks
 
@@ -261,6 +263,7 @@ Done and real:
 - Shared design tokens for web and MAUI styling.
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
+- Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
 
 Done but mock:
 
@@ -271,6 +274,6 @@ Done but mock:
 Still planned:
 
 - Expand `Regulas.MauiApp` with predictions and asset-detail screens.
-- Add background jobs for price snapshots, prediction scoring, and training.
+- Add more background jobs (prediction-accuracy scoring, model training) alongside the price-snapshot job.
 - Add more stock specialists, TCG detail screens, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
