@@ -40,6 +40,26 @@ public class AuthMigrationSchemaTests
         Assert.Contains("settings_json jsonb not null default '{}'::jsonb", sql);
     }
 
+    [Fact]
+    public void Ownership_migration_attaches_portfolio_rows_to_users()
+    {
+        var sql = ReadMigration("003_user_owned_data.sql");
+        Assert.Contains("legacy@local.regulas", sql);
+        Assert.Contains("alter table stocks add column if not exists user_id uuid", sql);
+        Assert.Contains("create unique index if not exists ux_stocks_user_symbol", sql);
+        Assert.Contains("on stocks (user_id, symbol)", sql);
+    }
+
+    [Fact]
+    public void Ownership_migration_attaches_notes_and_predictions_to_users()
+    {
+        var sql = ReadMigration("003_user_owned_data.sql");
+        Assert.Contains("alter table comments add column if not exists user_id uuid", sql);
+        Assert.Contains("alter table predictions add column if not exists user_id uuid", sql);
+        Assert.Contains("create index if not exists ix_comments_user_id", sql);
+        Assert.Contains("create index if not exists ix_predictions_user_asset_created_on", sql);
+    }
+
     private static string ReadMigration(string name, [CallerFilePath] string sourceFile = "")
     {
         var path = Path.Combine(ProjectRoot(sourceFile), "api", "Database", "Migrations", name);
