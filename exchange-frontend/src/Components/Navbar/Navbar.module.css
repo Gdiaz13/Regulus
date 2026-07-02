@@ -40,6 +40,28 @@
   gap: 0.75rem;
 }
 
+.authLink,
+.authButton {
+  white-space: nowrap;
+}
+
+.userSession {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.userName {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authButton {
+  padding: 0.45rem 0.85rem;
+}
+
 /* Responsive utilities */
 @media (min-width: 1024px) {
   .lgFlex {

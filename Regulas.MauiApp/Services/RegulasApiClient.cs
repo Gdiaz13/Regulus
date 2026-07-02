@@ -1,5 +1,7 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Regulas.MauiApp.Models;
 
 namespace Regulas.MauiApp.Services;
@@ -7,11 +9,14 @@ namespace Regulas.MauiApp.Services;
 // MAUI talks only to Regulas.Api. Provider keys and AI services stay server-side.
 public sealed class RegulasApiClient : IRegulasApiClient
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly HttpClient _httpClient;
+    private readonly IAuthTokenStore _tokens;
 
-    public RegulasApiClient(HttpClient httpClient)
+    public RegulasApiClient(HttpClient httpClient, IAuthTokenStore tokens)
     {
         _httpClient = httpClient;
+        _tokens = tokens;
     }
 
     public Task<ApiClientResult<ApiHealth>> GetHealthAsync(CancellationToken cancellationToken)
@@ -27,18 +32,85 @@ public sealed class RegulasApiClient : IRegulasApiClient
             : ApiClientResult<IReadOnlyList<PortfolioStock>>.Failure(result.Message);
     }
 
+    public async Task<ApiClientResult<IReadOnlyList<CompanySearchResult>>> SearchCompaniesAsync(string query, CancellationToken token)
+    {
+        var result = await GetAsync<List<CompanySearchResult>>(SearchPath(query), token);
+        return result.Ok && result.Data is not null
+            ? ApiClientResult<IReadOnlyList<CompanySearchResult>>.Success(result.Data)
+            : ApiClientResult<IReadOnlyList<CompanySearchResult>>.Failure(result.Message);
+    }
+
+    public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
+    {
+        return PostAsync<PortfolioStock>("api/stocks", request, token);
+    }
+
+    public Task<ApiClientResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken token)
+    {
+        return PostAsync<AuthResponse>("api/v1/auth/login", request, token);
+    }
+
+    public Task<ApiClientResult<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken token)
+    {
+        return PostAsync<AuthResponse>("api/v1/auth/register", request, token);
+    }
+
+    public Task<ApiClientResult<CurrentUser>> GetCurrentUserAsync(CancellationToken token)
+    {
+        return GetAsync<CurrentUser>("api/v1/auth/me", token);
+    }
+
+    public Task<ApiClientResult<bool>> LogoutAsync(CancellationToken token)
+    {
+        return SendNoContentAsync(HttpMethod.Post, "api/v1/auth/logout", token);
+    }
+
     private async Task<ApiClientResult<T>> GetAsync<T>(string path, CancellationToken cancellationToken)
+    {
+        return await SendAsync<T>(HttpMethod.Get, path, null, cancellationToken);
+    }
+
+    private static string SearchPath(string query)
+    {
+        return $"api/market-data/search-name?query={Uri.EscapeDataString(query.Trim())}";
+    }
+
+    private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)
+    {
+        return await SendAsync<T>(HttpMethod.Post, path, body, token);
+    }
+
+    private async Task<ApiClientResult<T>> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken token)
     {
         try
         {
-            RefreshBaseAddress();
-            using var response = await _httpClient.GetAsync(path, cancellationToken);
-            return await ToResult<T>(response, cancellationToken);
+            using var response = await SendRawAsync(method, path, body, token);
+            return await ToResult<T>(response, token);
         }
         catch (Exception exception) when (IsConnectionFailure(exception))
         {
             return ApiClientResult<T>.Failure("Unable to reach Regulas.Api.");
         }
+    }
+
+    private async Task<ApiClientResult<bool>> SendNoContentAsync(HttpMethod method, string path, CancellationToken token)
+    {
+        try
+        {
+            using var response = await SendRawAsync(method, path, null, token);
+            return response.IsSuccessStatusCode ? ApiClientResult<bool>.Success(true) : ApiClientResult<bool>.Failure(await ErrorMessage(response));
+        }
+        catch (Exception exception) when (IsConnectionFailure(exception))
+        {
+            return ApiClientResult<bool>.Failure("Unable to reach Regulas.Api.");
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendRawAsync(HttpMethod method, string path, object? body, CancellationToken token)
+    {
+        RefreshBaseAddress();
+        using var request = await RequestAsync(method, path, body);
+        return await _httpClient.SendAsync(request, token);
     }
 
     private void RefreshBaseAddress()
@@ -56,8 +128,28 @@ public sealed class RegulasApiClient : IRegulasApiClient
         {
             return ApiClientResult<T>.Failure(await ErrorMessage(response));
         }
-        var value = await response.Content.ReadFromJsonAsync<T>(cancellationToken: token);
+        var value = await response.Content.ReadFromJsonAsync<T>(JsonOptions, token);
         return value is null ? ApiClientResult<T>.Failure("Regulas.Api returned no data.") : ApiClientResult<T>.Success(value);
+    }
+
+    private async Task<HttpRequestMessage> RequestAsync(HttpMethod method, string path, object? body)
+    {
+        var request = new HttpRequestMessage(method, path);
+        await AddBearerAsync(request);
+        if (body is not null)
+        {
+            request.Content = JsonContent.Create(body, options: JsonOptions);
+        }
+        return request;
+    }
+
+    private async Task AddBearerAsync(HttpRequestMessage request)
+    {
+        var token = await _tokens.GetAsync();
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
     }
 
     private static async Task<string> ErrorMessage(HttpResponseMessage response)
