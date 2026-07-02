@@ -11,12 +11,11 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         _viewModel = viewModel;
         BindingContext = viewModel;
-        Loaded += OnLoaded;
     }
 
-    private async void OnLoaded(object? sender, EventArgs e)
+    protected override async void OnAppearing()
     {
-        Loaded -= OnLoaded;
+        base.OnAppearing();
         await _viewModel.LoadAsync();
     }
 }

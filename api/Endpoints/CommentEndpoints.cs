@@ -16,10 +16,10 @@ public static class CommentEndpoints
 
     private static Task<IResult> GetStockComments(int stockId, HttpContext context, StockCommentStore store)
     {
-        return DatabaseRequest.Run(async () => Results.Ok(await ListResponses(UserId(context), stockId, store)));
+        return DatabaseRequest.Run(async () => Results.Ok(await ListResponses(stockId, UserId(context), store)));
     }
 
-    private static async Task<List<CommentResponse>> ListResponses(Guid userId, int stockId, StockCommentStore store)
+    private static async Task<List<CommentResponse>> ListResponses(int stockId, Guid userId, StockCommentStore store)
     {
         var comments = await store.ListAsync(userId, stockId);
         return comments.Select(ToResponse).ToList();
@@ -35,12 +35,7 @@ public static class CommentEndpoints
         return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, context, store));
     }
 
-    private static async Task<IResult> CreateStockCommentCore(
-        int stockId,
-        CreateCommentRequest request,
-        HttpContext context,
-        StockCommentStore store
-    )
+    private static async Task<IResult> CreateStockCommentCore(int stockId, CreateCommentRequest request, HttpContext context, StockCommentStore store)
     {
         var userId = UserId(context);
         var validation = await ValidateCreateRequest(userId, stockId, request, store);
@@ -52,12 +47,7 @@ public static class CommentEndpoints
         return Results.Created($"/api/comments/{comment.Id}", ToResponse(comment));
     }
 
-    private static Task<IResult> UpdateComment(
-        int id,
-        CreateCommentRequest request,
-        HttpContext context,
-        StockCommentStore store
-    )
+    private static Task<IResult> UpdateComment(int id, CreateCommentRequest request, HttpContext context, StockCommentStore store)
     {
         return DatabaseRequest.Run(() => UpdateCommentCore(id, request, context, store));
     }
