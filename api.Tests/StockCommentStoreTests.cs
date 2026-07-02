@@ -10,9 +10,9 @@ public class StockCommentStoreTests
     public async Task CreateAsync_round_trips_comment_fields()
     {
         using var factory = new SqliteDapperConnectionFactory();
-        var stock = await SeedStock(factory);
+        var stock = await SeedStock(factory, TestUsers.AliceId);
         var store = new StockCommentStore(factory);
-        var comment = await store.CreateAsync(Comment(stock.Id, "Thesis"));
+        var comment = await store.CreateAsync(TestUsers.AliceId, Comment(stock.Id, "Thesis"));
         Assert.True(comment.Id > 0);
         Assert.Equal(stock.Id, comment.StockId);
         Assert.Equal("Thesis", comment.Title);
@@ -22,11 +22,11 @@ public class StockCommentStoreTests
     public async Task ListAsync_orders_newest_first()
     {
         using var factory = new SqliteDapperConnectionFactory();
-        var stock = await SeedStock(factory);
+        var stock = await SeedStock(factory, TestUsers.AliceId);
         var store = new StockCommentStore(factory);
-        await store.CreateAsync(Comment(stock.Id, "Old", -1));
-        await store.CreateAsync(Comment(stock.Id, "New", 1));
-        var comments = await store.ListAsync(stock.Id);
+        await store.CreateAsync(TestUsers.AliceId, Comment(stock.Id, "Old", -1));
+        await store.CreateAsync(TestUsers.AliceId, Comment(stock.Id, "New", 1));
+        var comments = await store.ListAsync(TestUsers.AliceId, stock.Id);
         Assert.Equal(["New", "Old"], comments.Select(comment => comment.Title));
     }
 
@@ -34,10 +34,10 @@ public class StockCommentStoreTests
     public async Task UpdateAsync_updates_existing_comment()
     {
         using var factory = new SqliteDapperConnectionFactory();
-        var stock = await SeedStock(factory);
+        var stock = await SeedStock(factory, TestUsers.AliceId);
         var store = new StockCommentStore(factory);
-        var comment = await store.CreateAsync(Comment(stock.Id, "Old"));
-        var updated = await store.UpdateAsync(comment.Id, "New", "Updated");
+        var comment = await store.CreateAsync(TestUsers.AliceId, Comment(stock.Id, "Old"));
+        var updated = await store.UpdateAsync(TestUsers.AliceId, comment.Id, "New", "Updated");
         Assert.Equal("New", updated!.Title);
         Assert.Equal("Updated", updated.Content);
     }
@@ -46,17 +46,30 @@ public class StockCommentStoreTests
     public async Task DeleteAsync_removes_comment()
     {
         using var factory = new SqliteDapperConnectionFactory();
-        var stock = await SeedStock(factory);
+        var stock = await SeedStock(factory, TestUsers.AliceId);
         var store = new StockCommentStore(factory);
-        var comment = await store.CreateAsync(Comment(stock.Id, "Delete"));
-        Assert.True(await store.DeleteAsync(comment.Id));
-        Assert.Empty(await store.ListAsync(stock.Id));
+        var comment = await store.CreateAsync(TestUsers.AliceId, Comment(stock.Id, "Delete"));
+        Assert.True(await store.DeleteAsync(TestUsers.AliceId, comment.Id));
+        Assert.Empty(await store.ListAsync(TestUsers.AliceId, stock.Id));
     }
 
-    private static async Task<Stock> SeedStock(SqliteDapperConnectionFactory factory)
+    [Fact]
+    public async Task Store_methods_are_scoped_to_user()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var stock = await SeedStock(factory, TestUsers.AliceId);
+        var store = new StockCommentStore(factory);
+        var comment = await store.CreateAsync(TestUsers.AliceId, Comment(stock.Id, "Private"));
+        Assert.Empty(await store.ListAsync(TestUsers.BobId, stock.Id));
+        Assert.False(await store.StockExistsAsync(TestUsers.BobId, stock.Id));
+        Assert.Null(await store.UpdateAsync(TestUsers.BobId, comment.Id, "Nope", "Denied"));
+        Assert.False(await store.DeleteAsync(TestUsers.BobId, comment.Id));
+    }
+
+    private static async Task<Stock> SeedStock(SqliteDapperConnectionFactory factory, Guid userId)
     {
         var store = new PortfolioStockStore(factory);
-        return await store.CreateAsync(new Stock { Symbol = "AMD", CompanyName = "AMD" });
+        return await store.CreateAsync(userId, new Stock { Symbol = "AMD", CompanyName = "AMD" });
     }
 
     private static Comment Comment(int stockId, string title, int offsetDays = 0)

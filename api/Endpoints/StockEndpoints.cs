@@ -50,7 +50,12 @@ public static class StockEndpoints
         return Results.Created($"/api/stocks/{stock.Symbol}", stock);
     }
 
-    private static Task<IResult> UpdateStock(int id, CreateStockRequest request, HttpContext context, PortfolioStockStore store)
+    private static Task<IResult> UpdateStock(
+        int id,
+        CreateStockRequest request,
+        HttpContext context,
+        PortfolioStockStore store
+    )
     {
         return DatabaseRequest.Run(() => UpdateStockCore(id, request, context, store));
     }

@@ -1,0 +1,64 @@
+.page {
+  width: min(480px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.panel {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  text-align: left;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  color: hsl(var(--accent));
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  margin: 0 0 0.75rem;
+}
+
+.note {
+  margin: 0;
+  opacity: 0.78;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+}
+
+.form button {
+  margin-top: 0.25rem;
+  min-height: 2.75rem;
+}
+
+.message {
+  color: hsl(var(--accent));
+  font-weight: 700;
+  margin: 1rem 0 0;
+}
+
+.switch {
+  margin: 1rem 0 0;
+}
