@@ -83,20 +83,22 @@ public sealed class PriceSnapshotService : BackgroundService
         {
             return Outcome.Skipped("Market data is not configured (no FMP key).");
         }
-        var stocks = await services.GetRequiredService<PortfolioStockStore>().ListAsync();
-        return stocks.Count == 0 ? Outcome.Skipped("No portfolio stocks to snapshot.") : await SnapshotAsync(services, stocks, token);
+        var symbols = await services.GetRequiredService<PortfolioStockStore>().ListTrackedSymbolsAsync(token);
+        return symbols.Count == 0 ? Outcome.Skipped("No portfolio stocks to snapshot.") : await SnapshotAsync(services, symbols, token);
     }
 
-    private async Task<Outcome> SnapshotAsync(IServiceProvider services, List<Stock> stocks, CancellationToken token)
+    // Snapshots every distinct symbol across all portfolios: price history is
+    // global market data, so the job runs once per symbol, not per user.
+    private async Task<Outcome> SnapshotAsync(IServiceProvider services, List<string> symbols, CancellationToken token)
     {
         var client = services.GetRequiredService<FinancialModelingPrepClient>();
         var store = services.GetRequiredService<PriceHistoryStore>();
         var captured = 0;
-        foreach (var stock in stocks)
+        foreach (var symbol in symbols)
         {
-            captured += await SnapshotOneAsync(client, store, stock.Symbol, token);
+            captured += await SnapshotOneAsync(client, store, symbol, token);
         }
-        return Outcome.Completed($"Snapshotted {stocks.Count} symbol(s).", captured);
+        return Outcome.Completed($"Snapshotted {symbols.Count} symbol(s).", captured);
     }
 
     private static async Task<int> SnapshotOneAsync(
