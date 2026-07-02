@@ -7,75 +7,79 @@ public static class CommentEndpoints
 {
     public static void MapCommentEndpoints(this WebApplication app)
     {
-        var comments = app.MapGroup("/api");
+        var comments = app.MapGroup("/api").RequireAuthorization();
         comments.MapGet("stocks/{stockId:int}/comments", GetStockComments);
         comments.MapPost("stocks/{stockId:int}/comments", CreateStockComment);
         comments.MapPut("comments/{id:int}", UpdateComment);
         comments.MapDelete("comments/{id:int}", DeleteComment);
     }
 
-    private static Task<IResult> GetStockComments(int stockId, StockCommentStore store)
+    private static Task<IResult> GetStockComments(int stockId, HttpContext context, StockCommentStore store)
     {
-        return DatabaseRequest.Run(async () => Results.Ok(await ListResponses(stockId, store)));
+        return DatabaseRequest.Run(async () => Results.Ok(await ListResponses(stockId, UserId(context), store)));
     }
 
-    private static async Task<List<CommentResponse>> ListResponses(int stockId, StockCommentStore store)
+    private static async Task<List<CommentResponse>> ListResponses(int stockId, Guid userId, StockCommentStore store)
     {
-        var comments = await store.ListAsync(stockId);
+        var comments = await store.ListAsync(userId, stockId);
         return comments.Select(ToResponse).ToList();
     }
 
     private static Task<IResult> CreateStockComment(
         int stockId,
         CreateCommentRequest request,
+        HttpContext context,
         StockCommentStore store
     )
     {
-        return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, store));
+        return DatabaseRequest.Run(() => CreateStockCommentCore(stockId, request, context, store));
     }
 
-    private static async Task<IResult> CreateStockCommentCore(
-        int stockId,
-        CreateCommentRequest request,
-        StockCommentStore store
-    )
+    private static async Task<IResult> CreateStockCommentCore(int stockId, CreateCommentRequest request, HttpContext context, StockCommentStore store)
     {
-        var validation = await ValidateCreateRequest(stockId, request, store);
+        var userId = UserId(context);
+        var validation = await ValidateCreateRequest(userId, stockId, request, store);
         if (validation is not null)
         {
             return validation;
         }
-        var comment = await store.CreateAsync(NewComment(stockId, request));
+        var comment = await store.CreateAsync(userId, NewComment(stockId, request));
         return Results.Created($"/api/comments/{comment.Id}", ToResponse(comment));
     }
 
-    private static Task<IResult> UpdateComment(int id, CreateCommentRequest request, StockCommentStore store)
+    private static Task<IResult> UpdateComment(int id, CreateCommentRequest request, HttpContext context, StockCommentStore store)
     {
-        return DatabaseRequest.Run(() => UpdateCommentCore(id, request, store));
+        return DatabaseRequest.Run(() => UpdateCommentCore(id, request, context, store));
     }
 
-    private static async Task<IResult> UpdateCommentCore(int id, CreateCommentRequest request, StockCommentStore store)
+    private static async Task<IResult> UpdateCommentCore(
+        int id,
+        CreateCommentRequest request,
+        HttpContext context,
+        StockCommentStore store
+    )
     {
         var validation = ValidateCommentBody(request);
         if (validation is not null)
         {
             return validation;
         }
-        var comment = await store.UpdateAsync(id, Clean(request.Title), Clean(request.Content));
+        var comment = await store.UpdateAsync(UserId(context), id, Clean(request.Title), Clean(request.Content));
         return comment is null ? CommentMissing(id) : Results.Ok(ToResponse(comment));
     }
 
-    private static Task<IResult> DeleteComment(int id, StockCommentStore store)
+    private static Task<IResult> DeleteComment(int id, HttpContext context, StockCommentStore store)
     {
-        return DatabaseRequest.Run(async () => await DeleteCommentCore(id, store));
+        return DatabaseRequest.Run(async () => await DeleteCommentCore(id, context, store));
     }
 
-    private static async Task<IResult> DeleteCommentCore(int id, StockCommentStore store)
+    private static async Task<IResult> DeleteCommentCore(int id, HttpContext context, StockCommentStore store)
     {
-        return await store.DeleteAsync(id) ? Results.NoContent() : CommentMissing(id);
+        return await store.DeleteAsync(UserId(context), id) ? Results.NoContent() : CommentMissing(id);
     }
 
     private static async Task<IResult?> ValidateCreateRequest(
+        Guid userId,
         int stockId,
         CreateCommentRequest request,
         StockCommentStore store
@@ -86,7 +90,7 @@ public static class CommentEndpoints
         {
             return validation;
         }
-        return await store.StockExistsAsync(stockId) ? null : Results.NotFound($"Stock with id {stockId} was not found.");
+        return await store.StockExistsAsync(userId, stockId) ? null : Results.NotFound($"Stock with id {stockId} was not found.");
     }
 
     private static Comment NewComment(int stockId, CreateCommentRequest request)
@@ -125,6 +129,11 @@ public static class CommentEndpoints
     private static string Clean(string? value)
     {
         return value?.Trim() ?? string.Empty;
+    }
+
+    private static Guid UserId(HttpContext context)
+    {
+        return CurrentUser.Id(context.User);
     }
 }
 
