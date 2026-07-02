@@ -14,7 +14,8 @@ public static class PredictionEndpoints
         group.MapPost("", Predict);
         group.MapGet("history", History);
         group.MapGet("accuracy", Accuracy);
-        group.MapGet("health", PredictHealth);
+        group.MapGet("accuracy/summary", AccuracySummary);
+        group.MapGet("health", PredictHealth).AllowAnonymous();
     }
 
     private static async Task<IResult> Predict(
@@ -29,23 +30,17 @@ public static class PredictionEndpoints
         {
             return Results.BadRequest("Send at least one asset to predict.");
         }
-        return await RunPrediction(request, context, client, store, loggers);
+        return await RunPrediction(request, UserId(context), client, store, loggers);
     }
 
-    private static async Task<IResult> RunPrediction(
-        PredictBatchRequest request,
-        HttpContext context,
-        RegulasAiClient client,
-        PredictionStore store,
-        ILoggerFactory loggers
-    )
+    private static async Task<IResult> RunPrediction(PredictBatchRequest request, Guid userId, RegulasAiClient client, PredictionStore store, ILoggerFactory loggers)
     {
         var overview = await CallAi(request, client, loggers);
         if (overview is null)
         {
             return AiUnavailable();
         }
-        await TrySave(UserId(context), store, overview, loggers);
+        await TrySave(store, userId, overview, loggers);
         return Results.Ok(overview);
     }
 
@@ -64,7 +59,7 @@ public static class PredictionEndpoints
 
     // Saving must never lose the user's prediction response. If the database is
     // down we still return the prediction and just log that it was not stored.
-    private static async Task TrySave(Guid userId, PredictionStore store, AiOverview overview, ILoggerFactory loggers)
+    private static async Task TrySave(PredictionStore store, Guid userId, AiOverview overview, ILoggerFactory loggers)
     {
         try
         {
@@ -91,13 +86,28 @@ public static class PredictionEndpoints
         });
     }
 
-    private static Task<IResult> Accuracy(string? assetId, int? take, HttpContext context, PredictionAccuracyStore store)
+    private static Task<IResult> Accuracy(
+        string? assetId,
+        int? take,
+        HttpContext context,
+        PredictionAccuracyStore store
+    )
     {
         return DatabaseRequest.Run(async () =>
         {
             var accuracy = await store.ListAsync(UserId(context), assetId, take);
             return Results.Ok(accuracy);
         });
+    }
+
+    private static Task<IResult> AccuracySummary(
+        string? assetId,
+        int? take,
+        HttpContext context,
+        PredictionAccuracyStore store
+    )
+    {
+        return DatabaseRequest.Run(async () => Results.Ok(await store.SummaryAsync(UserId(context), assetId, take)));
     }
 
     private static bool IsEmpty(PredictBatchRequest request)

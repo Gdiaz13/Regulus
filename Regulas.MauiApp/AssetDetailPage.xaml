@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.AssetDetailPage"
+             Title="{Binding Symbol}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="760"
+                             HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding Symbol}"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                <Label Text="{Binding NameText}"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}" />
+
+            <Border IsVisible="{Binding HasError}"
+                    Stroke="{StaticResource RegulasDanger}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <Label Text="{Binding ErrorText}"
+                       TextColor="{StaticResource RegulasDanger}" />
+            </Border>
+
+            <Border IsVisible="{Binding HasProfile}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding PriceText}"
+                           FontSize="24"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding ChangeText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="{Binding MarketCapText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding HasProfile}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="About"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding SectorText}" />
+                    <Label Text="{Binding ExchangeText}" />
+                    <Label Text="{Binding CeoText}" />
+                    <Label Text="{Binding WebsiteText}"
+                           TextColor="{StaticResource Primary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding HasDescription}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Description"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding DescriptionText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

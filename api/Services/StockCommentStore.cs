@@ -24,7 +24,7 @@ public sealed class StockCommentStore
     public async Task<Comment> CreateAsync(Guid userId, Comment comment)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.QuerySingleAsync<Comment>(Sql.Insert, InsertParams(userId, comment));
+        return await connection.QuerySingleAsync<Comment>(Sql.Insert, Params(userId, comment));
     }
 
     public async Task<Comment?> UpdateAsync(Guid userId, int id, string title, string content)
@@ -45,7 +45,7 @@ public sealed class StockCommentStore
         return await connection.ExecuteScalarAsync<bool>(Sql.StockExists, new { UserId = userId, StockId = stockId });
     }
 
-    private static object InsertParams(Guid userId, Comment comment)
+    private static object Params(Guid userId, Comment comment)
     {
         return new
         {

@@ -30,7 +30,7 @@ public sealed class PortfolioStockStore
     public async Task<Stock> CreateAsync(Guid userId, Stock stock)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.QuerySingleAsync<Stock>(Sql.Insert, InsertParams(userId, stock));
+        return await connection.QuerySingleAsync<Stock>(Sql.Insert, Params(userId, 0, stock));
     }
 
     public async Task<Stock?> UpdateAsync(Guid userId, int id, Stock stock)
@@ -57,9 +57,13 @@ public sealed class PortfolioStockStore
         return await connection.ExecuteScalarAsync<bool>(Sql.ExistsForOther, new { UserId = userId, Id = id, Symbol = symbol });
     }
 
-    private static object InsertParams(Guid userId, Stock stock)
+    // Every distinct symbol anyone tracks. The background snapshot job uses this
+    // because price history is global market data, not per-user data.
+    public async Task<List<string>> ListTrackedSymbolsAsync(CancellationToken token = default)
     {
-        return Params(userId, 0, stock);
+        await using var connection = await _factory.OpenDatabaseConnectionAsync(token);
+        var rows = await connection.QueryAsync<string>(Sql.TrackedSymbols);
+        return rows.ToList();
     }
 
     private static object Params(Guid userId, int id, Stock stock)
@@ -121,5 +125,7 @@ public sealed class PortfolioStockStore
             """;
 
         public const string Delete = "delete from stocks where user_id = @UserId and id = @Id;";
+
+        public const string TrackedSymbols = "select distinct symbol from stocks order by symbol;";
     }
 }
