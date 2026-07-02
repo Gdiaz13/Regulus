@@ -6,6 +6,8 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         Items.Add(TabBar(mainPage, searchPage, authPage, settingsPage));
+        // Detail pages are pushed onto the stack, not tabs, so they register as routes.
+        Routing.RegisterRoute(nameof(AssetDetailPage), typeof(AssetDetailPage));
     }
 
     private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, AuthPage authPage, SettingsPage settingsPage)

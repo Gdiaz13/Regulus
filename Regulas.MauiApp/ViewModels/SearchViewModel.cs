@@ -27,6 +27,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         _searchCommand = new Command(async () => await SearchAsync(), () => CanSearch);
         _addCommand = new Command<CompanySearchResult>(async c => await AddAsync(c), CanAdd);
         OpenAccountCommand = new Command(async () => await Shell.Current.GoToAsync($"//{nameof(AuthPage)}"));
+        OpenDetailsCommand = new Command<CompanySearchResult>(async c => await OpenDetailsAsync(c));
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
 
@@ -36,6 +37,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     public ICommand SearchCommand => _searchCommand;
     public ICommand AddToPortfolioCommand => _addCommand;
     public ICommand OpenAccountCommand { get; }
+    public ICommand OpenDetailsCommand { get; }
     public string Query { get => _query; set => SetQuery(value); }
     public string MessageText { get => _messageText; private set => SetMessage(value); }
     public bool IsBusy { get => _isBusy; private set => SetBusy(value); }
@@ -88,6 +90,15 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     {
         ReplaceResults(results);
         MessageText = results.Count == 0 ? $"No companies found for {Query.Trim()}." : string.Empty;
+    }
+
+    // Pushes the detail page with the symbol in the route query.
+    private static async Task OpenDetailsAsync(CompanySearchResult? company)
+    {
+        if (company is not null)
+        {
+            await Shell.Current.GoToAsync($"{nameof(AssetDetailPage)}?symbol={Uri.EscapeDataString(company.Symbol)}");
+        }
     }
 
     private async Task AddAsync(CompanySearchResult? company)
