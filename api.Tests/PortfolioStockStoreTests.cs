@@ -11,7 +11,7 @@ public class PortfolioStockStoreTests
     {
         using var factory = new SqliteDapperConnectionFactory();
         var store = new PortfolioStockStore(factory);
-        var stock = await store.CreateAsync(Stock("AMD"));
+        var stock = await store.CreateAsync(TestUsers.AliceId, Stock("AMD"));
         Assert.True(stock.Id > 0);
         Assert.Equal("AMD", stock.Symbol);
         Assert.Equal(100m, stock.PurchasePrice);
@@ -22,9 +22,9 @@ public class PortfolioStockStoreTests
     {
         using var factory = new SqliteDapperConnectionFactory();
         var store = new PortfolioStockStore(factory);
-        await store.CreateAsync(Stock("MSFT"));
-        await store.CreateAsync(Stock("AMD"));
-        var stocks = await store.ListAsync();
+        await store.CreateAsync(TestUsers.AliceId, Stock("MSFT"));
+        await store.CreateAsync(TestUsers.AliceId, Stock("AMD"));
+        var stocks = await store.ListAsync(TestUsers.AliceId);
         Assert.Equal(["AMD", "MSFT"], stocks.Select(stock => stock.Symbol));
     }
 
@@ -33,10 +33,10 @@ public class PortfolioStockStoreTests
     {
         using var factory = new SqliteDapperConnectionFactory();
         var store = new PortfolioStockStore(factory);
-        var stock = await store.CreateAsync(Stock("AMD"));
-        var updated = await store.UpdateAsync(stock.Id, Stock("NVDA"));
+        var stock = await store.CreateAsync(TestUsers.AliceId, Stock("AMD"));
+        var updated = await store.UpdateAsync(TestUsers.AliceId, stock.Id, Stock("NVDA"));
         Assert.Equal("NVDA", updated!.Symbol);
-        Assert.True(await store.SymbolBelongsToAnotherAsync(stock.Id + 1, "NVDA"));
+        Assert.True(await store.SymbolBelongsToAnotherAsync(TestUsers.AliceId, stock.Id + 1, "NVDA"));
     }
 
     [Fact]
@@ -44,9 +44,22 @@ public class PortfolioStockStoreTests
     {
         using var factory = new SqliteDapperConnectionFactory();
         var store = new PortfolioStockStore(factory);
-        var stock = await store.CreateAsync(Stock("AMD"));
-        Assert.True(await store.DeleteAsync(stock.Id));
-        Assert.False(await store.ExistsAsync("AMD"));
+        var stock = await store.CreateAsync(TestUsers.AliceId, Stock("AMD"));
+        Assert.True(await store.DeleteAsync(TestUsers.AliceId, stock.Id));
+        Assert.False(await store.ExistsAsync(TestUsers.AliceId, "AMD"));
+    }
+
+    [Fact]
+    public async Task Store_methods_are_scoped_to_user()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PortfolioStockStore(factory);
+        var alice = await store.CreateAsync(TestUsers.AliceId, Stock("AMD"));
+        var bob = await store.CreateAsync(TestUsers.BobId, Stock("AMD"));
+        Assert.Equal([alice.Id], (await store.ListAsync(TestUsers.AliceId)).Select(stock => stock.Id));
+        Assert.Null(await store.UpdateAsync(TestUsers.BobId, alice.Id, Stock("NVDA")));
+        Assert.False(await store.DeleteAsync(TestUsers.BobId, alice.Id));
+        Assert.True(await store.ExistsAsync(TestUsers.BobId, bob.Symbol));
     }
 
     private static Stock Stock(string symbol)
