@@ -10,17 +10,24 @@ namespace Regulas.MauiApp.ViewModels;
 public sealed class HomeViewModel : INotifyPropertyChanged
 {
     private readonly IRegulasApiClient _apiClient;
+    private readonly AuthSession _authSession;
+    private readonly Command _openAccountCommand;
     private readonly Command _refreshCommand;
+    private string _accountText = "Sign in to load your portfolio.";
     private string _databaseText = "Database not checked";
     private string _errorText = string.Empty;
     private bool _isBusy;
+    private bool _isAuthenticated;
     private string _marketDataText = "Market data key not checked";
     private string _statusText = "Connect to Regulas.Api";
 
-    public HomeViewModel(IRegulasApiClient apiClient)
+    public HomeViewModel(IRegulasApiClient apiClient, AuthSession authSession)
     {
         _apiClient = apiClient;
+        _authSession = authSession;
+        _openAccountCommand = new Command(async () => await Shell.Current.GoToAsync($"//{nameof(AuthPage)}"));
         _refreshCommand = new Command(async () => await LoadAsync(), () => CanRefresh);
+        _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -29,7 +36,11 @@ public sealed class HomeViewModel : INotifyPropertyChanged
 
     public ICommand RefreshCommand => _refreshCommand;
 
+    public ICommand OpenAccountCommand => _openAccountCommand;
+
     public string StatusText { get => _statusText; private set => SetField(ref _statusText, value); }
+
+    public string AccountText { get => _accountText; private set => SetField(ref _accountText, value); }
 
     public string DatabaseText { get => _databaseText; private set => SetField(ref _databaseText, value); }
 
@@ -40,6 +51,10 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     public bool IsBusy { get => _isBusy; private set => SetBusy(value); }
 
     public bool CanRefresh => !IsBusy;
+
+    public bool IsAuthenticated { get => _isAuthenticated; private set => SetAuthenticated(value); }
+
+    public bool IsAnonymous => !IsAuthenticated;
 
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorText);
 
@@ -69,7 +84,14 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     private async Task RefreshCoreAsync()
     {
         ErrorText = string.Empty;
+        await _authSession.RefreshAsync(CancellationToken.None);
+        SyncAuthState();
         await LoadHealthAsync();
+        if (!IsAuthenticated)
+        {
+            ReplaceStocks([]);
+            return;
+        }
         await LoadStocksAsync();
     }
 
@@ -116,6 +138,21 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         foreach (var stock in stocks)
         {
             Stocks.Add(stock);
+        }
+    }
+
+    private void SyncAuthState()
+    {
+        var user = _authSession.CurrentUser;
+        IsAuthenticated = user is not null;
+        AccountText = user is null ? "Sign in to load your portfolio." : $"Signed in as {user.DisplayName}";
+    }
+
+    private void SetAuthenticated(bool value)
+    {
+        if (SetField(ref _isAuthenticated, value, nameof(IsAuthenticated)))
+        {
+            OnPropertyChanged(nameof(IsAnonymous));
         }
     }
 

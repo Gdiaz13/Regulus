@@ -19,7 +19,8 @@ public sealed record CaptureResult(
     string AssetType,
     int AssetId,
     int Captured,
-    int Skipped
+    int Skipped,
+    string Source
 );
 
 // One stored price point as the frontend reads it back.

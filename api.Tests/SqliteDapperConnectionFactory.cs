@@ -1,5 +1,6 @@
 using System.Data.Common;
 using api.Services;
+using Dapper;
 using Microsoft.Data.Sqlite;
 
 namespace api.Tests;
@@ -11,6 +12,7 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
 
     public SqliteDapperConnectionFactory()
     {
+        SqlMapper.AddTypeHandler(new SqliteGuidTypeHandler());
         _connectionString = $"Data Source=regulas-{Guid.NewGuid()};Mode=Memory;Cache=Shared";
         _root = new SqliteConnection(_connectionString);
         _root.Open();
@@ -37,18 +39,55 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
     }
 
     private const string SchemaSql = """
+        create table users (
+            id text primary key,
+            email text not null,
+            normalized_email text not null unique,
+            display_name text not null,
+            password_hash text not null,
+            created_at text not null,
+            updated_at text null,
+            last_login_at text null,
+            is_active integer not null default 1,
+            email_confirmed integer not null default 0,
+            failed_login_count integer not null default 0,
+            lockout_until text null
+        );
+
+        create table refresh_tokens (
+            id text primary key,
+            user_id text not null references users(id) on delete cascade,
+            token_hash text not null unique,
+            created_at text not null,
+            expires_at text not null,
+            revoked_at text null,
+            replaced_by_token_hash text null,
+            created_by_ip text null,
+            revoked_by_ip text null
+        );
+
+        create table user_settings (
+            user_id text primary key references users(id) on delete cascade,
+            settings_json text not null default '{}',
+            created_at text not null default current_timestamp,
+            updated_at text null
+        );
+
         create table stocks (
             id integer primary key autoincrement,
-            symbol text not null unique,
+            user_id text not null,
+            symbol text not null,
             company_name text not null,
             purchase_price numeric not null,
             last_dividend numeric not null,
             industry text not null,
-            market_cap integer not null
+            market_cap integer not null,
+            unique(user_id, symbol)
         );
 
         create table comments (
             id integer primary key autoincrement,
+            user_id text not null,
             title text not null,
             content text not null,
             created_on text not null,
@@ -87,6 +126,7 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
 
         create table predictions (
             id integer primary key autoincrement,
+            user_id text not null,
             asset_id text not null,
             asset_name text not null,
             asset_type text not null,
@@ -112,4 +152,17 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             text text not null
         );
         """;
+
+    private sealed class SqliteGuidTypeHandler : SqlMapper.TypeHandler<Guid>
+    {
+        public override Guid Parse(object value)
+        {
+            return value is Guid guid ? guid : Guid.Parse(value.ToString() ?? string.Empty);
+        }
+
+        public override void SetValue(System.Data.IDbDataParameter parameter, Guid value)
+        {
+            parameter.Value = value.ToString();
+        }
+    }
 }
