@@ -2,19 +2,19 @@ namespace Regulas.MauiApp;
 
 public partial class AppShell : Shell
 {
-    public AppShell(MainPage mainPage, SearchPage searchPage, AuthPage authPage, SettingsPage settingsPage)
+    public AppShell(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, AuthPage authPage, SettingsPage settingsPage)
     {
         InitializeComponent();
-        Items.Add(TabBar(mainPage, searchPage, authPage, settingsPage));
-        // Detail pages are pushed onto the stack, not tabs, so they register as routes.
-        Routing.RegisterRoute(nameof(AssetDetailPage), typeof(AssetDetailPage));
+        RegisterRoutes();
+        Items.Add(TabBar(mainPage, searchPage, predictionsPage, authPage, settingsPage));
     }
 
-    private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, AuthPage authPage, SettingsPage settingsPage)
+    private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, AuthPage authPage, SettingsPage settingsPage)
     {
         var tabBar = new TabBar();
         tabBar.Items.Add(ShellContent("Home", nameof(MainPage), mainPage));
         tabBar.Items.Add(ShellContent("Search", nameof(SearchPage), searchPage));
+        tabBar.Items.Add(ShellContent("Predictions", nameof(PredictionsPage), predictionsPage));
         tabBar.Items.Add(ShellContent("Account", nameof(AuthPage), authPage));
         tabBar.Items.Add(ShellContent("Settings", nameof(SettingsPage), settingsPage));
         return tabBar;
@@ -23,5 +23,12 @@ public partial class AppShell : Shell
     private static ShellContent ShellContent(string title, string route, Page page)
     {
         return new ShellContent { Title = title, Route = route, Content = page };
+    }
+
+    private static void RegisterRoutes()
+    {
+        // Detail pages are pushed onto the stack, not tabs, so they register as routes.
+        Routing.RegisterRoute(nameof(AssetDetailPage), typeof(AssetDetailPage));
+        Routing.RegisterRoute(nameof(PriceHistoryPage), typeof(PriceHistoryPage));
     }
 }

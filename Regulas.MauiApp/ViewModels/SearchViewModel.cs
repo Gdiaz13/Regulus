@@ -26,7 +26,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         _authSession = authSession;
         _searchCommand = new Command(async () => await SearchAsync(), () => CanSearch);
         _addCommand = new Command<CompanySearchResult>(async c => await AddAsync(c), CanAdd);
-        OpenAccountCommand = new Command(async () => await Shell.Current.GoToAsync($"//{nameof(AuthPage)}"));
+        OpenAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
         OpenDetailsCommand = new Command<CompanySearchResult>(async c => await OpenDetailsAsync(c));
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
@@ -97,7 +97,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     {
         if (company is not null)
         {
-            await Shell.Current.GoToAsync($"{nameof(AssetDetailPage)}?symbol={Uri.EscapeDataString(company.Symbol)}");
+            await NavigationRoutes.OpenAssetDetailAsync(company.Symbol);
         }
     }
 

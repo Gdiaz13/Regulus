@@ -39,19 +39,23 @@ public static class MauiProgram
         services.AddSingleton<AppShell>();
         services.AddSingleton<MainPage>();
         services.AddSingleton<SearchPage>();
+        services.AddSingleton<PredictionsPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
         // Detail pages are transient: each navigation carries its own symbol.
         services.AddTransient<AssetDetailPage>();
+        services.AddTransient<PriceHistoryPage>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
     {
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<SearchViewModel>();
+        services.AddSingleton<PredictionsViewModel>();
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddTransient<AssetDetailViewModel>();
+        services.AddTransient<PriceHistoryViewModel>();
     }
 
     private static void RegisterApiServices(IServiceCollection services)

@@ -42,6 +42,13 @@
                            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
                     <Label Text="{Binding MarketCapText}"
                            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <HorizontalStackLayout Spacing="8"
+                                           HorizontalOptions="End">
+                        <Button Text="Price history"
+                                Command="{Binding OpenPriceHistoryCommand}" />
+                        <Button Text="Predict"
+                                Command="{Binding OpenPredictionCommand}" />
+                    </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>
 
