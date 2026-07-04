@@ -160,7 +160,23 @@ function isCSharpFile(file) {
 }
 
 function isMethodStart(line) {
+  return methodDeclaration(line) && !isTypeDeclaration(line) && !isExpressionBodied(line);
+}
+
+// Single-line expression-bodied members (=> ...;) are one line by definition
+// and have no brace block for the scanner to measure.
+function isExpressionBodied(line) {
+  return /=>.*;\s*$/.test(line);
+}
+
+function methodDeclaration(line) {
   return /^\s*(public|private|internal|protected)\s+(static\s+)?(override\s+)?(async\s+)?[\w<>?[\],\s]+\s+\w+\s*\(/.test(line);
+}
+
+// Positional records look like methods to the regex above, but type
+// declarations are not functions and should not be length-checked.
+function isTypeDeclaration(line) {
+  return /\b(class|record|struct|interface|enum)\b/.test(line);
 }
 
 function braceCount(line, brace) {

@@ -47,6 +47,7 @@ public class UserOwnedEndpointAuthorizationTests
         services.AddSingleton<StockCommentStore>();
         services.AddSingleton<PredictionStore>();
         services.AddSingleton<PredictionAccuracyStore>();
+        services.AddSingleton<ModelAccuracyResultStore>();
         services.AddSingleton(new RegulasAiClient(new HttpClient()));
     }
 
@@ -64,6 +65,8 @@ public class UserOwnedEndpointAuthorizationTests
         yield return new("/api/predict/", "POST");
         yield return new("/api/predict/history", "GET");
         yield return new("/api/predict/accuracy", "GET");
+        yield return new("/api/predict/accuracy/summary", "GET");
+        yield return new("/api/predict/accuracy/results", "GET");
     }
 
     private static void AssertProtected(RouteEndpoint endpoint)
