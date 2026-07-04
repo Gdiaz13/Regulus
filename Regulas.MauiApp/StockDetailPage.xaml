@@ -57,11 +57,15 @@
                                Grid.Column="1"
                                Text="{Binding ChangeText}"
                                TextColor="{StaticResource Primary}" />
-                        <Button Grid.Row="2"
-                                Grid.ColumnSpan="2"
-                                Text="Price history"
-                                HorizontalOptions="End"
-                                Command="{Binding OpenPriceHistoryCommand}" />
+                        <HorizontalStackLayout Grid.Row="2"
+                                               Grid.ColumnSpan="2"
+                                               Spacing="8"
+                                               HorizontalOptions="End">
+                            <Button Text="Price history"
+                                    Command="{Binding OpenPriceHistoryCommand}" />
+                            <Button Text="Predict"
+                                    Command="{Binding OpenPredictionCommand}" />
+                        </HorizontalStackLayout>
                     </Grid>
                 </Border>
 

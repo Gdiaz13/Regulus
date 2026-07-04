@@ -24,6 +24,7 @@ public sealed class StockDetailViewModel : INotifyPropertyChanged
     {
         _apiClient = apiClient;
         OpenPriceHistoryCommand = new Command(async () => await NavigationRoutes.OpenPriceHistoryAsync(_symbol));
+        OpenPredictionCommand = new Command(async () => await NavigationRoutes.OpenPredictionsAsync(_symbol));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -31,6 +32,7 @@ public sealed class StockDetailViewModel : INotifyPropertyChanged
     public ObservableCollection<ProfileMetric> Facts { get; } = [];
     public ObservableCollection<ProfileMetric> Metrics { get; } = [];
     public ICommand OpenPriceHistoryCommand { get; }
+    public ICommand OpenPredictionCommand { get; }
     public bool IsBusy { get => _isBusy; private set => SetBusy(value); }
     public bool HasProfile => _profile is not null;
     public bool HasError => !string.IsNullOrWhiteSpace(_errorText);

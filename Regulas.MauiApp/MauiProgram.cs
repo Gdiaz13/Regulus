@@ -39,6 +39,7 @@ public static class MauiProgram
         services.AddSingleton<AppShell>();
         services.AddSingleton<MainPage>();
         services.AddSingleton<SearchPage>();
+        services.AddSingleton<PredictionsPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
         services.AddTransient<StockDetailPage>();
@@ -49,6 +50,7 @@ public static class MauiProgram
     {
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<SearchViewModel>();
+        services.AddSingleton<PredictionsViewModel>();
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddTransient<StockDetailViewModel>();
