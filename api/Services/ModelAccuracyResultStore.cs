@@ -79,7 +79,7 @@ public sealed class ModelAccuracyResultStore
         parameters.Add("DirectionMatched", AccuracyMath.DirectionMatched(prediction.PredictedPercentChange, actualPercent));
         parameters.Add("ActualPrice", actual.Close);
         parameters.Add("TargetDate", targetDate.ToDateTime(TimeOnly.MinValue));
-        parameters.Add("ActualDate", actual.Date);
+        parameters.Add("ActualDate", actual.Date.ToDateTime(TimeOnly.MinValue));
         parameters.Add("ScoredAt", DateTime.UtcNow);
     }
 
@@ -103,9 +103,10 @@ public sealed class ModelAccuracyResultStore
         public DateTime CreatedOn { get; init; }
     }
 
+    // Npgsql returns PostgreSQL date columns as DateOnly, so the row matches that.
     private sealed class ActualPriceRow
     {
-        public DateTime Date { get; init; }
+        public DateOnly Date { get; init; }
         public decimal Close { get; init; }
     }
 

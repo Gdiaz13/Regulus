@@ -13,6 +13,7 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
     public SqliteDapperConnectionFactory()
     {
         SqlMapper.AddTypeHandler(new SqliteGuidTypeHandler());
+        SqlMapper.AddTypeHandler(new SqliteDateOnlyTypeHandler());
         _connectionString = $"Data Source=regulas-{Guid.NewGuid()};Mode=Memory;Cache=Shared";
         _root = new SqliteConnection(_connectionString);
         _root.Open();
@@ -121,6 +122,10 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             close_price numeric not null,
             volume integer not null,
             source text not null,
+            price_type text null,
+            card_condition text null,
+            grade text null,
+            currency text null,
             unique(asset_id, date)
         );
 
@@ -183,6 +188,26 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             finished_at text null
         );
         """;
+
+    // PostgreSQL date columns come back as DateOnly through Npgsql; SQLite stores
+    // them as text, so tests need this handler to read the same row types.
+    private sealed class SqliteDateOnlyTypeHandler : SqlMapper.TypeHandler<DateOnly>
+    {
+        public override DateOnly Parse(object value)
+        {
+            return value switch
+            {
+                DateOnly date => date,
+                DateTime dateTime => DateOnly.FromDateTime(dateTime),
+                _ => DateOnly.FromDateTime(DateTime.Parse(value.ToString() ?? string.Empty)),
+            };
+        }
+
+        public override void SetValue(System.Data.IDbDataParameter parameter, DateOnly value)
+        {
+            parameter.Value = value.ToDateTime(TimeOnly.MinValue);
+        }
+    }
 
     private sealed class SqliteGuidTypeHandler : SqlMapper.TypeHandler<Guid>
     {
