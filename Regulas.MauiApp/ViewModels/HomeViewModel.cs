@@ -12,6 +12,7 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     private readonly IRegulasApiClient _apiClient;
     private readonly AuthSession _authSession;
     private readonly Command _openAccountCommand;
+    private readonly Command<PortfolioStock> _openStockCommand;
     private readonly Command _refreshCommand;
     private string _accountText = "Sign in to load your portfolio.";
     private string _databaseText = "Database not checked";
@@ -25,7 +26,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     {
         _apiClient = apiClient;
         _authSession = authSession;
-        _openAccountCommand = new Command(async () => await Shell.Current.GoToAsync($"//{nameof(AuthPage)}"));
+        _openAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
+        _openStockCommand = new Command<PortfolioStock>(async stock => await OpenStockAsync(stock));
         _refreshCommand = new Command(async () => await LoadAsync(), () => CanRefresh);
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
@@ -37,6 +39,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     public ICommand RefreshCommand => _refreshCommand;
 
     public ICommand OpenAccountCommand => _openAccountCommand;
+
+    public ICommand OpenStockCommand => _openStockCommand;
 
     public string StatusText { get => _statusText; private set => SetField(ref _statusText, value); }
 
@@ -138,6 +142,14 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         foreach (var stock in stocks)
         {
             Stocks.Add(stock);
+        }
+    }
+
+    private static async Task OpenStockAsync(PortfolioStock? stock)
+    {
+        if (stock is not null)
+        {
+            await NavigationRoutes.OpenStockDetailAsync(stock.Symbol);
         }
     }
 

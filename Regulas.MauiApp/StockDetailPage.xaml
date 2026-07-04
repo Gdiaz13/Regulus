@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.StockDetailPage"
+             Title="Stock Details">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="840"
+                             HorizontalOptions="Center">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding TitleText}"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                    <Label Text="{Binding SymbolText}"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}" />
+                    <Label Text="{Binding SubtitleText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+                <ActivityIndicator Grid.Column="1"
+                                   IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}" />
+            </Grid>
+
+            <Border IsVisible="{Binding ShowStatus}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <Label Text="{Binding StatusText}"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            </Border>
+
+            <VerticalStackLayout IsVisible="{Binding HasProfile}"
+                                 Spacing="16">
+                <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto"
+                          RowDefinitions="Auto,Auto"
+                          ColumnSpacing="12">
+                        <Label Text="Market snapshot"
+                               FontAttributes="Bold" />
+                        <Label Grid.Column="1"
+                               Text="{Binding PriceText}"
+                               FontSize="20"
+                               FontAttributes="Bold" />
+                        <Label Grid.Row="1"
+                               Text="Change"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                        <Label Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding ChangeText}"
+                               TextColor="{StaticResource Primary}" />
+                    </Grid>
+                </Border>
+
+                <CollectionView ItemsSource="{Binding Metrics}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                    StrokeShape="RoundRectangle 8"
+                                    Padding="14"
+                                    Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="12">
+                                    <Label Text="{Binding Label}"
+                                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding Value}"
+                                           FontAttributes="Bold" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="16">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Company profile"
+                               FontAttributes="Bold" />
+                        <Label Text="{Binding DescriptionText}"
+                               LineBreakMode="WordWrap"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                        <Label Text="{Binding WebsiteText}"
+                               TextColor="{StaticResource Primary}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <CollectionView ItemsSource="{Binding Facts}"
+                                SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto"
+                                  Padding="4,6"
+                                  ColumnSpacing="12">
+                                <Label Text="{Binding Label}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Value}"
+                                       HorizontalTextAlignment="End" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

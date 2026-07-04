@@ -5,6 +5,7 @@ public partial class AppShell : Shell
     public AppShell(MainPage mainPage, SearchPage searchPage, AuthPage authPage, SettingsPage settingsPage)
     {
         InitializeComponent();
+        RegisterRoutes();
         Items.Add(TabBar(mainPage, searchPage, authPage, settingsPage));
     }
 
@@ -21,5 +22,10 @@ public partial class AppShell : Shell
     private static ShellContent ShellContent(string title, string route, Page page)
     {
         return new ShellContent { Title = title, Route = route, Content = page };
+    }
+
+    private static void RegisterRoutes()
+    {
+        Routing.RegisterRoute(nameof(StockDetailPage), typeof(StockDetailPage));
     }
 }

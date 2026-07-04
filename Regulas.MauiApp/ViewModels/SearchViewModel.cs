@@ -12,6 +12,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     private readonly Command<CompanySearchResult> _addCommand;
     private readonly IRegulasApiClient _apiClient;
     private readonly AuthSession _authSession;
+    private readonly Command<CompanySearchResult> _detailCommand;
     private readonly Command _searchCommand;
     private bool _hasResults;
     private bool _isAdding;
@@ -26,7 +27,8 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         _authSession = authSession;
         _searchCommand = new Command(async () => await SearchAsync(), () => CanSearch);
         _addCommand = new Command<CompanySearchResult>(async c => await AddAsync(c), CanAdd);
-        OpenAccountCommand = new Command(async () => await Shell.Current.GoToAsync($"//{nameof(AuthPage)}"));
+        _detailCommand = new Command<CompanySearchResult>(async c => await OpenDetailAsync(c));
+        OpenAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
 
@@ -35,6 +37,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
     public ObservableCollection<CompanySearchResult> Results { get; } = [];
     public ICommand SearchCommand => _searchCommand;
     public ICommand AddToPortfolioCommand => _addCommand;
+    public ICommand OpenDetailCommand => _detailCommand;
     public ICommand OpenAccountCommand { get; }
     public string Query { get => _query; set => SetQuery(value); }
     public string MessageText { get => _messageText; private set => SetMessage(value); }
@@ -97,6 +100,14 @@ public sealed class SearchViewModel : INotifyPropertyChanged
             return;
         }
         await RunAddAsync(company);
+    }
+
+    private async Task OpenDetailAsync(CompanySearchResult? company)
+    {
+        if (company is not null)
+        {
+            await NavigationRoutes.OpenStockDetailAsync(company.Symbol);
+        }
     }
 
     private async Task RunAddAsync(CompanySearchResult company)
@@ -218,6 +229,7 @@ public sealed class SearchViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShowMessage));
         _searchCommand.ChangeCanExecute();
         _addCommand.ChangeCanExecute();
+        _detailCommand.ChangeCanExecute();
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
