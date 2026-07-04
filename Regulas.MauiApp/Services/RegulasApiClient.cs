@@ -56,6 +56,24 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return PostAsync<PriceCaptureResult>(PriceCapturePath(symbol, assetType), new { }, token);
     }
 
+    public Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token)
+    {
+        return PostAsync<AiOverview>("api/predict", new PredictBatchRequest(assets), token);
+    }
+
+    public async Task<ApiClientResult<IReadOnlyList<PredictionHistoryItem>>> GetPredictionHistoryAsync(int take, CancellationToken token)
+    {
+        var result = await GetAsync<List<PredictionHistoryItem>>(PredictionHistoryPath(take), token);
+        return result.Ok && result.Data is not null
+            ? ApiClientResult<IReadOnlyList<PredictionHistoryItem>>.Success(result.Data)
+            : ApiClientResult<IReadOnlyList<PredictionHistoryItem>>.Failure(result.Message);
+    }
+
+    public Task<ApiClientResult<PredictionHealth>> GetPredictionHealthAsync(CancellationToken token)
+    {
+        return GetAsync<PredictionHealth>("api/predict/health", token);
+    }
+
     public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
     {
         return PostAsync<PortfolioStock>("api/stocks", request, token);
@@ -104,6 +122,11 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static string PriceCapturePath(string symbol, string assetType)
     {
         return $"api/price-history/{Esc(symbol)}/capture?assetType={Esc(assetType)}";
+    }
+
+    private static string PredictionHistoryPath(int take)
+    {
+        return $"api/predict/history?take={Math.Clamp(take, 1, 100)}";
     }
 
     private static string Esc(string value)

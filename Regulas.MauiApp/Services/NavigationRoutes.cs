@@ -23,6 +23,12 @@ public static class NavigationRoutes
             : Shell.Current.GoToAsync(PriceHistoryRoute(cleanSymbol));
     }
 
+    public static Task OpenPredictionsAsync(string? symbol = null)
+    {
+        var cleanSymbol = CleanSymbol(symbol);
+        return Shell.Current.GoToAsync(PredictionsRoute(cleanSymbol));
+    }
+
     private static string StockDetailRoute(string symbol)
     {
         return $"{nameof(StockDetailPage)}?symbol={Uri.EscapeDataString(symbol)}";
@@ -31,6 +37,13 @@ public static class NavigationRoutes
     private static string PriceHistoryRoute(string symbol)
     {
         return $"{nameof(PriceHistoryPage)}?symbol={Uri.EscapeDataString(symbol)}";
+    }
+
+    private static string PredictionsRoute(string symbol)
+    {
+        return string.IsNullOrWhiteSpace(symbol)
+            ? $"//{nameof(PredictionsPage)}"
+            : $"//{nameof(PredictionsPage)}?symbol={Uri.EscapeDataString(symbol)}";
     }
 
     private static string CleanSymbol(string? symbol)
