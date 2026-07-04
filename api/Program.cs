@@ -29,10 +29,12 @@ builder.Services.AddSingleton<PredictionAccuracyStore>();
 builder.Services.AddSingleton<PredictionStore>();
 builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddSingleton<BackgroundJobRunStore>();
+builder.Services.AddSingleton<ModelAccuracyResultStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 builder.Services.AddHostedService<PriceSnapshotService>();
+builder.Services.AddHostedService<PredictionScoringService>();
 
 var app = builder.Build();
 

@@ -13,6 +13,17 @@ public static class BackgroundJobsConfiguration
         return TimeSpan.FromMinutes(configuration.GetValue("BackgroundJobs:PriceSnapshotIntervalMinutes", 720));
     }
 
+    public static bool PredictionScoringEnabled(IConfiguration configuration)
+    {
+        return configuration.GetValue("BackgroundJobs:PredictionScoringEnabled", true);
+    }
+
+    // Daily by default: predictions mature over days, not minutes.
+    public static TimeSpan PredictionScoringInterval(IConfiguration configuration)
+    {
+        return TimeSpan.FromMinutes(configuration.GetValue("BackgroundJobs:PredictionScoringIntervalMinutes", 1440));
+    }
+
     public static TimeSpan StartupDelay(IConfiguration configuration)
     {
         return TimeSpan.FromSeconds(configuration.GetValue("BackgroundJobs:StartupDelaySeconds", 15));

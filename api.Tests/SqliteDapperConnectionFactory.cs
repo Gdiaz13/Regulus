@@ -152,6 +152,27 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             text text not null
         );
 
+        create table model_accuracy_results (
+            id integer primary key autoincrement,
+            prediction_id integer not null references predictions(id) on delete cascade,
+            user_id text not null,
+            asset_id text not null,
+            asset_type text not null,
+            model_name text not null,
+            model_version text not null,
+            predicted_percent_change real not null,
+            actual_percent_change real not null,
+            absolute_percent_error real not null,
+            direction_matched integer not null,
+            actual_price numeric not null,
+            target_date text not null,
+            actual_date text not null,
+            is_mock integer not null default 0,
+            predicted_on text not null,
+            scored_at text not null,
+            unique(prediction_id)
+        );
+
         create table background_job_runs (
             id integer primary key autoincrement,
             job_name text not null,

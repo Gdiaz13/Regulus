@@ -70,8 +70,8 @@ public sealed class PredictionAccuracyStore
         DateOnly targetDate
     )
     {
-        var actualPercent = PercentChange(prediction.CurrentPrice, actual.Close);
-        var error = Math.Abs(actualPercent - prediction.PredictedPercentChange);
+        var actualPercent = AccuracyMath.PercentChange(prediction.CurrentPrice, actual.Close);
+        var error = AccuracyMath.AbsoluteError(prediction.PredictedPercentChange, actualPercent);
         return BuildResponse(prediction, actual, targetDate, actualPercent, error);
     }
 
@@ -82,7 +82,7 @@ public sealed class PredictionAccuracyStore
             (int)prediction.Id, prediction.AssetId, prediction.AssetName, prediction.AssetType,
             prediction.ModelName, prediction.ModelVersion, prediction.CurrentPrice, prediction.PredictedPrice,
             actual.Close, prediction.PredictedPercentChange, actualPercent, error,
-            Direction(prediction.PredictedPercentChange) == Direction(actualPercent),
+            AccuracyMath.DirectionMatched(prediction.PredictedPercentChange, actualPercent),
             prediction.TimeHorizonDays, prediction.CreatedOn, targetDate, DateOnly.FromDateTime(actual.Date),
             prediction.IsMock
         );
@@ -100,17 +100,7 @@ public sealed class PredictionAccuracyStore
 
     private static DateOnly TargetDate(PredictionRow prediction)
     {
-        return DateOnly.FromDateTime(prediction.CreatedOn.Date).AddDays(prediction.TimeHorizonDays);
-    }
-
-    private static double PercentChange(decimal start, decimal finish)
-    {
-        return start == 0 ? 0 : Math.Round((double)((finish - start) / start * 100), 2);
-    }
-
-    private static int Direction(double percent)
-    {
-        return percent.CompareTo(0);
+        return AccuracyMath.TargetDate(prediction.CreatedOn, prediction.TimeHorizonDays);
     }
 
     private static string CleanAssetId(string? assetId)
