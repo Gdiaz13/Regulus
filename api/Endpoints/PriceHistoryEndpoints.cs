@@ -14,7 +14,53 @@ public static class PriceHistoryEndpoints
     {
         var group = app.MapGroup("/api/price-history");
         group.MapPost("{symbol}/capture", Capture);
+        // Manual entry is auth-only so anonymous callers cannot write price data.
+        group.MapPost("{symbol}/manual", ManualCapture).RequireAuthorization();
         group.MapGet("{symbol}", GetHistory);
+    }
+
+    // Hand-entered prices, mainly for TCG cards: no provider feed exists yet, so
+    // signed-in users record card prices with source metadata (type/condition/grade).
+    private static async Task<IResult> ManualCapture(
+        string symbol,
+        string? assetType,
+        ManualPriceRequest request,
+        PriceHistoryStore store
+    )
+    {
+        var validation = ValidateManual(symbol, request);
+        if (validation is not null)
+        {
+            return validation;
+        }
+        return await StoreManual(store, symbol, ParseManualType(assetType), request);
+    }
+
+    private static async Task<IResult> StoreManual(
+        PriceHistoryStore store,
+        string symbol,
+        AssetType type,
+        ManualPriceRequest request
+    )
+    {
+        var asset = await store.EnsureAssetAsync(symbol, type, request.Name);
+        var captured = await store.SaveManualAsync(asset.Id, request);
+        return Results.Ok(new CaptureResult(asset.Symbol, type.ToString(), (int)asset.Id, captured, 1 - captured, PriceHistoryStore.ManualSource));
+    }
+
+    private static IResult? ValidateManual(string symbol, ManualPriceRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(symbol))
+        {
+            return Results.BadRequest("A symbol is required.");
+        }
+        return request.Price <= 0 ? Results.BadRequest("A positive price is required.") : null;
+    }
+
+    // Manual entry defaults to TCG cards because that is the market without a feed.
+    private static AssetType ParseManualType(string? value)
+    {
+        return Enum.TryParse<AssetType>(value, ignoreCase: true, out var parsed) ? parsed : AssetType.TcgCard;
     }
 
     private static async Task<IResult> Capture(

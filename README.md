@@ -164,7 +164,7 @@ Regulas needs to track more than stocks. The schema is shaped around flexible as
 - `assets` holds stocks, ETFs, TCG cards, crypto, and collectibles through Dapper.
 - `asset_categories` groups assets into markets or segments like Technology or Pokemon through Dapper.
 - `users`, `refresh_tokens`, and `user_settings` are the auth foundation for user-owned app data.
-- `price_history` stores end-of-day prices and source metadata through Dapper.
+- `price_history` stores end-of-day prices and source metadata through Dapper. TCG rows also track price type (market/listed/sold), card condition, grade, and currency, so a sold PSA 9 price never mixes silently with a raw-card listing.
 - `predictions` stores every user-owned AI prediction so accuracy can be checked later.
 - `prediction_reasons` stores reasons and warnings separately from the main row.
 - `stocks` and `comments` keep each user's portfolio and notes working through Dapper.
@@ -219,6 +219,7 @@ Current mock services include:
 - `DELETE /api/comments/{id}` requires auth.
 - `GET /api/market-data/{providerPath}`
 - `POST /api/price-history/{symbol}/capture` stores provider history and returns capture counts plus source metadata.
+- `POST /api/price-history/{symbol}/manual` requires auth and records a hand-entered price (TCG cards first) with price type, condition, grade, and currency.
 - `GET /api/price-history/{symbol}` defaults to the latest 365 stored points, accepts `?take=` up to 1000, and returns source metadata per point.
 - `POST /api/predict` requires auth and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.

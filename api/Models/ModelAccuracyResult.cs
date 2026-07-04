@@ -16,8 +16,9 @@ public sealed class ModelAccuracyResult
     public double AbsolutePercentError { get; init; }
     public bool DirectionMatched { get; init; }
     public decimal ActualPrice { get; init; }
-    public DateTime TargetDate { get; init; }
-    public DateTime ActualDate { get; init; }
+    // date columns; Npgsql reads them back as DateOnly.
+    public DateOnly TargetDate { get; init; }
+    public DateOnly ActualDate { get; init; }
     public bool IsMock { get; init; }
     public DateTime PredictedOn { get; init; }
     public DateTime ScoredAt { get; init; }
