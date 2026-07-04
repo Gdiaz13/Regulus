@@ -5,91 +5,42 @@ namespace api.Services;
 
 // Periodically snapshots portfolio price history into PostgreSQL so user requests
 // read stored data instead of calling the provider. Every run is recorded.
-public sealed class PriceSnapshotService : BackgroundService
+public sealed class PriceSnapshotService : RecurringJobService
 {
-    private const string JobName = "price-snapshot";
     private const string FmpHistoryPath = "historical-price-eod/full";
-
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<PriceSnapshotService> _logger;
 
     public PriceSnapshotService(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
         ILogger<PriceSnapshotService> logger
     )
+        : base(scopeFactory, logger)
     {
-        _scopeFactory = scopeFactory;
         _configuration = configuration;
-        _logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        if (!BackgroundJobsConfiguration.PriceSnapshotEnabled(_configuration))
-        {
-            return;
-        }
-        await Loop(stoppingToken);
-    }
+    protected override string JobName => "price-snapshot";
 
-    private async Task Loop(CancellationToken stoppingToken)
-    {
-        await SafeDelay(BackgroundJobsConfiguration.StartupDelay(_configuration), stoppingToken);
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await RunSafelyAsync(stoppingToken);
-            await SafeDelay(BackgroundJobsConfiguration.PriceSnapshotInterval(_configuration), stoppingToken);
-        }
-    }
+    protected override bool Enabled => BackgroundJobsConfiguration.PriceSnapshotEnabled(_configuration);
 
-    private static async Task SafeDelay(TimeSpan delay, CancellationToken token)
-    {
-        try
-        {
-            await Task.Delay(delay, token);
-        }
-        catch (OperationCanceledException)
-        {
-        }
-    }
+    protected override TimeSpan StartupDelay => BackgroundJobsConfiguration.StartupDelay(_configuration);
 
-    // One broken run must not crash the host, so failures are logged and swallowed.
-    private async Task RunSafelyAsync(CancellationToken token)
-    {
-        try
-        {
-            await RunOnceAsync(token);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            _logger.LogWarning(exception, "Price snapshot run failed.");
-        }
-    }
+    protected override TimeSpan Interval => BackgroundJobsConfiguration.PriceSnapshotInterval(_configuration);
 
-    private async Task RunOnceAsync(CancellationToken token)
-    {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        var runs = scope.ServiceProvider.GetRequiredService<BackgroundJobRunStore>();
-        var id = await runs.StartAsync(JobName, token);
-        var outcome = await CaptureAsync(scope.ServiceProvider, token);
-        await runs.FinishAsync(id, outcome.Status, outcome.Detail, outcome.Count, token);
-    }
-
-    private async Task<Outcome> CaptureAsync(IServiceProvider services, CancellationToken token)
+    protected override async Task<JobOutcome> RunAsync(IServiceProvider services, CancellationToken token)
     {
         if (!MarketDataConfiguration.HasApiKey(_configuration))
         {
-            return Outcome.Skipped("Market data is not configured (no FMP key).");
+            return JobOutcome.Skipped("Market data is not configured (no FMP key).");
         }
         var symbols = await services.GetRequiredService<PortfolioStockStore>().ListTrackedSymbolsAsync(token);
-        return symbols.Count == 0 ? Outcome.Skipped("No portfolio stocks to snapshot.") : await SnapshotAsync(services, symbols, token);
+        return symbols.Count == 0 ? JobOutcome.Skipped("No portfolio stocks to snapshot.") : await SnapshotAsync(services, symbols, token);
     }
 
     // Snapshots every distinct symbol across all portfolios: price history is
     // global market data, so the job runs once per symbol, not per user.
-    private async Task<Outcome> SnapshotAsync(IServiceProvider services, List<string> symbols, CancellationToken token)
+    private static async Task<JobOutcome> SnapshotAsync(IServiceProvider services, List<string> symbols, CancellationToken token)
     {
         var client = services.GetRequiredService<FinancialModelingPrepClient>();
         var store = services.GetRequiredService<PriceHistoryStore>();
@@ -98,7 +49,7 @@ public sealed class PriceSnapshotService : BackgroundService
         {
             captured += await SnapshotOneAsync(client, store, symbol, token);
         }
-        return Outcome.Completed($"Snapshotted {symbols.Count} symbol(s).", captured);
+        return JobOutcome.Completed($"Snapshotted {symbols.Count} symbol(s).", captured);
     }
 
     private static async Task<int> SnapshotOneAsync(
@@ -137,12 +88,5 @@ public sealed class PriceSnapshotService : BackgroundService
     private static bool IsFetchException(Exception exception)
     {
         return exception is HttpRequestException or TaskCanceledException or InvalidOperationException;
-    }
-
-    private sealed record Outcome(string Status, string Detail, int Count)
-    {
-        public static Outcome Skipped(string detail) => new("skipped", detail, 0);
-
-        public static Outcome Completed(string detail, int count) => new("completed", detail, count);
     }
 }

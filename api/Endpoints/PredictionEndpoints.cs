@@ -15,6 +15,7 @@ public static class PredictionEndpoints
         group.MapGet("history", History);
         group.MapGet("accuracy", Accuracy);
         group.MapGet("accuracy/summary", AccuracySummary);
+        group.MapGet("accuracy/results", AccuracyResults);
         group.MapGet("health", PredictHealth).AllowAnonymous();
     }
 
@@ -108,6 +109,12 @@ public static class PredictionEndpoints
     )
     {
         return DatabaseRequest.Run(async () => Results.Ok(await store.SummaryAsync(UserId(context), assetId, take)));
+    }
+
+    // Persisted results written by the scoring job, unlike the live /accuracy scoring.
+    private static Task<IResult> AccuracyResults(int? take, HttpContext context, ModelAccuracyResultStore store)
+    {
+        return DatabaseRequest.Run(async () => Results.Ok(await store.ListResultsAsync(UserId(context), take)));
     }
 
     private static bool IsEmpty(PredictBatchRequest request)
