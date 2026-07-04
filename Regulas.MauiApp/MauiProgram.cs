@@ -45,6 +45,7 @@ public static class MauiProgram
         // Detail pages are transient: each navigation carries its own symbol.
         services.AddTransient<AssetDetailPage>();
         services.AddTransient<PriceHistoryPage>();
+        services.AddTransient<TradingAgentsPage>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
@@ -56,6 +57,7 @@ public static class MauiProgram
         services.AddSingleton<SettingsViewModel>();
         services.AddTransient<AssetDetailViewModel>();
         services.AddTransient<PriceHistoryViewModel>();
+        services.AddTransient<TradingAgentsViewModel>();
     }
 
     private static void RegisterApiServices(IServiceCollection services)

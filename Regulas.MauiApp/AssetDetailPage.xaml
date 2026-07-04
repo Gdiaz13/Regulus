@@ -48,6 +48,10 @@
                                 Command="{Binding OpenPriceHistoryCommand}" />
                         <Button Text="Predict"
                                 Command="{Binding OpenPredictionCommand}" />
+                        <Button Text="Research"
+                                Command="{Binding OpenTradingAgentsCommand}"
+                                BackgroundColor="{StaticResource Secondary}"
+                                TextColor="{StaticResource MidnightBlue}" />
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Border>

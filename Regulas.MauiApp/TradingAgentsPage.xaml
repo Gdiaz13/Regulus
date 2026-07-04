@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.TradingAgentsPage"
+             Title="{Binding Symbol, StringFormat='{0} research'}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="760"
+                             HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="TradingAgents research"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                <Label Text="Outside research engine, compared against Regulas AIs. Not financial advice."
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}" />
+
+            <Border IsVisible="{Binding HasError}"
+                    Stroke="{StaticResource RegulasDanger}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding ErrorText}"
+                           TextColor="{StaticResource RegulasDanger}" />
+                    <Button Text="Try again"
+                            Command="{Binding RerunCommand}"
+                            IsEnabled="{Binding CanRun}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding HasResult}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding Result.RecommendationText}"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding Result.ScoreText}" />
+                    <Label Text="{Binding Result.Summary}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="{Binding Result.DateText}"
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="{Binding Result.ModelText}"
+                           FontSize="12"
+                           TextColor="{StaticResource RegulasWarning}" />
+                    <Button Text="Run again"
+                            Command="{Binding RerunCommand}"
+                            IsEnabled="{Binding CanRun}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding Result.HasBullish, FallbackValue=False}"
+                    Stroke="{StaticResource RegulasSuccess}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Bullish arguments"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource RegulasSuccess}" />
+                    <VerticalStackLayout Spacing="4"
+                                         BindableLayout.ItemsSource="{Binding Result.BullishArguments}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding ., StringFormat='• {0}'}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding Result.HasBearish, FallbackValue=False}"
+                    Stroke="{StaticResource RegulasDanger}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Bearish arguments"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource RegulasDanger}" />
+                    <VerticalStackLayout Spacing="4"
+                                         BindableLayout.ItemsSource="{Binding Result.BearishArguments}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding ., StringFormat='• {0}'}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border IsVisible="{Binding Result.HasWarnings, FallbackValue=False}"
+                    Stroke="{StaticResource RegulasWarning}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Warnings"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource RegulasWarning}" />
+                    <VerticalStackLayout Spacing="4"
+                                         BindableLayout.ItemsSource="{Binding Result.Warnings}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding ., StringFormat='• {0}'}" />
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
