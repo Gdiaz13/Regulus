@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Regulas.MauiApp.Models;
 using Regulas.MauiApp.Services;
 
@@ -18,10 +19,14 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
     public AssetDetailViewModel(IRegulasApiClient apiClient)
     {
         _apiClient = apiClient;
+        OpenPriceHistoryCommand = new Command(async () => await NavigationRoutes.OpenPriceHistoryAsync(Symbol));
+        OpenPredictionCommand = new Command(async () => await NavigationRoutes.OpenPredictionsAsync(Symbol));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public ICommand OpenPriceHistoryCommand { get; }
+    public ICommand OpenPredictionCommand { get; }
     public string Symbol { get => _symbol; private set => SetField(ref _symbol, value); }
     public bool IsBusy { get => _isBusy; private set => SetField(ref _isBusy, value); }
     public string ErrorText => _errorText;

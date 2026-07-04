@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.PredictionsPage"
+             x:Name="PredictionsRoot"
+             Title="Predictions">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="900"
+                             HorizontalOptions="Center">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Predictions"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                    <Label Text="Run research-only model estimates and review saved history."
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+                <ActivityIndicator Grid.Column="1"
+                                   IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}" />
+            </Grid>
+
+            <Button Text="Sign in"
+                    Command="{Binding OpenAccountCommand}"
+                    IsVisible="{Binding IsAnonymous}" />
+
+            <Border IsVisible="{Binding IsAuthenticated}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10">
+                        <Entry Text="{Binding Symbol}"
+                               Placeholder="Symbol"
+                               MaxLength="32" />
+                        <Picker Grid.Column="1"
+                                ItemsSource="{Binding AssetTypes}"
+                                SelectedItem="{Binding AssetType}" />
+                        <Entry Grid.Row="1"
+                               Text="{Binding CurrentPrice}"
+                               Keyboard="Numeric"
+                               Placeholder="Current price" />
+                        <Entry Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding TimeHorizonDays}"
+                               Keyboard="Numeric"
+                               Placeholder="Horizon days" />
+                        <Entry Grid.Row="2"
+                               Text="{Binding AssetName}"
+                               Placeholder="Name optional" />
+                        <Entry Grid.Row="2"
+                               Grid.Column="1"
+                               Text="{Binding Category}"
+                               Placeholder="Category optional" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*"
+                          ColumnSpacing="10">
+                        <Button Text="Stage asset"
+                                Command="{Binding StageCommand}"
+                                IsEnabled="{Binding CanStage}" />
+                        <Button Grid.Column="1"
+                                Text="Run prediction"
+                                Command="{Binding RunCommand}"
+                                IsEnabled="{Binding CanRun}" />
+                    </Grid>
+                    <Label Text="{Binding MessageText}"
+                           IsVisible="{Binding ShowMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <CollectionView ItemsSource="{Binding StagedAssets}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasStaged}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14"
+                                Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  RowDefinitions="Auto,Auto,Auto"
+                                  ColumnSpacing="12">
+                                <Label Text="{Binding Symbol}"
+                                       FontAttributes="Bold"
+                                       FontSize="18" />
+                                <Button Grid.Column="1"
+                                        Grid.RowSpan="3"
+                                        Text="Remove"
+                                        Command="{Binding Source={x:Reference PredictionsRoot}, Path=BindingContext.RemoveStagedCommand}"
+                                        CommandParameter="{Binding .}" />
+                                <Label Grid.Row="1"
+                                       Text="{Binding DisplayName}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Grid.Row="2"
+                                       Text="{Binding PriceText}"
+                                       TextColor="{StaticResource Primary}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Border IsVisible="{Binding ShowPredictionSummary}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="16">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding SummaryText}"
+                           FontAttributes="Bold"
+                           LineBreakMode="WordWrap" />
+                    <Label Text="{Binding ModelText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <CollectionView ItemsSource="{Binding Predictions}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasPredictionResults}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14"
+                                Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding AssetName}"
+                                               FontAttributes="Bold"
+                                               FontSize="18" />
+                                        <Label Text="{Binding AssetId}"
+                                               TextColor="{StaticResource Primary}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1"
+                                           Text="MOCK"
+                                           IsVisible="{Binding IsMock}"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource RegulasDanger}" />
+                                </Grid>
+                                <Label Text="{Binding CategoryText}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Text="{Binding PriceText}"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding ChangeText}"
+                                       TextColor="{StaticResource Primary}" />
+                                <Label Text="{Binding ScoreText}" />
+                                <Label Text="{Binding ReasonText}"
+                                       IsVisible="{Binding HasReasons}"
+                                       LineBreakMode="WordWrap"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Text="{Binding WarningText}"
+                                       IsVisible="{Binding HasWarnings}"
+                                       LineBreakMode="WordWrap"
+                                       TextColor="{StaticResource RegulasDanger}" />
+                                <Label Text="{Binding ModelText}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12"
+                  IsVisible="{Binding IsAuthenticated}">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Saved history"
+                           FontSize="20"
+                           FontAttributes="Bold" />
+                    <Label Text="Recent model calls for this account."
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1"
+                        Text="Refresh"
+                        Command="{Binding RefreshHistoryCommand}"
+                        IsEnabled="{Binding CanRefreshHistory}" />
+            </Grid>
+
+            <ActivityIndicator IsRunning="{Binding IsHistoryBusy}"
+                               IsVisible="{Binding IsHistoryBusy}" />
+            <Label Text="{Binding HistoryMessageText}"
+                   IsVisible="{Binding ShowHistoryMessage}"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+
+            <CollectionView ItemsSource="{Binding History}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasHistory}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14"
+                                Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding AssetName}"
+                                               FontAttributes="Bold" />
+                                        <Label Text="{Binding AssetId}"
+                                               TextColor="{StaticResource Primary}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding CreatedText}"
+                                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                </Grid>
+                                <Label Text="{Binding PriceText}" />
+                                <Label Text="{Binding ChangeText}"
+                                       TextColor="{StaticResource Primary}" />
+                                <Label Text="{Binding ScoreText}" />
+                                <Label Text="{Binding ReasonText}"
+                                       IsVisible="{Binding HasReasons}"
+                                       LineBreakMode="WordWrap"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Text="{Binding WarningText}"
+                                       IsVisible="{Binding HasWarnings}"
+                                       LineBreakMode="WordWrap"
+                                       TextColor="{StaticResource RegulasDanger}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

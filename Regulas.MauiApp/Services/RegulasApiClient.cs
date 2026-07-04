@@ -44,14 +44,35 @@ public sealed class RegulasApiClient : IRegulasApiClient
     public async Task<ApiClientResult<CompanyProfile>> GetCompanyProfileAsync(string symbol, CancellationToken token)
     {
         var result = await GetAsync<List<CompanyProfile>>(ProfilePath(symbol), token);
-        if (!result.Ok || result.Data is null)
-        {
-            return ApiClientResult<CompanyProfile>.Failure(result.Message);
-        }
-        var profile = result.Data.FirstOrDefault();
-        return profile is null
-            ? ApiClientResult<CompanyProfile>.Failure($"No profile data for {symbol.Trim().ToUpperInvariant()}.")
-            : ApiClientResult<CompanyProfile>.Success(profile);
+        return FirstProfileResult(symbol, result);
+    }
+
+    public Task<ApiClientResult<PriceHistoryResponse>> GetPriceHistoryAsync(string symbol, string assetType, int take, CancellationToken token)
+    {
+        return GetAsync<PriceHistoryResponse>(PriceHistoryPath(symbol, assetType, take), token);
+    }
+
+    public Task<ApiClientResult<PriceCaptureResult>> CapturePriceHistoryAsync(string symbol, string assetType, CancellationToken token)
+    {
+        return PostAsync<PriceCaptureResult>(PriceCapturePath(symbol, assetType), new { }, token);
+    }
+
+    public Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token)
+    {
+        return PostAsync<AiOverview>("api/predict", new PredictBatchRequest(assets), token);
+    }
+
+    public async Task<ApiClientResult<IReadOnlyList<PredictionHistoryItem>>> GetPredictionHistoryAsync(int take, CancellationToken token)
+    {
+        var result = await GetAsync<List<PredictionHistoryItem>>(PredictionHistoryPath(take), token);
+        return result.Ok && result.Data is not null
+            ? ApiClientResult<IReadOnlyList<PredictionHistoryItem>>.Success(result.Data)
+            : ApiClientResult<IReadOnlyList<PredictionHistoryItem>>.Failure(result.Message);
+    }
+
+    public Task<ApiClientResult<PredictionHealth>> GetPredictionHealthAsync(CancellationToken token)
+    {
+        return GetAsync<PredictionHealth>("api/predict/health", token);
     }
 
     public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
@@ -92,6 +113,41 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static string ProfilePath(string symbol)
     {
         return $"api/market-data/profile?symbol={Uri.EscapeDataString(symbol.Trim().ToUpperInvariant())}";
+    }
+
+    private static string PriceHistoryPath(string symbol, string assetType, int take)
+    {
+        return $"api/price-history/{Esc(symbol)}?assetType={Esc(assetType)}&take={take}";
+    }
+
+    private static string PriceCapturePath(string symbol, string assetType)
+    {
+        return $"api/price-history/{Esc(symbol)}/capture?assetType={Esc(assetType)}";
+    }
+
+    private static string PredictionHistoryPath(int take)
+    {
+        return $"api/predict/history?take={Math.Clamp(take, 1, 100)}";
+    }
+
+    private static string Esc(string value)
+    {
+        return Uri.EscapeDataString(value.Trim());
+    }
+
+    private static ApiClientResult<CompanyProfile> FirstProfileResult(string symbol, ApiClientResult<List<CompanyProfile>> result)
+    {
+        if (!result.Ok || result.Data is null)
+        {
+            return ApiClientResult<CompanyProfile>.Failure(result.Message);
+        }
+        var profile = result.Data.FirstOrDefault();
+        return profile is null ? MissingProfile(symbol) : ApiClientResult<CompanyProfile>.Success(profile);
+    }
+
+    private static ApiClientResult<CompanyProfile> MissingProfile(string symbol)
+    {
+        return ApiClientResult<CompanyProfile>.Failure($"No profile data for {symbol.Trim().ToUpperInvariant()}.");
     }
 
     private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)
