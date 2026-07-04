@@ -46,6 +46,16 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return FirstProfileResult(symbol, result);
     }
 
+    public Task<ApiClientResult<PriceHistoryResponse>> GetPriceHistoryAsync(string symbol, string assetType, int take, CancellationToken token)
+    {
+        return GetAsync<PriceHistoryResponse>(PriceHistoryPath(symbol, assetType, take), token);
+    }
+
+    public Task<ApiClientResult<PriceCaptureResult>> CapturePriceHistoryAsync(string symbol, string assetType, CancellationToken token)
+    {
+        return PostAsync<PriceCaptureResult>(PriceCapturePath(symbol, assetType), new { }, token);
+    }
+
     public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
     {
         return PostAsync<PortfolioStock>("api/stocks", request, token);
@@ -84,6 +94,21 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static string ProfilePath(string symbol)
     {
         return $"api/market-data/profile?symbol={Uri.EscapeDataString(symbol.Trim())}";
+    }
+
+    private static string PriceHistoryPath(string symbol, string assetType, int take)
+    {
+        return $"api/price-history/{Esc(symbol)}?assetType={Esc(assetType)}&take={take}";
+    }
+
+    private static string PriceCapturePath(string symbol, string assetType)
+    {
+        return $"api/price-history/{Esc(symbol)}/capture?assetType={Esc(assetType)}";
+    }
+
+    private static string Esc(string value)
+    {
+        return Uri.EscapeDataString(value.Trim());
     }
 
     private static ApiClientResult<CompanyProfile> FirstProfileResult(string symbol, ApiClientResult<List<CompanyProfile>> result)

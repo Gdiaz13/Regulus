@@ -42,6 +42,7 @@ public static class MauiProgram
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
         services.AddTransient<StockDetailPage>();
+        services.AddTransient<PriceHistoryPage>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
@@ -51,6 +52,7 @@ public static class MauiProgram
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddTransient<StockDetailViewModel>();
+        services.AddTransient<PriceHistoryViewModel>();
     }
 
     private static void RegisterApiServices(IServiceCollection services)

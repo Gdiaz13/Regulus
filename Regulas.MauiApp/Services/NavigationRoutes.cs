@@ -15,9 +15,22 @@ public static class NavigationRoutes
             : Shell.Current.GoToAsync(StockDetailRoute(cleanSymbol));
     }
 
+    public static Task OpenPriceHistoryAsync(string? symbol)
+    {
+        var cleanSymbol = CleanSymbol(symbol);
+        return string.IsNullOrWhiteSpace(cleanSymbol)
+            ? Task.CompletedTask
+            : Shell.Current.GoToAsync(PriceHistoryRoute(cleanSymbol));
+    }
+
     private static string StockDetailRoute(string symbol)
     {
         return $"{nameof(StockDetailPage)}?symbol={Uri.EscapeDataString(symbol)}";
+    }
+
+    private static string PriceHistoryRoute(string symbol)
+    {
+        return $"{nameof(PriceHistoryPage)}?symbol={Uri.EscapeDataString(symbol)}";
     }
 
     private static string CleanSymbol(string? symbol)
