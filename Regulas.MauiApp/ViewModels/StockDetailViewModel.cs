@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Regulas.MauiApp.Models;
 using Regulas.MauiApp.Services;
 
@@ -22,12 +23,14 @@ public sealed class StockDetailViewModel : INotifyPropertyChanged
     public StockDetailViewModel(IRegulasApiClient apiClient)
     {
         _apiClient = apiClient;
+        OpenPriceHistoryCommand = new Command(async () => await NavigationRoutes.OpenPriceHistoryAsync(_symbol));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<ProfileMetric> Facts { get; } = [];
     public ObservableCollection<ProfileMetric> Metrics { get; } = [];
+    public ICommand OpenPriceHistoryCommand { get; }
     public bool IsBusy { get => _isBusy; private set => SetBusy(value); }
     public bool HasProfile => _profile is not null;
     public bool HasError => !string.IsNullOrWhiteSpace(_errorText);
