@@ -30,5 +30,6 @@ public partial class AppShell : Shell
         // Detail pages are pushed onto the stack, not tabs, so they register as routes.
         Routing.RegisterRoute(nameof(AssetDetailPage), typeof(AssetDetailPage));
         Routing.RegisterRoute(nameof(PriceHistoryPage), typeof(PriceHistoryPage));
+        Routing.RegisterRoute(nameof(TradingAgentsPage), typeof(TradingAgentsPage));
     }
 }

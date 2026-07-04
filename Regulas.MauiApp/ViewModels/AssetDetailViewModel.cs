@@ -21,12 +21,14 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
         _apiClient = apiClient;
         OpenPriceHistoryCommand = new Command(async () => await NavigationRoutes.OpenPriceHistoryAsync(Symbol));
         OpenPredictionCommand = new Command(async () => await NavigationRoutes.OpenPredictionsAsync(Symbol));
+        OpenTradingAgentsCommand = new Command(async () => await OpenTradingAgentsAsync());
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand OpenPriceHistoryCommand { get; }
     public ICommand OpenPredictionCommand { get; }
+    public ICommand OpenTradingAgentsCommand { get; }
     public string Symbol { get => _symbol; private set => SetField(ref _symbol, value); }
     public bool IsBusy { get => _isBusy; private set => SetField(ref _isBusy, value); }
     public string ErrorText => _errorText;
@@ -65,6 +67,14 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    // Passes the loaded price along so the research page skips a second profile fetch.
+    private Task OpenTradingAgentsAsync()
+    {
+        return _profile is null
+            ? Task.CompletedTask
+            : NavigationRoutes.OpenTradingAgentsAsync(Symbol, _profile.Price, _profile.CompanyName);
     }
 
     private void ApplyResult(ApiClientResult<CompanyProfile> result)
