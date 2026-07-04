@@ -224,6 +224,7 @@ Current mock services include:
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
 - `GET /api/predict/accuracy/summary` requires auth and rolls the current user's accuracy up per model (win rate, avg error, bull/bear lean).
+- `GET /api/predict/accuracy/results` requires auth and lists the user's persisted accuracy results written by the scoring job.
 - `GET /api/predict/health`
 - `POST /api/trading-agents/stock/analyze`
 - `GET /api/trading-agents/stock/health`
@@ -264,6 +265,7 @@ Done and real:
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 - Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
+- Background prediction-scoring job that scores matured predictions against stored prices and persists them to `model_accuracy_results`, so accuracy history accumulates per model. Tune it with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` (daily by default).
 
 Done but mock:
 
