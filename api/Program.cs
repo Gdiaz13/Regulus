@@ -31,6 +31,7 @@ builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddSingleton<ModelAccuracyResultStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
+builder.Services.AddHttpClient<PokemonTcgClient>(ConfigurePokemonTcgClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 builder.Services.AddHostedService<PriceSnapshotService>();
@@ -65,6 +66,7 @@ app.MapMarketDataEndpoints();
 app.MapPriceHistoryEndpoints();
 app.MapPredictionEndpoints();
 app.MapStockEndpoints();
+app.MapTcgEndpoints();
 app.MapTradingAgentsEndpoints();
 
 app.Run();
@@ -80,6 +82,12 @@ static void ConfigureRegulasAiClient(IServiceProvider services, HttpClient clien
     var configuration = services.GetRequiredService<IConfiguration>();
     client.BaseAddress = RegulasAiConfiguration.CoreUrl(configuration);
     client.Timeout = TimeSpan.FromSeconds(15);
+}
+
+static void ConfigurePokemonTcgClient(HttpClient client)
+{
+    client.BaseAddress = new Uri("https://api.pokemontcg.io/v2/");
+    client.Timeout = TimeSpan.FromSeconds(10);
 }
 
 static void ConfigureTradingAgentsClient(IServiceProvider services, HttpClient client)

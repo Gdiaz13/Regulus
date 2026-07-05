@@ -62,6 +62,14 @@ Or use an environment variable:
 $env:FMP_API_KEY="your_fmp_key"
 ```
 
+Pokemon TCG search/detail calls also run through the API. A key is optional for
+local development, but if you have one, keep it on the API side:
+
+```powershell
+dotnet user-secrets set "PokemonTcg:ApiKey" "your_pokemon_tcg_key"
+$env:POKEMON_TCG_API_KEY="your_pokemon_tcg_key"
+```
+
 The default PostgreSQL connection is:
 
 ```text
@@ -151,6 +159,7 @@ cd ai
 - `/predictions` stages assets and asks the mock AI hierarchy for research signals.
 - `/trading-agents` runs stock TradingAgents research through the C# gateway.
 - `/price-history` captures and reads stored price history.
+- `/tcg` searches Pokemon cards, opens card details, and reads stored TCG price history.
 - `/company/:ticker` opens the company dashboard.
 - `/company/:ticker/company-profile` shows key metrics.
 - `/company/:ticker/income-statement` shows income statement data.
@@ -221,6 +230,8 @@ Current mock services include:
 - `POST /api/price-history/{symbol}/capture` stores provider history and returns capture counts plus source metadata.
 - `POST /api/price-history/{symbol}/manual` requires auth and records a hand-entered price (TCG cards first) with price type, condition, grade, and currency.
 - `GET /api/price-history/{symbol}` defaults to the latest 365 stored points, accepts `?take=` up to 1000, and returns source metadata per point.
+- `GET /api/tcg/pokemon/cards?query=charizard` searches Pokemon cards through the backend gateway.
+- `GET /api/tcg/pokemon/cards/{id}` returns one Pokemon card detail with provider price variants and source metadata.
 - `POST /api/predict` requires auth and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
@@ -253,6 +264,7 @@ cd ..\ai
 Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
+- Web Pokemon TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI asset-detail screen for company profile data through the API market-data proxy.

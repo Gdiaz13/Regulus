@@ -16,7 +16,7 @@ const Navbar = () => (
 function LogoGroup() {
   return (
     <div className={styles.logoGroup}>
-      <Link to="/">Regulus</Link>
+      <Link to="/">Regulas</Link>
       <SearchMenu />
     </div>
   );
@@ -30,6 +30,7 @@ function SearchMenu() {
       <Link to="/predictions" className={styles.link}>Predictions</Link>
       <Link to="/trading-agents" className={styles.link}>Research</Link>
       <Link to="/price-history" className={styles.link}>Prices</Link>
+      <Link to="/tcg" className={styles.link}>TCG</Link>
     </div>
   );
 }
