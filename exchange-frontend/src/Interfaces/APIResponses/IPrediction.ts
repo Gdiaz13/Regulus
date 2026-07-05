@@ -89,6 +89,8 @@ export interface IPredictionAccuracyResponse {
   predictedPrice: number;
   confidenceScore: number;
   riskScore: number;
+  bullishScore: number;
+  bearishScore: number;
   actualPrice: number;
   predictedPercentChange: number;
   actualPercentChange: number;
@@ -101,6 +103,13 @@ export interface IPredictionAccuracyResponse {
   isMock: boolean;
 }
 
+export interface IModelHorizonAccuracySummary {
+  horizon: string;
+  scoredCount: number;
+  winRate: number;
+  averageAbsolutePercentError: number;
+}
+
 export interface IModelAccuracySummary {
   modelName: string;
   scoredCount: number;
@@ -108,7 +117,15 @@ export interface IModelAccuracySummary {
   averageAbsolutePercentError: number;
   averagePredictedPercentChange: number;
   averageActualPercentChange: number;
+  averageTimeHorizonDays: number;
   averageConfidenceScore: number;
   averageRiskScore: number;
+  averageBullishScore: number;
+  averageBearishScore: number;
+  averageDirectionalBias: number;
+  bullishBiasRate: number;
+  bearishBiasRate: number;
   confidenceCalibrationError: number;
+  riskCalibrationError: number;
+  horizons: IModelHorizonAccuracySummary[];
 }

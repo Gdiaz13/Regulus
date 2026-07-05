@@ -81,7 +81,7 @@ public sealed class PredictionAccuracyStore
         return new PredictionAccuracyResponse(
             (int)prediction.Id, prediction.AssetId, prediction.AssetName, prediction.AssetType,
             prediction.ModelName, prediction.ModelVersion, prediction.CurrentPrice, prediction.PredictedPrice,
-            prediction.ConfidenceScore, prediction.RiskScore, actual.Close,
+            prediction.ConfidenceScore, prediction.RiskScore, prediction.BullishScore, prediction.BearishScore, actual.Close,
             prediction.PredictedPercentChange, actualPercent, error,
             AccuracyMath.DirectionMatched(prediction.PredictedPercentChange, actualPercent),
             prediction.TimeHorizonDays, prediction.CreatedOn, targetDate, actual.Date,
@@ -122,14 +122,40 @@ public sealed class PredictionAccuracyStore
     private static ModelAccuracySummary ToSummary(IGrouping<string, PredictionAccuracyResponse> group)
     {
         var scored = group.ToList();
+        var outcomes = OutcomeMetrics(scored);
+        var signals = SignalMetrics(scored);
         return new ModelAccuracySummary(
-            group.Key, scored.Count, WinRate(scored),
+            group.Key, scored.Count, WinRate(scored), outcomes.AverageAbsolutePercentError,
+            outcomes.AveragePredictedPercentChange, outcomes.AverageActualPercentChange,
+            signals.AverageTimeHorizonDays, signals.AverageConfidenceScore, signals.AverageRiskScore,
+            signals.AverageBullishScore, signals.AverageBearishScore, outcomes.AverageDirectionalBias,
+            outcomes.BullishBiasRate, outcomes.BearishBiasRate, signals.ConfidenceCalibrationError,
+            signals.RiskCalibrationError, HorizonBreakdown(scored)
+        );
+    }
+
+    private static SummaryOutcomeMetrics OutcomeMetrics(List<PredictionAccuracyResponse> scored)
+    {
+        return new SummaryOutcomeMetrics(
             Average(scored, result => result.AbsolutePercentError),
             Average(scored, result => result.PredictedPercentChange),
             Average(scored, result => result.ActualPercentChange),
+            Average(scored, DirectionalBias),
+            Rate(scored, result => DirectionalBias(result) > 0),
+            Rate(scored, result => DirectionalBias(result) < 0)
+        );
+    }
+
+    private static SummarySignalMetrics SignalMetrics(List<PredictionAccuracyResponse> scored)
+    {
+        return new SummarySignalMetrics(
+            Average(scored, result => result.TimeHorizonDays),
             Average(scored, result => result.ConfidenceScore),
             Average(scored, result => result.RiskScore),
-            Average(scored, ConfidenceCalibrationError)
+            Average(scored, result => result.BullishScore),
+            Average(scored, result => result.BearishScore),
+            Average(scored, ConfidenceCalibrationError),
+            Average(scored, RiskCalibrationError)
         );
     }
 
@@ -143,10 +169,47 @@ public sealed class PredictionAccuracyStore
         return Math.Round(scored.Average(select), 2);
     }
 
+    private static double Rate(List<PredictionAccuracyResponse> scored, Func<PredictionAccuracyResponse, bool> select)
+    {
+        return Math.Round(scored.Count(select) * 100.0 / scored.Count, 2);
+    }
+
+    private static List<ModelHorizonAccuracySummary> HorizonBreakdown(List<PredictionAccuracyResponse> scored)
+    {
+        return scored.GroupBy(HorizonBucket).OrderBy(group => HorizonOrder(group.Key)).Select(HorizonSummary).ToList();
+    }
+
+    private static ModelHorizonAccuracySummary HorizonSummary(IGrouping<string, PredictionAccuracyResponse> group)
+    {
+        var scored = group.ToList();
+        return new ModelHorizonAccuracySummary(group.Key, scored.Count, WinRate(scored), Average(scored, r => r.AbsolutePercentError));
+    }
+
+    private static string HorizonBucket(PredictionAccuracyResponse result)
+    {
+        return result.TimeHorizonDays <= 30 ? "Short" : result.TimeHorizonDays <= 90 ? "Medium" : "Long";
+    }
+
+    private static int HorizonOrder(string horizon)
+    {
+        return horizon switch { "Short" => 0, "Medium" => 1, _ => 2 };
+    }
+
+    private static double DirectionalBias(PredictionAccuracyResponse result)
+    {
+        return result.PredictedPercentChange - result.ActualPercentChange;
+    }
+
     private static double ConfidenceCalibrationError(PredictionAccuracyResponse result)
     {
         var outcome = result.DirectionMatched ? 100d : 0d;
         return Math.Abs((result.ConfidenceScore * 100d) - outcome);
+    }
+
+    private static double RiskCalibrationError(PredictionAccuracyResponse result)
+    {
+        var badOutcome = result.DirectionMatched ? Math.Min(result.AbsolutePercentError, 100d) : 100d;
+        return Math.Abs((result.RiskScore * 100d) - badOutcome);
     }
 
     private sealed class PredictionRow
@@ -159,6 +222,8 @@ public sealed class PredictionAccuracyStore
         public decimal PredictedPrice { get; init; }
         public double ConfidenceScore { get; init; }
         public double RiskScore { get; init; }
+        public double BullishScore { get; init; }
+        public double BearishScore { get; init; }
         public double PredictedPercentChange { get; init; }
         public int TimeHorizonDays { get; init; }
         public string ModelName { get; init; } = string.Empty;
@@ -166,6 +231,25 @@ public sealed class PredictionAccuracyStore
         public bool IsMock { get; init; }
         public DateTime CreatedOn { get; init; }
     }
+
+    private sealed record SummaryOutcomeMetrics(
+        double AverageAbsolutePercentError,
+        double AveragePredictedPercentChange,
+        double AverageActualPercentChange,
+        double AverageDirectionalBias,
+        double BullishBiasRate,
+        double BearishBiasRate
+    );
+
+    private sealed record SummarySignalMetrics(
+        double AverageTimeHorizonDays,
+        double AverageConfidenceScore,
+        double AverageRiskScore,
+        double AverageBullishScore,
+        double AverageBearishScore,
+        double ConfidenceCalibrationError,
+        double RiskCalibrationError
+    );
 
     // Npgsql returns PostgreSQL date columns as DateOnly, so the row matches that.
     private sealed class ActualPriceRow
@@ -181,6 +265,7 @@ public sealed class PredictionAccuracyStore
                    asset_type as "AssetType", current_price as "CurrentPrice",
                    predicted_price as "PredictedPrice",
                    confidence_score as "ConfidenceScore", risk_score as "RiskScore",
+                   bullish_score as "BullishScore", bearish_score as "BearishScore",
                    predicted_percent_change as "PredictedPercentChange",
                    time_horizon_days as "TimeHorizonDays", model_name as "ModelName",
                    model_version as "ModelVersion", is_mock as "IsMock", created_on as "CreatedOn"

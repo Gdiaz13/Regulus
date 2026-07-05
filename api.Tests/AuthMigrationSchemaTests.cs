@@ -60,6 +60,17 @@ public class AuthMigrationSchemaTests
         Assert.Contains("create index if not exists ix_predictions_user_asset_created_on", sql);
     }
 
+    [Fact]
+    public void Model_accuracy_signal_migration_preserves_prediction_inputs()
+    {
+        var sql = ReadMigration("007_model_accuracy_signal_fields.sql");
+        Assert.Contains("confidence_score double precision", sql);
+        Assert.Contains("risk_score double precision", sql);
+        Assert.Contains("bullish_score double precision", sql);
+        Assert.Contains("bearish_score double precision", sql);
+        Assert.Contains("time_horizon_days integer", sql);
+    }
+
     private static string ReadMigration(string name, [CallerFilePath] string sourceFile = "")
     {
         var path = Path.Combine(ProjectRoot(sourceFile), "api", "Database", "Migrations", name);

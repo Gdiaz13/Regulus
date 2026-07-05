@@ -12,6 +12,11 @@ public sealed class ModelAccuracyResult
     public string ModelName { get; init; } = string.Empty;
     public string ModelVersion { get; init; } = string.Empty;
     public double PredictedPercentChange { get; init; }
+    public double ConfidenceScore { get; init; }
+    public double RiskScore { get; init; }
+    public double BullishScore { get; init; }
+    public double BearishScore { get; init; }
+    public int TimeHorizonDays { get; init; }
     public double ActualPercentChange { get; init; }
     public double AbsolutePercentError { get; init; }
     public bool DirectionMatched { get; init; }

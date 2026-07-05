@@ -74,9 +74,17 @@ public class PredictionAccuracyStoreTests
         Assert.Equal(100d, summary.WinRate);
         Assert.Equal(2d, summary.AverageAbsolutePercentError);
         Assert.Equal(12d, summary.AverageActualPercentChange);
+        Assert.Equal(1d, summary.AverageTimeHorizonDays);
         Assert.Equal(0.6d, summary.AverageConfidenceScore);
         Assert.Equal(0.4d, summary.AverageRiskScore);
+        Assert.Equal(0.7d, summary.AverageBullishScore);
+        Assert.Equal(0.3d, summary.AverageBearishScore);
+        Assert.Equal(-2d, summary.AverageDirectionalBias);
+        Assert.Equal(0d, summary.BullishBiasRate);
+        Assert.Equal(100d, summary.BearishBiasRate);
         Assert.Equal(40d, summary.ConfidenceCalibrationError);
+        Assert.Equal(38d, summary.RiskCalibrationError);
+        AssertHorizon(summary.Horizons.Single(), "Short", 1, 100d, 2d);
     }
 
     [Fact]
@@ -88,7 +96,27 @@ public class PredictionAccuracyStoreTests
         var summary = (await Summary(factory)).Single();
         Assert.Equal(0d, summary.WinRate);
         Assert.Equal(-10d, summary.AverageActualPercentChange);
+        Assert.Equal(20d, summary.AverageDirectionalBias);
+        Assert.Equal(100d, summary.BullishBiasRate);
+        Assert.Equal(0d, summary.BearishBiasRate);
         Assert.Equal(60d, summary.ConfidenceCalibrationError);
+        Assert.Equal(60d, summary.RiskCalibrationError);
+    }
+
+    [Fact]
+    public async Task SummaryAsync_breaks_out_horizon_accuracy()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        await SaveReadyPrediction(factory, "AMD", horizonDays: 14);
+        await SaveReadyPrediction(factory, "NVDA", horizonDays: 60);
+        await SaveReadyPrediction(factory, "TSLA", horizonDays: 120);
+        await SavePrice(factory, "AMD", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
+        await SavePrice(factory, "NVDA", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
+        await SavePrice(factory, "TSLA", DateOnly.FromDateTime(DateTime.UtcNow), 112m);
+        var summary = (await Summary(factory)).Single();
+        Assert.Equal(["Short", "Medium", "Long"], summary.Horizons.Select(item => item.Horizon));
+        Assert.Equal(64.67d, summary.AverageTimeHorizonDays);
+        Assert.All(summary.Horizons, item => AssertHorizon(item, item.Horizon, 1, 100d, 2d));
     }
 
     [Fact]
@@ -109,20 +137,40 @@ public class PredictionAccuracyStoreTests
         return new PredictionAccuracyStore(factory).SummaryAsync(TestUsers.AliceId, null, null);
     }
 
+    private static void AssertHorizon(
+        ModelHorizonAccuracySummary item,
+        string horizon,
+        int count,
+        double winRate,
+        double averageError
+    )
+    {
+        Assert.Equal(horizon, item.Horizon);
+        Assert.Equal(count, item.ScoredCount);
+        Assert.Equal(winRate, item.WinRate);
+        Assert.Equal(averageError, item.AverageAbsolutePercentError);
+    }
+
     private static async Task SaveReadyPrediction(
         SqliteDapperConnectionFactory factory,
         string symbol,
-        Guid? userId = null
+        Guid? userId = null,
+        int horizonDays = 1
     )
     {
         await new PredictionStore(factory).SaveAsync(userId ?? TestUsers.AliceId, TestData.Overview(TestData.Prediction(symbol)));
-        await TouchPrediction(factory, symbol);
+        await TouchPrediction(factory, symbol, horizonDays);
     }
 
-    private static async Task TouchPrediction(SqliteDapperConnectionFactory factory, string symbol)
+    private static async Task TouchPrediction(SqliteDapperConnectionFactory factory, string symbol, int horizonDays)
     {
         await using var connection = await factory.OpenDatabaseConnectionAsync();
-        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, CreatedOn = DateTime.UtcNow.AddDays(-2) });
+        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, HorizonDays = horizonDays, CreatedOn = CreatedOn(horizonDays) });
+    }
+
+    private static DateTime CreatedOn(int horizonDays)
+    {
+        return DateTime.UtcNow.AddDays(-(horizonDays + 2));
     }
 
     private static async Task SavePrice(SqliteDapperConnectionFactory factory, string symbol, DateOnly date, decimal close)
@@ -148,7 +196,7 @@ public class PredictionAccuracyStoreTests
 
     private const string SqlTouch = """
         update predictions
-        set created_on = @CreatedOn, time_horizon_days = 1
+        set created_on = @CreatedOn, time_horizon_days = @HorizonDays
         where asset_id = @Symbol;
         """;
 }

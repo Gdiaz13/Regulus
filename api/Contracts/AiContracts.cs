@@ -106,6 +106,8 @@ public sealed record PredictionAccuracyResponse(
     decimal PredictedPrice,
     double ConfidenceScore,
     double RiskScore,
+    double BullishScore,
+    double BearishScore,
     decimal ActualPrice,
     double PredictedPercentChange,
     double ActualPercentChange,
@@ -118,6 +120,13 @@ public sealed record PredictionAccuracyResponse(
     bool IsMock
 );
 
+public sealed record ModelHorizonAccuracySummary(
+    string Horizon,
+    int ScoredCount,
+    double WinRate,
+    double AverageAbsolutePercentError
+);
+
 // Per-model accuracy rollup so Regulas can show which AI is most accurate and
 // whether it leans too bullish or too bearish.
 public sealed record ModelAccuracySummary(
@@ -127,7 +136,15 @@ public sealed record ModelAccuracySummary(
     double AverageAbsolutePercentError,
     double AveragePredictedPercentChange,
     double AverageActualPercentChange,
+    double AverageTimeHorizonDays,
     double AverageConfidenceScore,
     double AverageRiskScore,
-    double ConfidenceCalibrationError
+    double AverageBullishScore,
+    double AverageBearishScore,
+    double AverageDirectionalBias,
+    double BullishBiasRate,
+    double BearishBiasRate,
+    double ConfidenceCalibrationError,
+    double RiskCalibrationError,
+    List<ModelHorizonAccuracySummary> Horizons
 );

@@ -1,4 +1,11 @@
-import type { IAiOverview, IPredictAsset, IPredictionHealth, IPredictionHistoryItem } from '../Interfaces/APIResponses/IPrediction';
+import type {
+  IAiOverview,
+  IModelAccuracySummary,
+  IPredictAsset,
+  IPredictionAccuracyResponse,
+  IPredictionHealth,
+  IPredictionHistoryItem,
+} from '../Interfaces/APIResponses/IPrediction';
 import { apiPath, jsonInit, requestApi } from './apiClient';
 import type { ApiResult } from './types';
 
@@ -23,5 +30,19 @@ export function getPredictionHistory(take = 10): Promise<ApiResult<IPredictionHi
   return requestApi<IPredictionHistoryItem[]>(apiPath('/api/predict', '/history', { take }), {
     failureMessage: 'Prediction history request failed',
     connectionMessage: 'Unable to connect to the prediction history API.',
+  });
+}
+
+export function getPredictionAccuracy(take = 25): Promise<ApiResult<IPredictionAccuracyResponse[]>> {
+  return requestApi<IPredictionAccuracyResponse[]>(apiPath('/api/predict', '/accuracy', { take }), {
+    failureMessage: 'Prediction accuracy request failed',
+    connectionMessage: 'Unable to connect to the prediction accuracy API.',
+  });
+}
+
+export function getPredictionAccuracySummary(take = 25): Promise<ApiResult<IModelAccuracySummary[]>> {
+  return requestApi<IModelAccuracySummary[]>(apiPath('/api/predict', '/accuracy/summary', { take }), {
+    failureMessage: 'Prediction accuracy summary request failed',
+    connectionMessage: 'Unable to connect to the prediction accuracy summary API.',
   });
 }

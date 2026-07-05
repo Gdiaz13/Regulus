@@ -80,15 +80,30 @@ public sealed class ModelAccuracyResultStore
 
     private static void AddPredictionParams(DynamicParameters parameters, PendingPrediction prediction)
     {
+        AddPredictionIdentityParams(parameters, prediction);
+        AddPredictionSignalParams(parameters, prediction);
+        parameters.Add("IsMock", prediction.IsMock);
+        parameters.Add("PredictedOn", prediction.CreatedOn);
+    }
+
+    private static void AddPredictionIdentityParams(DynamicParameters parameters, PendingPrediction prediction)
+    {
         parameters.Add("PredictionId", prediction.PredictionId);
         parameters.Add("UserId", prediction.UserId);
         parameters.Add("AssetId", prediction.AssetId);
         parameters.Add("AssetType", prediction.AssetType);
         parameters.Add("ModelName", prediction.ModelName);
         parameters.Add("ModelVersion", prediction.ModelVersion);
+    }
+
+    private static void AddPredictionSignalParams(DynamicParameters parameters, PendingPrediction prediction)
+    {
         parameters.Add("PredictedPercentChange", prediction.PredictedPercentChange);
-        parameters.Add("IsMock", prediction.IsMock);
-        parameters.Add("PredictedOn", prediction.CreatedOn);
+        parameters.Add("ConfidenceScore", prediction.ConfidenceScore);
+        parameters.Add("RiskScore", prediction.RiskScore);
+        parameters.Add("BullishScore", prediction.BullishScore);
+        parameters.Add("BearishScore", prediction.BearishScore);
+        parameters.Add("TimeHorizonDays", prediction.TimeHorizonDays);
     }
 
     private static void AddScoreParams(DynamicParameters parameters, PendingPrediction prediction, ActualPriceRow actual, DateOnly targetDate)
@@ -116,6 +131,10 @@ public sealed class ModelAccuracyResultStore
         public string AssetType { get; init; } = string.Empty;
         public decimal CurrentPrice { get; init; }
         public double PredictedPercentChange { get; init; }
+        public double ConfidenceScore { get; init; }
+        public double RiskScore { get; init; }
+        public double BullishScore { get; init; }
+        public double BearishScore { get; init; }
         public int TimeHorizonDays { get; init; }
         public string ModelName { get; init; } = string.Empty;
         public string ModelVersion { get; init; } = string.Empty;
@@ -138,6 +157,8 @@ public sealed class ModelAccuracyResultStore
             select p.id as "PredictionId", p.user_id as "UserId", p.asset_id as "AssetId",
                    p.asset_type as "AssetType", p.current_price as "CurrentPrice",
                    p.predicted_percent_change as "PredictedPercentChange",
+                   p.confidence_score as "ConfidenceScore", p.risk_score as "RiskScore",
+                   p.bullish_score as "BullishScore", p.bearish_score as "BearishScore",
                    p.time_horizon_days as "TimeHorizonDays", p.model_name as "ModelName",
                    p.model_version as "ModelVersion", p.is_mock as "IsMock", p.created_on as "CreatedOn"
             from predictions p
@@ -151,6 +172,8 @@ public sealed class ModelAccuracyResultStore
             select p.id as "PredictionId", p.user_id as "UserId", p.asset_id as "AssetId",
                    p.asset_type as "AssetType", p.current_price as "CurrentPrice",
                    p.predicted_percent_change as "PredictedPercentChange",
+                   p.confidence_score as "ConfidenceScore", p.risk_score as "RiskScore",
+                   p.bullish_score as "BullishScore", p.bearish_score as "BearishScore",
                    p.time_horizon_days as "TimeHorizonDays", p.model_name as "ModelName",
                    p.model_version as "ModelVersion", p.is_mock as "IsMock", p.created_on as "CreatedOn"
             from model_accuracy_results r
@@ -171,18 +194,25 @@ public sealed class ModelAccuracyResultStore
         public const string Insert = """
             insert into model_accuracy_results
                 (prediction_id, user_id, asset_id, asset_type, model_name, model_version,
-                 predicted_percent_change, actual_percent_change, absolute_percent_error,
+                 predicted_percent_change, confidence_score, risk_score, bullish_score, bearish_score,
+                 time_horizon_days, actual_percent_change, absolute_percent_error,
                  direction_matched, actual_price, target_date, actual_date, is_mock, predicted_on, scored_at)
             values
                 (@PredictionId, @UserId, @AssetId, @AssetType, @ModelName, @ModelVersion,
-                 @PredictedPercentChange, @ActualPercentChange, @AbsolutePercentError,
+                 @PredictedPercentChange, @ConfidenceScore, @RiskScore, @BullishScore, @BearishScore,
+                 @TimeHorizonDays, @ActualPercentChange, @AbsolutePercentError,
                  @DirectionMatched, @ActualPrice, @TargetDate, @ActualDate, @IsMock, @PredictedOn, @ScoredAt)
             on conflict (prediction_id) do nothing;
             """;
 
         public const string Update = """
             update model_accuracy_results
-            set actual_percent_change = @ActualPercentChange,
+            set confidence_score = @ConfidenceScore,
+                risk_score = @RiskScore,
+                bullish_score = @BullishScore,
+                bearish_score = @BearishScore,
+                time_horizon_days = @TimeHorizonDays,
+                actual_percent_change = @ActualPercentChange,
                 absolute_percent_error = @AbsolutePercentError,
                 direction_matched = @DirectionMatched,
                 actual_price = @ActualPrice,
@@ -196,6 +226,9 @@ public sealed class ModelAccuracyResultStore
             select id as "Id", prediction_id as "PredictionId", user_id as "UserId",
                    asset_id as "AssetId", asset_type as "AssetType", model_name as "ModelName",
                    model_version as "ModelVersion", predicted_percent_change as "PredictedPercentChange",
+                   confidence_score as "ConfidenceScore", risk_score as "RiskScore",
+                   bullish_score as "BullishScore", bearish_score as "BearishScore",
+                   time_horizon_days as "TimeHorizonDays",
                    actual_percent_change as "ActualPercentChange", absolute_percent_error as "AbsolutePercentError",
                    direction_matched as "DirectionMatched", actual_price as "ActualPrice",
                    target_date as "TargetDate", actual_date as "ActualDate", is_mock as "IsMock",
