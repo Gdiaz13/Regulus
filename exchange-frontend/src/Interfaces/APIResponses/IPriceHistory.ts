@@ -7,6 +7,10 @@ export interface IPricePoint {
   close: number;
   volume: number;
   source: string;
+  priceType: string | null;
+  cardCondition: string | null;
+  grade: string | null;
+  currency: string | null;
 }
 
 export interface IPriceHistory {
