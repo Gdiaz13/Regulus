@@ -1,4 +1,4 @@
-import type { ICaptureResult, IPriceHistory } from '../Interfaces/APIResponses/IPriceHistory';
+import type { ICaptureResult, IManualPriceRequest, IPriceHistory } from '../Interfaces/APIResponses/IPriceHistory';
 import { apiPath, jsonInit, requestApi } from './apiClient';
 import type { ApiResult } from './types';
 
@@ -10,6 +10,16 @@ const base = '/api/price-history';
 export function getPriceHistory(symbol: string, assetType: string, take?: number): Promise<ApiResult<IPriceHistory>> {
   return requestApi<IPriceHistory>(apiPath(base, `/${encodeURIComponent(symbol)}`, { assetType, take }), {
     failureMessage: 'Price history request failed',
+    connectionMessage: 'Unable to connect to the price history API.',
+  });
+}
+
+// Hand-entered prices for assets with no provider feed yet (TCG cards first).
+// The API requires a signed-in user; requestApi attaches the bearer token.
+export function recordManualPrice(symbol: string, request: IManualPriceRequest): Promise<ApiResult<ICaptureResult>> {
+  return requestApi<ICaptureResult>(apiPath(base, `/${encodeURIComponent(symbol)}/manual`, { assetType: 'TcgCard' }), {
+    init: jsonInit({ method: 'POST', body: JSON.stringify(request) }),
+    failureMessage: 'Manual price entry failed',
     connectionMessage: 'Unable to connect to the price history API.',
   });
 }
