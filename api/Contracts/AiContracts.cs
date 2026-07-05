@@ -104,6 +104,8 @@ public sealed record PredictionAccuracyResponse(
     string ModelVersion,
     decimal CurrentPrice,
     decimal PredictedPrice,
+    double ConfidenceScore,
+    double RiskScore,
     decimal ActualPrice,
     double PredictedPercentChange,
     double ActualPercentChange,
@@ -124,5 +126,8 @@ public sealed record ModelAccuracySummary(
     double WinRate,
     double AverageAbsolutePercentError,
     double AveragePredictedPercentChange,
-    double AverageActualPercentChange
+    double AverageActualPercentChange,
+    double AverageConfidenceScore,
+    double AverageRiskScore,
+    double ConfidenceCalibrationError
 );

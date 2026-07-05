@@ -81,7 +81,8 @@ public sealed class PredictionAccuracyStore
         return new PredictionAccuracyResponse(
             (int)prediction.Id, prediction.AssetId, prediction.AssetName, prediction.AssetType,
             prediction.ModelName, prediction.ModelVersion, prediction.CurrentPrice, prediction.PredictedPrice,
-            actual.Close, prediction.PredictedPercentChange, actualPercent, error,
+            prediction.ConfidenceScore, prediction.RiskScore, actual.Close,
+            prediction.PredictedPercentChange, actualPercent, error,
             AccuracyMath.DirectionMatched(prediction.PredictedPercentChange, actualPercent),
             prediction.TimeHorizonDays, prediction.CreatedOn, targetDate, actual.Date,
             prediction.IsMock
@@ -125,7 +126,10 @@ public sealed class PredictionAccuracyStore
             group.Key, scored.Count, WinRate(scored),
             Average(scored, result => result.AbsolutePercentError),
             Average(scored, result => result.PredictedPercentChange),
-            Average(scored, result => result.ActualPercentChange)
+            Average(scored, result => result.ActualPercentChange),
+            Average(scored, result => result.ConfidenceScore),
+            Average(scored, result => result.RiskScore),
+            Average(scored, ConfidenceCalibrationError)
         );
     }
 
@@ -139,6 +143,12 @@ public sealed class PredictionAccuracyStore
         return Math.Round(scored.Average(select), 2);
     }
 
+    private static double ConfidenceCalibrationError(PredictionAccuracyResponse result)
+    {
+        var outcome = result.DirectionMatched ? 100d : 0d;
+        return Math.Abs((result.ConfidenceScore * 100d) - outcome);
+    }
+
     private sealed class PredictionRow
     {
         public long Id { get; init; }
@@ -147,6 +157,8 @@ public sealed class PredictionAccuracyStore
         public string AssetType { get; init; } = string.Empty;
         public decimal CurrentPrice { get; init; }
         public decimal PredictedPrice { get; init; }
+        public double ConfidenceScore { get; init; }
+        public double RiskScore { get; init; }
         public double PredictedPercentChange { get; init; }
         public int TimeHorizonDays { get; init; }
         public string ModelName { get; init; } = string.Empty;
@@ -168,6 +180,7 @@ public sealed class PredictionAccuracyStore
             select id as "Id", asset_id as "AssetId", asset_name as "AssetName",
                    asset_type as "AssetType", current_price as "CurrentPrice",
                    predicted_price as "PredictedPrice",
+                   confidence_score as "ConfidenceScore", risk_score as "RiskScore",
                    predicted_percent_change as "PredictedPercentChange",
                    time_horizon_days as "TimeHorizonDays", model_name as "ModelName",
                    model_version as "ModelVersion", is_mock as "IsMock", created_on as "CreatedOn"
