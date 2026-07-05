@@ -150,6 +150,12 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return ApiClientResult<CompanyProfile>.Failure($"No profile data for {symbol.Trim().ToUpperInvariant()}.");
     }
 
+    // Runs the separate TradingAgents research service through the gateway.
+    public Task<ApiClientResult<StockTradingAgentsResult>> AnalyzeStockAsync(StockTradingAgentsRequest request, CancellationToken token)
+    {
+        return PostAsync<StockTradingAgentsResult>("api/trading-agents/stock/analyze", request, token);
+    }
+
     private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)
     {
         return await SendAsync<T>(HttpMethod.Post, path, body, token);

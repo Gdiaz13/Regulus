@@ -22,6 +22,8 @@ public interface IRegulasApiClient
 
     Task<ApiClientResult<PredictionHealth>> GetPredictionHealthAsync(CancellationToken token);
 
+    Task<ApiClientResult<StockTradingAgentsResult>> AnalyzeStockAsync(StockTradingAgentsRequest request, CancellationToken token);
+
     Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token);
 
     Task<ApiClientResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
