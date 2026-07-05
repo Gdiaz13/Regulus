@@ -270,7 +270,7 @@ Done and real:
 - PostgreSQL/Dapper migration foundation, local compose setup, and PostgreSQL health probe.
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 - Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
-- Background prediction-scoring job that scores matured predictions against stored prices and persists them to `model_accuracy_results`, so accuracy history accumulates per model. Tune it with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` (daily by default).
+- Background prediction-scoring and accuracy-recalculation jobs that persist and refresh `model_accuracy_results`, so accuracy history improves as stored prices fill in. Tune them with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` and `BackgroundJobs:ModelAccuracyRecalculationEnabled` / `ModelAccuracyRecalculationIntervalMinutes` (daily by default).
 
 Done but mock:
 

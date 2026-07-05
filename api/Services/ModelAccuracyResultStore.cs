@@ -30,6 +30,19 @@ public sealed class ModelAccuracyResultStore
         return scored;
     }
 
+    // Refreshes existing results when better target-date price data arrives later.
+    public async Task<int> RecalculateExistingAsync(CancellationToken token = default)
+    {
+        await using var connection = await _factory.OpenDatabaseConnectionAsync(token);
+        var existing = await connection.QueryAsync<PendingPrediction>(Sql.Existing, new { Take = BatchSize });
+        var recalculated = 0;
+        foreach (var prediction in existing)
+        {
+            recalculated += await RecalculateOneAsync(connection, prediction);
+        }
+        return recalculated;
+    }
+
     public async Task<List<ModelAccuracyResult>> ListResultsAsync(Guid userId, int? take, CancellationToken token = default)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync(token);
@@ -42,6 +55,13 @@ public sealed class ModelAccuracyResultStore
         var targetDate = AccuracyMath.TargetDate(prediction.CreatedOn, prediction.TimeHorizonDays);
         var actual = await ActualPrice(connection, prediction, targetDate);
         return actual is null ? 0 : await connection.ExecuteAsync(Sql.Insert, InsertParams(prediction, actual, targetDate));
+    }
+
+    private static async Task<int> RecalculateOneAsync(DbConnection connection, PendingPrediction prediction)
+    {
+        var targetDate = AccuracyMath.TargetDate(prediction.CreatedOn, prediction.TimeHorizonDays);
+        var actual = await ActualPrice(connection, prediction, targetDate);
+        return actual is null ? 0 : await connection.ExecuteAsync(Sql.Update, InsertParams(prediction, actual, targetDate));
     }
 
     private static Task<ActualPriceRow?> ActualPrice(DbConnection connection, PendingPrediction prediction, DateOnly targetDate)
@@ -127,6 +147,18 @@ public sealed class ModelAccuracyResultStore
             limit @Take;
             """;
 
+        public const string Existing = """
+            select p.id as "PredictionId", p.user_id as "UserId", p.asset_id as "AssetId",
+                   p.asset_type as "AssetType", p.current_price as "CurrentPrice",
+                   p.predicted_percent_change as "PredictedPercentChange",
+                   p.time_horizon_days as "TimeHorizonDays", p.model_name as "ModelName",
+                   p.model_version as "ModelVersion", p.is_mock as "IsMock", p.created_on as "CreatedOn"
+            from model_accuracy_results r
+            join predictions p on p.id = r.prediction_id
+            order by r.scored_at, r.id
+            limit @Take;
+            """;
+
         public const string ActualPrice = """
             select p.date as "Date", p.close_price as "Close"
             from price_history p
@@ -146,6 +178,18 @@ public sealed class ModelAccuracyResultStore
                  @PredictedPercentChange, @ActualPercentChange, @AbsolutePercentError,
                  @DirectionMatched, @ActualPrice, @TargetDate, @ActualDate, @IsMock, @PredictedOn, @ScoredAt)
             on conflict (prediction_id) do nothing;
+            """;
+
+        public const string Update = """
+            update model_accuracy_results
+            set actual_percent_change = @ActualPercentChange,
+                absolute_percent_error = @AbsolutePercentError,
+                direction_matched = @DirectionMatched,
+                actual_price = @ActualPrice,
+                target_date = @TargetDate,
+                actual_date = @ActualDate,
+                scored_at = @ScoredAt
+            where prediction_id = @PredictionId;
             """;
 
         public const string ListResults = """

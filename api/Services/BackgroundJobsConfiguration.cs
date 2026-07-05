@@ -24,6 +24,16 @@ public static class BackgroundJobsConfiguration
         return TimeSpan.FromMinutes(configuration.GetValue("BackgroundJobs:PredictionScoringIntervalMinutes", 1440));
     }
 
+    public static bool ModelAccuracyRecalculationEnabled(IConfiguration configuration)
+    {
+        return configuration.GetValue("BackgroundJobs:ModelAccuracyRecalculationEnabled", true);
+    }
+
+    public static TimeSpan ModelAccuracyRecalculationInterval(IConfiguration configuration)
+    {
+        return TimeSpan.FromMinutes(configuration.GetValue("BackgroundJobs:ModelAccuracyRecalculationIntervalMinutes", 1440));
+    }
+
     public static TimeSpan StartupDelay(IConfiguration configuration)
     {
         return TimeSpan.FromSeconds(configuration.GetValue("BackgroundJobs:StartupDelaySeconds", 15));
