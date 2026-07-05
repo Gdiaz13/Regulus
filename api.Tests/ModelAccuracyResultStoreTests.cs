@@ -19,6 +19,11 @@ public class ModelAccuracyResultStoreTests
         var result = Assert.Single(await store.ListResultsAsync(TestUsers.AliceId, null));
         Assert.Equal(12d, result.ActualPercentChange);
         Assert.Equal(2d, result.AbsolutePercentError);
+        Assert.Equal(0.6d, result.ConfidenceScore);
+        Assert.Equal(0.4d, result.RiskScore);
+        Assert.Equal(0.7d, result.BullishScore);
+        Assert.Equal(0.3d, result.BearishScore);
+        Assert.Equal(1, result.TimeHorizonDays);
         Assert.True(result.DirectionMatched);
     }
 
@@ -49,6 +54,7 @@ public class ModelAccuracyResultStoreTests
         var result = Assert.Single(await store.ListResultsAsync(TestUsers.AliceId, null));
         Assert.Equal(5d, result.ActualPercentChange);
         Assert.Equal(5d, result.AbsolutePercentError);
+        Assert.Equal(1, result.TimeHorizonDays);
     }
 
     [Fact]
@@ -78,17 +84,23 @@ public class ModelAccuracyResultStoreTests
         SqliteDapperConnectionFactory factory,
         string symbol,
         Guid? userId = null,
-        DateTime? createdOn = null
+        DateTime? createdOn = null,
+        int horizonDays = 1
     )
     {
         await new PredictionStore(factory).SaveAsync(userId ?? TestUsers.AliceId, TestData.Overview(TestData.Prediction(symbol)));
-        await TouchPrediction(factory, symbol, createdOn ?? DateTime.UtcNow.AddDays(-2));
+        await TouchPrediction(factory, symbol, createdOn ?? DateTime.UtcNow.AddDays(-2), horizonDays);
     }
 
-    private static async Task TouchPrediction(SqliteDapperConnectionFactory factory, string symbol, DateTime createdOn)
+    private static async Task TouchPrediction(
+        SqliteDapperConnectionFactory factory,
+        string symbol,
+        DateTime createdOn,
+        int horizonDays
+    )
     {
         await using var connection = await factory.OpenDatabaseConnectionAsync();
-        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, CreatedOn = createdOn });
+        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, CreatedOn = createdOn, HorizonDays = horizonDays });
     }
 
     private static async Task SavePrice(SqliteDapperConnectionFactory factory, string symbol, DateOnly date, decimal close)
@@ -105,7 +117,7 @@ public class ModelAccuracyResultStoreTests
 
     private const string SqlTouch = """
         update predictions
-        set created_on = @CreatedOn, time_horizon_days = 1
+        set created_on = @CreatedOn, time_horizon_days = @HorizonDays
         where asset_id = @Symbol;
         """;
 }
