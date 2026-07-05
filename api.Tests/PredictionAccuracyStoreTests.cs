@@ -17,6 +17,8 @@ public class PredictionAccuracyStoreTests
         var accuracy = await List(factory);
         Assert.Equal(12d, accuracy.Single().ActualPercentChange);
         Assert.Equal(2d, accuracy.Single().AbsolutePercentError);
+        Assert.Equal(0.6d, accuracy.Single().ConfidenceScore);
+        Assert.Equal(0.4d, accuracy.Single().RiskScore);
     }
 
     [Fact]
@@ -72,6 +74,9 @@ public class PredictionAccuracyStoreTests
         Assert.Equal(100d, summary.WinRate);
         Assert.Equal(2d, summary.AverageAbsolutePercentError);
         Assert.Equal(12d, summary.AverageActualPercentChange);
+        Assert.Equal(0.6d, summary.AverageConfidenceScore);
+        Assert.Equal(0.4d, summary.AverageRiskScore);
+        Assert.Equal(40d, summary.ConfidenceCalibrationError);
     }
 
     [Fact]
@@ -83,6 +88,7 @@ public class PredictionAccuracyStoreTests
         var summary = (await Summary(factory)).Single();
         Assert.Equal(0d, summary.WinRate);
         Assert.Equal(-10d, summary.AverageActualPercentChange);
+        Assert.Equal(60d, summary.ConfidenceCalibrationError);
     }
 
     [Fact]

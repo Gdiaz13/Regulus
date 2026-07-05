@@ -77,3 +77,38 @@ export interface IPredictionHistoryItem {
   isMock: boolean;
   createdOn: string;
 }
+
+export interface IPredictionAccuracyResponse {
+  predictionId: number;
+  assetId: string;
+  assetName: string;
+  assetType: string;
+  modelName: string;
+  modelVersion: string;
+  currentPrice: number;
+  predictedPrice: number;
+  confidenceScore: number;
+  riskScore: number;
+  actualPrice: number;
+  predictedPercentChange: number;
+  actualPercentChange: number;
+  absolutePercentError: number;
+  directionMatched: boolean;
+  timeHorizonDays: number;
+  predictedOn: string;
+  targetDate: string;
+  actualDate: string;
+  isMock: boolean;
+}
+
+export interface IModelAccuracySummary {
+  modelName: string;
+  scoredCount: number;
+  winRate: number;
+  averageAbsolutePercentError: number;
+  averagePredictedPercentChange: number;
+  averageActualPercentChange: number;
+  averageConfidenceScore: number;
+  averageRiskScore: number;
+  confidenceCalibrationError: number;
+}
