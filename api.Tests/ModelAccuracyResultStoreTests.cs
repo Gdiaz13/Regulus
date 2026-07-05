@@ -35,6 +35,23 @@ public class ModelAccuracyResultStoreTests
     }
 
     [Fact]
+    public async Task RecalculateExisting_refreshes_when_better_target_price_arrives()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var createdOn = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+        var targetDate = DateOnly.FromDateTime(createdOn.AddDays(1));
+        await SaveReadyPrediction(factory, "AMD", createdOn: createdOn);
+        await SavePrice(factory, "AMD", targetDate.AddDays(2), 112m);
+        var store = new ModelAccuracyResultStore(factory);
+        Assert.Equal(1, await store.ScorePendingAsync());
+        await SavePrice(factory, "AMD", targetDate, 105m);
+        Assert.Equal(1, await store.RecalculateExistingAsync());
+        var result = Assert.Single(await store.ListResultsAsync(TestUsers.AliceId, null));
+        Assert.Equal(5d, result.ActualPercentChange);
+        Assert.Equal(5d, result.AbsolutePercentError);
+    }
+
+    [Fact]
     public async Task ScorePending_skips_predictions_that_have_not_matured()
     {
         using var factory = new SqliteDapperConnectionFactory();
@@ -60,17 +77,18 @@ public class ModelAccuracyResultStoreTests
     private static async Task SaveReadyPrediction(
         SqliteDapperConnectionFactory factory,
         string symbol,
-        Guid? userId = null
+        Guid? userId = null,
+        DateTime? createdOn = null
     )
     {
         await new PredictionStore(factory).SaveAsync(userId ?? TestUsers.AliceId, TestData.Overview(TestData.Prediction(symbol)));
-        await TouchPrediction(factory, symbol);
+        await TouchPrediction(factory, symbol, createdOn ?? DateTime.UtcNow.AddDays(-2));
     }
 
-    private static async Task TouchPrediction(SqliteDapperConnectionFactory factory, string symbol)
+    private static async Task TouchPrediction(SqliteDapperConnectionFactory factory, string symbol, DateTime createdOn)
     {
         await using var connection = await factory.OpenDatabaseConnectionAsync();
-        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, CreatedOn = DateTime.UtcNow.AddDays(-2) });
+        await connection.ExecuteAsync(SqlTouch, new { Symbol = symbol, CreatedOn = createdOn });
     }
 
     private static async Task SavePrice(SqliteDapperConnectionFactory factory, string symbol, DateOnly date, decimal close)
