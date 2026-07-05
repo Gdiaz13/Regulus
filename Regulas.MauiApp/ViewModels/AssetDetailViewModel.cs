@@ -21,12 +21,14 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
         _apiClient = apiClient;
         OpenPriceHistoryCommand = new Command(async () => await NavigationRoutes.OpenPriceHistoryAsync(Symbol));
         OpenPredictionCommand = new Command(async () => await NavigationRoutes.OpenPredictionsAsync(Symbol));
+        OpenTradingAgentsCommand = new Command(async () => await OpenTradingAgentsAsync());
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand OpenPriceHistoryCommand { get; }
     public ICommand OpenPredictionCommand { get; }
+    public ICommand OpenTradingAgentsCommand { get; }
     public string Symbol { get => _symbol; private set => SetField(ref _symbol, value); }
     public bool IsBusy { get => _isBusy; private set => SetField(ref _isBusy, value); }
     public string ErrorText => _errorText;
@@ -74,6 +76,11 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
         OnPropertyChanged(string.Empty);
     }
 
+    private Task OpenTradingAgentsAsync()
+    {
+        return NavigationRoutes.OpenTradingAgentsAsync(Symbol, _profile?.CompanyName, _profile?.Price);
+    }
+
     // 3.2T reads better on a phone screen than 3,200,000,000,000.
     private static string CompactNumber(long value)
     {
@@ -89,7 +96,7 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
     private static string Join(string? left, string? right)
     {
         var parts = new[] { left, right }.Where(part => !string.IsNullOrWhiteSpace(part));
-        return string.Join(" · ", parts);
+        return string.Join(" - ", parts);
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)
