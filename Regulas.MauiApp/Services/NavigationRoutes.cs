@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Regulas.MauiApp.Services;
 
 public static class NavigationRoutes
@@ -34,21 +36,9 @@ public static class NavigationRoutes
         return Shell.Current.GoToAsync(PredictionsRoute(cleanSymbol));
     }
 
-    // Carries the already-loaded price and name so the research page does not
-    // have to fetch the profile again.
-    public static Task OpenTradingAgentsAsync(string? symbol, decimal price, string? name)
+    public static Task OpenTradingAgentsAsync(string? symbol = null, string? companyName = null, decimal? currentPrice = null)
     {
-        var cleanSymbol = CleanSymbol(symbol);
-        return string.IsNullOrWhiteSpace(cleanSymbol) || price <= 0
-            ? Task.CompletedTask
-            : Shell.Current.GoToAsync(TradingAgentsRoute(cleanSymbol, price, name));
-    }
-
-    private static string TradingAgentsRoute(string symbol, decimal price, string? name)
-    {
-        var cleanPrice = price.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        return $"{nameof(TradingAgentsPage)}?symbol={Uri.EscapeDataString(symbol)}"
-            + $"&price={Uri.EscapeDataString(cleanPrice)}&name={Uri.EscapeDataString(name ?? string.Empty)}";
+        return Shell.Current.GoToAsync(TradingAgentsRoute(CleanSymbol(symbol), companyName, currentPrice));
     }
 
     private static string AssetDetailRoute(string symbol)
@@ -66,6 +56,34 @@ public static class NavigationRoutes
         return string.IsNullOrWhiteSpace(symbol)
             ? $"//{nameof(PredictionsPage)}"
             : $"//{nameof(PredictionsPage)}?symbol={Uri.EscapeDataString(symbol)}";
+    }
+
+    private static string TradingAgentsRoute(string symbol, string? companyName, decimal? currentPrice)
+    {
+        var query = TradingAgentsQuery(symbol, companyName, currentPrice);
+        return string.IsNullOrWhiteSpace(query) ? $"//{nameof(TradingAgentsPage)}" : $"//{nameof(TradingAgentsPage)}?{query}";
+    }
+
+    private static string TradingAgentsQuery(string symbol, string? companyName, decimal? currentPrice)
+    {
+        var parts = new List<string>();
+        AddQuery(parts, "symbol", symbol);
+        AddQuery(parts, "companyName", companyName);
+        AddQuery(parts, "currentPrice", PriceText(currentPrice));
+        return string.Join("&", parts);
+    }
+
+    private static void AddQuery(List<string> parts, string key, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            parts.Add($"{key}={Uri.EscapeDataString(value.Trim())}");
+        }
+    }
+
+    private static string? PriceText(decimal? value)
+    {
+        return value?.ToString("0.##", CultureInfo.InvariantCulture);
     }
 
     private static string CleanSymbol(string? symbol)

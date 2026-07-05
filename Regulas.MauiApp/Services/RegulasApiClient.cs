@@ -75,6 +75,21 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return GetAsync<PredictionHealth>("api/predict/health", token);
     }
 
+    public Task<ApiClientResult<StockTradingAgentsResponse>> AnalyzeStockWithTradingAgentsAsync(StockTradingAgentsRequest request, CancellationToken token)
+    {
+        return PostAsync<StockTradingAgentsResponse>("api/trading-agents/stock/analyze", request, token);
+    }
+
+    public Task<ApiClientResult<TradingAgentsHealth>> GetTradingAgentsHealthAsync(CancellationToken token)
+    {
+        return GetAsync<TradingAgentsHealth>("api/trading-agents/stock/health", token);
+    }
+
+    public Task<ApiClientResult<TradingAgentsModelInfo>> GetTradingAgentsModelInfoAsync(CancellationToken token)
+    {
+        return GetAsync<TradingAgentsModelInfo>("api/trading-agents/stock/model-info", token);
+    }
+
     public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token)
     {
         return PostAsync<PortfolioStock>("api/stocks", request, token);
@@ -148,12 +163,6 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static ApiClientResult<CompanyProfile> MissingProfile(string symbol)
     {
         return ApiClientResult<CompanyProfile>.Failure($"No profile data for {symbol.Trim().ToUpperInvariant()}.");
-    }
-
-    // Runs the separate TradingAgents research service through the gateway.
-    public Task<ApiClientResult<StockTradingAgentsResult>> AnalyzeStockAsync(StockTradingAgentsRequest request, CancellationToken token)
-    {
-        return PostAsync<StockTradingAgentsResult>("api/trading-agents/stock/analyze", request, token);
     }
 
     private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)

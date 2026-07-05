@@ -1,37 +1,34 @@
-using System.Globalization;
 using Regulas.MauiApp.ViewModels;
 
 namespace Regulas.MauiApp;
 
-// TradingAgents research for one symbol. The detail page passes symbol, price,
-// and name in the route query; the analysis runs automatically on appearing.
-[QueryProperty(nameof(Symbol), "symbol")]
-[QueryProperty(nameof(Price), "price")]
-[QueryProperty(nameof(CompanyName), "name")]
-public partial class TradingAgentsPage : ContentPage
+public partial class TradingAgentsPage : ContentPage, IQueryAttributable
 {
     private readonly TradingAgentsViewModel _viewModel;
 
     public TradingAgentsPage(TradingAgentsViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = _viewModel = viewModel;
+        _viewModel = viewModel;
+        BindingContext = viewModel;
     }
-
-    public string Symbol { get; set; } = string.Empty;
-
-    public string Price { get; set; } = string.Empty;
-
-    public string CompanyName { get; set; } = string.Empty;
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadAsync(Symbol, ParsePrice(Price), CompanyName);
+        await _viewModel.LoadAsync();
     }
 
-    private static decimal ParsePrice(string value)
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ? price : 0m;
+        _viewModel.ApplyQuery(
+            Value(query, "symbol"),
+            Value(query, "companyName"),
+            Value(query, "currentPrice"));
+    }
+
+    private static string? Value(IDictionary<string, object> query, string key)
+    {
+        return query.TryGetValue(key, out var value) ? value?.ToString() : null;
     }
 }

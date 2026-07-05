@@ -69,19 +69,17 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
         }
     }
 
-    // Passes the loaded price along so the research page skips a second profile fetch.
-    private Task OpenTradingAgentsAsync()
-    {
-        return _profile is null
-            ? Task.CompletedTask
-            : NavigationRoutes.OpenTradingAgentsAsync(Symbol, _profile.Price, _profile.CompanyName);
-    }
-
     private void ApplyResult(ApiClientResult<CompanyProfile> result)
     {
         _profile = result.Ok ? result.Data : null;
         _errorText = result.Ok ? string.Empty : result.Message;
         OnPropertyChanged(string.Empty);
+    }
+
+    // Passes loaded profile values so the research tab can start prefilled.
+    private Task OpenTradingAgentsAsync()
+    {
+        return NavigationRoutes.OpenTradingAgentsAsync(Symbol, _profile?.CompanyName, _profile?.Price);
     }
 
     // 3.2T reads better on a phone screen than 3,200,000,000,000.
@@ -99,7 +97,7 @@ public sealed class AssetDetailViewModel : INotifyPropertyChanged
     private static string Join(string? left, string? right)
     {
         var parts = new[] { left, right }.Where(part => !string.IsNullOrWhiteSpace(part));
-        return string.Join(" · ", parts);
+        return string.Join(" - ", parts);
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)

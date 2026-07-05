@@ -40,12 +40,12 @@ public static class MauiProgram
         services.AddSingleton<MainPage>();
         services.AddSingleton<SearchPage>();
         services.AddSingleton<PredictionsPage>();
+        services.AddSingleton<TradingAgentsPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
         // Detail pages are transient: each navigation carries its own symbol.
         services.AddTransient<AssetDetailPage>();
         services.AddTransient<PriceHistoryPage>();
-        services.AddTransient<TradingAgentsPage>();
     }
 
     private static void RegisterViewModels(IServiceCollection services)
@@ -53,11 +53,11 @@ public static class MauiProgram
         services.AddSingleton<HomeViewModel>();
         services.AddSingleton<SearchViewModel>();
         services.AddSingleton<PredictionsViewModel>();
+        services.AddSingleton<TradingAgentsViewModel>();
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddTransient<AssetDetailViewModel>();
         services.AddTransient<PriceHistoryViewModel>();
-        services.AddTransient<TradingAgentsViewModel>();
     }
 
     private static void RegisterApiServices(IServiceCollection services)

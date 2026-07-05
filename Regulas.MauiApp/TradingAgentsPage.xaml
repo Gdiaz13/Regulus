@@ -2,35 +2,84 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Regulas.MauiApp.TradingAgentsPage"
-             Title="{Binding Symbol, StringFormat='{0} research'}">
+             Title="Research">
     <ScrollView>
         <VerticalStackLayout Padding="20"
                              Spacing="16"
-                             MaximumWidthRequest="760"
+                             MaximumWidthRequest="900"
                              HorizontalOptions="Center">
-            <VerticalStackLayout Spacing="4">
-                <Label Text="TradingAgents research"
-                       FontSize="28"
-                       FontAttributes="Bold"
-                       TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
-                <Label Text="Outside research engine, compared against Regulas AIs. Not financial advice."
-                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
-            </VerticalStackLayout>
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="TradingAgents"
+                           FontSize="28"
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                    <Label Text="Run the separate stock research branch through Regulas.Api."
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+                <ActivityIndicator Grid.Column="1"
+                                   IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}" />
+            </Grid>
 
-            <ActivityIndicator IsRunning="{Binding IsBusy}"
-                               IsVisible="{Binding IsBusy}" />
-
-            <Border IsVisible="{Binding HasError}"
-                    Stroke="{StaticResource RegulasDanger}"
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
                     BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
                     StrokeShape="RoundRectangle 8"
                     Padding="14">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding ErrorText}"
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="10">
+                        <Label Text="{Binding StatusText}"
+                               FontAttributes="Bold" />
+                        <Button Grid.Column="1"
+                                Text="Refresh"
+                                Command="{Binding RefreshStatusCommand}" />
+                    </Grid>
+                    <Label Text="{Binding ModelStatusText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="{Binding PurposeText}"
+                           LineBreakMode="WordWrap"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="MOCK"
+                           IsVisible="{Binding IsModelMock}"
+                           FontAttributes="Bold"
                            TextColor="{StaticResource RegulasDanger}" />
-                    <Button Text="Try again"
-                            Command="{Binding RerunCommand}"
-                            IsEnabled="{Binding CanRun}" />
+                    <ActivityIndicator IsRunning="{Binding IsStatusBusy}"
+                                       IsVisible="{Binding IsStatusBusy}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10">
+                        <Entry Text="{Binding Symbol}"
+                               Placeholder="Symbol"
+                               MaxLength="32" />
+                        <Entry Grid.Column="1"
+                               Text="{Binding CompanyName}"
+                               Placeholder="Company optional" />
+                        <Entry Grid.Row="1"
+                               Text="{Binding CurrentPrice}"
+                               Keyboard="Numeric"
+                               Placeholder="Current price" />
+                        <Entry Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding AnalysisDate}"
+                               Placeholder="yyyy-mm-dd optional" />
+                    </Grid>
+                    <Button Text="Analyze stock"
+                            Command="{Binding AnalyzeCommand}"
+                            IsEnabled="{Binding CanAnalyze}" />
+                    <Label Text="{Binding MessageText}"
+                           IsVisible="{Binding ShowMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
                 </VerticalStackLayout>
             </Border>
 
@@ -39,82 +88,112 @@
                     BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
                     StrokeShape="RoundRectangle 8"
                     Padding="16">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="{Binding Result.RecommendationText}"
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="10">
+                        <VerticalStackLayout Spacing="3">
+                            <Label Text="{Binding RecommendationText}"
+                                   FontSize="20"
+                                   FontAttributes="Bold" />
+                            <Label Text="{Binding ModelText}"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1"
+                               Text="MOCK"
+                               IsVisible="{Binding IsResultMock}"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource RegulasDanger}" />
+                    </Grid>
+                    <Label Text="{Binding ResultDateText}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <Label Text="{Binding SummaryText}"
+                           LineBreakMode="WordWrap" />
+                    <Label Text="{Binding ScoreText}"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <CollectionView ItemsSource="{Binding BullishArguments}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasBullish}">
+                <CollectionView.Header>
+                    <Label Text="Bullish arguments"
                            FontSize="18"
                            FontAttributes="Bold" />
-                    <Label Text="{Binding Result.ScoreText}" />
-                    <Label Text="{Binding Result.Summary}"
-                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
-                    <Label Text="{Binding Result.DateText}"
-                           FontSize="12"
-                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
-                    <Label Text="{Binding Result.ModelText}"
-                           FontSize="12"
-                           TextColor="{StaticResource RegulasWarning}" />
-                    <Button Text="Run again"
-                            Command="{Binding RerunCommand}"
-                            IsEnabled="{Binding CanRun}" />
-                </VerticalStackLayout>
-            </Border>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="12"
+                                Margin="0,0,0,8">
+                            <Label Text="{Binding Text}"
+                                   LineBreakMode="WordWrap" />
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
-            <Border IsVisible="{Binding Result.HasBullish, FallbackValue=False}"
-                    Stroke="{StaticResource RegulasSuccess}"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
-                    StrokeShape="RoundRectangle 8"
-                    Padding="16">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Bullish arguments"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource RegulasSuccess}" />
-                    <VerticalStackLayout Spacing="4"
-                                         BindableLayout.ItemsSource="{Binding Result.BullishArguments}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate>
-                                <Label Text="{Binding ., StringFormat='• {0}'}" />
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
-            </Border>
-
-            <Border IsVisible="{Binding Result.HasBearish, FallbackValue=False}"
-                    Stroke="{StaticResource RegulasDanger}"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
-                    StrokeShape="RoundRectangle 8"
-                    Padding="16">
-                <VerticalStackLayout Spacing="6">
+            <CollectionView ItemsSource="{Binding BearishArguments}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasBearish}">
+                <CollectionView.Header>
                     <Label Text="Bearish arguments"
+                           FontSize="18"
+                           FontAttributes="Bold" />
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="12"
+                                Margin="0,0,0,8">
+                            <Label Text="{Binding Text}"
+                                   LineBreakMode="WordWrap" />
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <CollectionView ItemsSource="{Binding Warnings}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasWarnings}">
+                <CollectionView.Header>
+                    <Label Text="Warnings"
+                           FontSize="18"
                            FontAttributes="Bold"
                            TextColor="{StaticResource RegulasDanger}" />
-                    <VerticalStackLayout Spacing="4"
-                                         BindableLayout.ItemsSource="{Binding Result.BearishArguments}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate>
-                                <Label Text="{Binding ., StringFormat='• {0}'}" />
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
-            </Border>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{StaticResource RegulasDanger}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="12"
+                                Margin="0,0,0,8">
+                            <Label Text="{Binding Text}"
+                                   LineBreakMode="WordWrap"
+                                   TextColor="{StaticResource RegulasDanger}" />
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
 
-            <Border IsVisible="{Binding Result.HasWarnings, FallbackValue=False}"
-                    Stroke="{StaticResource RegulasWarning}"
+            <Border IsVisible="{Binding HasRawDecision}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
                     BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
                     StrokeShape="RoundRectangle 8"
-                    Padding="16">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Warnings"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource RegulasWarning}" />
-                    <VerticalStackLayout Spacing="4"
-                                         BindableLayout.ItemsSource="{Binding Result.Warnings}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate>
-                                <Label Text="{Binding ., StringFormat='• {0}'}" />
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
+                    Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Raw decision"
+                           FontAttributes="Bold" />
+                    <Label Text="{Binding RawDecisionText}"
+                           FontFamily="monospace"
+                           LineBreakMode="WordWrap"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
                 </VerticalStackLayout>
             </Border>
         </VerticalStackLayout>

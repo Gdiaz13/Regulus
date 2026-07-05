@@ -2,22 +2,34 @@ namespace Regulas.MauiApp;
 
 public partial class AppShell : Shell
 {
-    public AppShell(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, AuthPage authPage, SettingsPage settingsPage)
+    public AppShell(
+        MainPage mainPage,
+        SearchPage searchPage,
+        PredictionsPage predictionsPage,
+        TradingAgentsPage tradingAgentsPage,
+        AuthPage authPage,
+        SettingsPage settingsPage)
     {
         InitializeComponent();
         RegisterRoutes();
-        Items.Add(TabBar(mainPage, searchPage, predictionsPage, authPage, settingsPage));
+        Items.Add(TabBar(mainPage, searchPage, predictionsPage, tradingAgentsPage, authPage, settingsPage));
     }
 
-    private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, AuthPage authPage, SettingsPage settingsPage)
+    private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, TradingAgentsPage tradingAgentsPage, AuthPage authPage, SettingsPage settingsPage)
     {
         var tabBar = new TabBar();
-        tabBar.Items.Add(ShellContent("Home", nameof(MainPage), mainPage));
-        tabBar.Items.Add(ShellContent("Search", nameof(SearchPage), searchPage));
-        tabBar.Items.Add(ShellContent("Predictions", nameof(PredictionsPage), predictionsPage));
-        tabBar.Items.Add(ShellContent("Account", nameof(AuthPage), authPage));
-        tabBar.Items.Add(ShellContent("Settings", nameof(SettingsPage), settingsPage));
+        AddTab(tabBar, "Home", nameof(MainPage), mainPage);
+        AddTab(tabBar, "Search", nameof(SearchPage), searchPage);
+        AddTab(tabBar, "Predictions", nameof(PredictionsPage), predictionsPage);
+        AddTab(tabBar, "Research", nameof(TradingAgentsPage), tradingAgentsPage);
+        AddTab(tabBar, "Account", nameof(AuthPage), authPage);
+        AddTab(tabBar, "Settings", nameof(SettingsPage), settingsPage);
         return tabBar;
+    }
+
+    private static void AddTab(TabBar tabBar, string title, string route, Page page)
+    {
+        tabBar.Items.Add(ShellContent(title, route, page));
     }
 
     private static ShellContent ShellContent(string title, string route, Page page)
@@ -30,6 +42,5 @@ public partial class AppShell : Shell
         // Detail pages are pushed onto the stack, not tabs, so they register as routes.
         Routing.RegisterRoute(nameof(AssetDetailPage), typeof(AssetDetailPage));
         Routing.RegisterRoute(nameof(PriceHistoryPage), typeof(PriceHistoryPage));
-        Routing.RegisterRoute(nameof(TradingAgentsPage), typeof(TradingAgentsPage));
     }
 }
