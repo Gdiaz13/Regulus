@@ -160,6 +160,7 @@ cd ai
 - `/trading-agents` runs stock TradingAgents research through the C# gateway.
 - `/price-history` captures and reads stored price history.
 - `/tcg` searches Pokemon cards, opens card details, and reads stored TCG price history.
+- `/tcg/record` records TCG card prices by hand (signed-in) with type/condition/grade/currency, and shows what is stored.
 - `/company/:ticker` opens the company dashboard.
 - `/company/:ticker/company-profile` shows key metrics.
 - `/company/:ticker/income-statement` shows income statement data.
