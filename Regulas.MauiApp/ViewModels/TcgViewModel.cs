@@ -18,6 +18,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     private readonly Command _saveCommand;
     private string _condition = string.Empty;
     private string _currency = "USD";
+    private string _category = "Pokemon";
     private string _date = Today();
     private string _grade = string.Empty;
     private bool _isAuthenticated;
@@ -41,12 +42,14 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<TcgPointRow> Points { get; } = [];
+    public IReadOnlyList<string> TcgGames { get; } = ["Pokemon", "Magic", "One Piece"];
     public IReadOnlyList<string> PriceTypes { get; } = ["Sold", "Listed", "Market"];
     public ICommand SaveCommand => _saveCommand;
     public ICommand LoadCommand => _loadCommand;
     public ICommand OpenAccountCommand { get; }
     public string Symbol { get => _symbol; set => SetInput(ref _symbol, value.ToUpperInvariant(), nameof(Symbol)); }
     public string Name { get => _name; set => SetInput(ref _name, value, nameof(Name)); }
+    public string Category { get => _category; set => SetInput(ref _category, value, nameof(Category)); }
     public string Date { get => _date; set => SetInput(ref _date, value, nameof(Date)); }
     public string Price { get => _price; set => SetInput(ref _price, value, nameof(Price)); }
     public string PriceType { get => _priceType; set => SetInput(ref _priceType, value, nameof(PriceType)); }
@@ -124,7 +127,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     {
         return new ManualPriceRequest(
             ParseDate(Date), ParsePrice(Price), PriceType,
-            BlankToNull(Condition), BlankToNull(Grade), BlankToNull(Currency), BlankToNull(Name)
+            BlankToNull(Condition), BlankToNull(Grade), BlankToNull(Currency), BlankToNull(Name), BlankToNull(Category)
         );
     }
 

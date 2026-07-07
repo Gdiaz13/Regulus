@@ -13,7 +13,7 @@ export interface IPricePoint {
   currency: string | null;
 }
 
-// What the manual capture endpoint accepts (TCG cards first).
+// What the manual capture endpoint accepts (TCG cards first), including the game category.
 export interface IManualPriceRequest {
   date: string;
   price: number;
@@ -22,6 +22,7 @@ export interface IManualPriceRequest {
   grade?: string | null;
   currency?: string | null;
   name?: string | null;
+  category?: string | null;
 }
 
 export interface IPriceHistory {

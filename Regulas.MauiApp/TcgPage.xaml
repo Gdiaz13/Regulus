@@ -13,7 +13,7 @@
                        FontSize="28"
                        FontAttributes="Bold"
                        TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
-                <Label Text="Record card prices by hand. Type, condition, grade, and currency are stored so a sold PSA 9 never mixes with a raw listing."
+                <Label Text="Record Pokemon, Magic, and One Piece prices by hand. Type, condition, grade, currency, and game are stored so listings stay comparable."
                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
             </VerticalStackLayout>
 
@@ -28,7 +28,7 @@
                     Padding="14">
                 <VerticalStackLayout Spacing="12">
                     <Grid ColumnDefinitions="*,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                           ColumnSpacing="10"
                           RowSpacing="10">
                         <Entry Text="{Binding Symbol}"
@@ -37,26 +37,29 @@
                         <Entry Grid.Column="1"
                                Text="{Binding Name}"
                                Placeholder="Card name optional" />
-                        <Entry Grid.Row="1"
-                               Text="{Binding Date}"
-                               Placeholder="Date yyyy-mm-dd" />
+                        <Picker Grid.Row="1"
+                                ItemsSource="{Binding TcgGames}"
+                                SelectedItem="{Binding Category}" />
                         <Entry Grid.Row="1"
                                Grid.Column="1"
+                               Text="{Binding Date}"
+                               Placeholder="Date yyyy-mm-dd" />
+                        <Entry Grid.Row="2"
                                Text="{Binding Price}"
                                Keyboard="Numeric"
                                Placeholder="Price e.g. 120.50" />
                         <Picker Grid.Row="2"
+                                Grid.Column="1"
                                 ItemsSource="{Binding PriceTypes}"
                                 SelectedItem="{Binding PriceType}" />
-                        <Entry Grid.Row="2"
-                               Grid.Column="1"
+                        <Entry Grid.Row="3"
                                Text="{Binding Condition}"
                                Placeholder="Condition e.g. Near Mint" />
                         <Entry Grid.Row="3"
+                               Grid.Column="1"
                                Text="{Binding Grade}"
                                Placeholder="Grade e.g. PSA 9" />
-                        <Entry Grid.Row="3"
-                               Grid.Column="1"
+                        <Entry Grid.Row="4"
                                Text="{Binding Currency}"
                                MaxLength="8"
                                Placeholder="Currency" />

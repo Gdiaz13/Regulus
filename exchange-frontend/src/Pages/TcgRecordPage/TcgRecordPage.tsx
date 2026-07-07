@@ -5,8 +5,9 @@ import type { ICaptureResult, IManualPriceRequest, IPriceHistory, IPricePoint } 
 import styles from './TcgRecordPage.module.css';
 
 const priceTypes = ['Sold', 'Listed', 'Market'];
+const tcgGames = ['Pokemon', 'Magic', 'One Piece'];
 
-type TcgForm = { symbol: string; name: string; date: string; price: string; priceType: string; condition: string; grade: string; currency: string };
+type TcgForm = { symbol: string; name: string; category: string; date: string; price: string; priceType: string; condition: string; grade: string; currency: string };
 type SetText = (value: string) => void;
 type EntryState = { message: string; history: IPriceHistory | null; busy: boolean };
 type ApplyEntry = (state: EntryState) => void;
@@ -34,7 +35,7 @@ function useTcgForm() {
 }
 
 function emptyForm(): TcgForm {
-  return { symbol: '', name: '', date: today(), price: '', priceType: 'Sold', condition: '', grade: '', currency: 'USD' };
+  return { symbol: '', name: '', category: 'Pokemon', date: today(), price: '', priceType: 'Sold', condition: '', grade: '', currency: 'USD' };
 }
 
 function today() {
@@ -76,6 +77,7 @@ function toRequest(form: TcgForm, price: number): IManualPriceRequest {
     grade: form.grade.trim() || null,
     currency: form.currency.trim() || null,
     name: form.name.trim() || null,
+    category: form.category.trim() || null,
   };
 }
 
@@ -90,7 +92,7 @@ function Header() {
     <header className={styles.header}>
       <p className={styles.eyebrow}>TCG cards</p>
       <h1 className={styles.title}>Record card prices by hand.</h1>
-      <p className={styles.note}>Record the prices you see, by hand. Type, condition, grade, and currency are stored so a sold PSA 9 never mixes with a raw listing. <Link to="/tcg">Browse Pokemon cards</Link> for card details and stored charts.</p>
+      <p className={styles.note}>Record Pokemon, Magic, and One Piece prices by hand. Type, condition, grade, currency, and game are stored so listings stay comparable. <Link to="/tcg">Browse Pokemon cards</Link> for card details and stored charts.</p>
     </header>
   );
 }
@@ -113,6 +115,9 @@ function CardInputs({ form, update }: FieldProps) {
     <div className={styles.row}>
       <input value={form.symbol} maxLength={32} placeholder="Card code e.g. SV3-125" onChange={(event) => update('symbol')(event.target.value)} />
       <input value={form.name} placeholder="Card name (optional)" onChange={(event) => update('name')(event.target.value)} />
+      <select value={form.category} onChange={(event) => update('category')(event.target.value)} aria-label="Card game">
+        {tcgGames.map((game) => <option key={game} value={game}>{game}</option>)}
+      </select>
       <input type="date" value={form.date} onChange={(event) => update('date')(event.target.value)} />
       <input value={form.price} inputMode="decimal" placeholder="Price e.g. 120.50" onChange={(event) => update('price')(event.target.value)} />
     </div>
@@ -152,10 +157,10 @@ function HistoryRow({ point }: { point: IPricePoint }) {
     <tr>
       <td>{point.date}</td>
       <td>{point.close.toFixed(2)}</td>
-      <td>{point.priceType ?? '—'}</td>
-      <td>{point.cardCondition ?? '—'}</td>
-      <td>{point.grade ?? '—'}</td>
-      <td>{point.currency ?? '—'}</td>
+      <td>{point.priceType ?? '-'}</td>
+      <td>{point.cardCondition ?? '-'}</td>
+      <td>{point.grade ?? '-'}</td>
+      <td>{point.currency ?? '-'}</td>
       <td>{point.source}</td>
     </tr>
   );

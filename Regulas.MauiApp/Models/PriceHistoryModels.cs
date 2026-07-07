@@ -22,8 +22,8 @@ public sealed record PricePoint(
     string? Currency = null
 );
 
-// What the manual capture endpoint accepts (TCG cards first); mirrors
-// api/Contracts/PriceHistoryContracts.cs ManualPriceRequest.
+// What the manual capture endpoint accepts (TCG cards first); includes the
+// game/category so Magic and One Piece prices do not collapse into Pokemon.
 public sealed record ManualPriceRequest(
     DateOnly Date,
     decimal Price,
@@ -31,7 +31,8 @@ public sealed record ManualPriceRequest(
     string? CardCondition,
     string? Grade,
     string? Currency,
-    string? Name
+    string? Name,
+    string? Category
 );
 
 // One stored card price formatted for the TCG list.
