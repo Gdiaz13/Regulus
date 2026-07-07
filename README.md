@@ -233,6 +233,8 @@ Current mock services include:
 - `GET /api/price-history/{symbol}` defaults to the latest 365 stored points, accepts `?take=` up to 1000, and returns source metadata per point.
 - `GET /api/tcg/pokemon/cards?query=charizard` searches Pokemon cards through the backend gateway.
 - `GET /api/tcg/pokemon/cards/{id}` returns one Pokemon card detail with provider price variants and source metadata.
+- `GET /api/tcg/magic/cards?query=lightning%20bolt` searches Magic cards through the backend Scryfall gateway.
+- `GET /api/tcg/magic/cards/{id}` returns one Magic card detail with set, oracle text, image, price, and source metadata.
 - `POST /api/predict` requires auth and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
@@ -266,6 +268,7 @@ Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
 - Web Pokemon TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
+- Backend Magic TCG search/detail gateway through Scryfall with source and price metadata.
 - Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
@@ -296,5 +299,5 @@ Done but mock:
 Still planned:
 
 - Connect the model-training job to real trainers when model training is ready.
-- Add more stock specialists, real Magic/One Piece provider/detail flows, and future crypto support.
+- Add more stock specialists, One Piece provider/detail flows, web/MAUI Magic browse UI, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
