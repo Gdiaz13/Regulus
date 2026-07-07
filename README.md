@@ -159,7 +159,7 @@ cd ai
 - `/predictions` stages assets and asks the mock AI hierarchy for research signals.
 - `/trading-agents` runs stock TradingAgents research through the C# gateway.
 - `/price-history` captures and reads stored price history.
-- `/tcg` searches Pokemon cards, opens card details, and reads stored TCG price history.
+- `/tcg` searches Pokemon cards, opens card details, and reads stored TCG price history. Opening a card also stores its provider market price, so browsing builds history over time.
 - `/company/:ticker` opens the company dashboard.
 - `/company/:ticker/company-profile` shows key metrics.
 - `/company/:ticker/income-statement` shows income statement data.

@@ -27,14 +27,37 @@ public static class TcgEndpoints
         return await ProviderRequest(() => client.SearchAsync(clean, ClampPageSize(pageSize), token));
     }
 
-    private static async Task<IResult> GetPokemonCard(string id, PokemonTcgClient client, CancellationToken token)
+    private static async Task<IResult> GetPokemonCard(
+        string id,
+        PokemonTcgClient client,
+        PriceHistoryStore store,
+        ILoggerFactory loggers,
+        CancellationToken token
+    )
     {
         var clean = Clean(id);
         if (string.IsNullOrWhiteSpace(clean))
         {
             return Results.BadRequest("A card id is required.");
         }
-        return await ProviderRequest(() => client.GetCardAsync(clean, token));
+        return await ProviderRequest(() => FetchAndStoreAsync(clean, client, store, loggers, token));
+    }
+
+    // Viewing a card also stores its market price, so browsing builds TCG history.
+    private static async Task<Contracts.PokemonCardDetail?> FetchAndStoreAsync(
+        string id,
+        PokemonTcgClient client,
+        PriceHistoryStore store,
+        ILoggerFactory loggers,
+        CancellationToken token
+    )
+    {
+        var card = await client.GetCardAsync(id, token);
+        if (card is not null)
+        {
+            await TcgCardPriceCapture.TryStoreAsync(store, card, loggers.CreateLogger(nameof(TcgEndpoints)));
+        }
+        return card;
     }
 
     private static async Task<IResult> ProviderRequest<T>(Func<Task<T?>> request)
