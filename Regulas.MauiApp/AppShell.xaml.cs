@@ -7,21 +7,23 @@ public partial class AppShell : Shell
         SearchPage searchPage,
         PredictionsPage predictionsPage,
         TradingAgentsPage tradingAgentsPage,
+        TcgPage tcgPage,
         AuthPage authPage,
         SettingsPage settingsPage)
     {
         InitializeComponent();
         RegisterRoutes();
-        Items.Add(TabBar(mainPage, searchPage, predictionsPage, tradingAgentsPage, authPage, settingsPage));
+        Items.Add(TabBar(mainPage, searchPage, predictionsPage, tradingAgentsPage, tcgPage, authPage, settingsPage));
     }
 
-    private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, TradingAgentsPage tradingAgentsPage, AuthPage authPage, SettingsPage settingsPage)
+    private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, TradingAgentsPage tradingAgentsPage, TcgPage tcgPage, AuthPage authPage, SettingsPage settingsPage)
     {
         var tabBar = new TabBar();
         AddTab(tabBar, "Home", nameof(MainPage), mainPage);
         AddTab(tabBar, "Search", nameof(SearchPage), searchPage);
         AddTab(tabBar, "Predictions", nameof(PredictionsPage), predictionsPage);
         AddTab(tabBar, "Research", nameof(TradingAgentsPage), tradingAgentsPage);
+        AddTab(tabBar, "TCG", nameof(TcgPage), tcgPage);
         AddTab(tabBar, "Account", nameof(AuthPage), authPage);
         AddTab(tabBar, "Settings", nameof(SettingsPage), settingsPage);
         return tabBar;

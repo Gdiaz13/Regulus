@@ -57,6 +57,13 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return PostAsync<PriceCaptureResult>(PriceCapturePath(symbol, assetType), new { }, token);
     }
 
+    // Hand-entered card prices; the API requires a signed-in user and the bearer
+    // token is attached like every other call.
+    public Task<ApiClientResult<PriceCaptureResult>> RecordManualPriceAsync(string symbol, ManualPriceRequest request, CancellationToken token)
+    {
+        return PostAsync<PriceCaptureResult>($"api/price-history/{Esc(symbol)}/manual?assetType=TcgCard", request, token);
+    }
+
     public Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token)
     {
         return PostAsync<AiOverview>("api/predict", new PredictBatchRequest(assets), token);
