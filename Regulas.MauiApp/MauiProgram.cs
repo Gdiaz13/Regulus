@@ -41,6 +41,7 @@ public static class MauiProgram
         services.AddSingleton<SearchPage>();
         services.AddSingleton<PredictionsPage>();
         services.AddSingleton<TradingAgentsPage>();
+        services.AddSingleton<TcgPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
         // Detail pages are transient: each navigation carries its own symbol.
@@ -54,6 +55,7 @@ public static class MauiProgram
         services.AddSingleton<SearchViewModel>();
         services.AddSingleton<PredictionsViewModel>();
         services.AddSingleton<TradingAgentsViewModel>();
+        services.AddSingleton<TcgViewModel>();
         services.AddSingleton<AuthViewModel>();
         services.AddSingleton<SettingsViewModel>();
         services.AddTransient<AssetDetailViewModel>();

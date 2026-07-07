@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.TcgPage"
+             Title="TCG">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="760"
+                             HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="TCG cards"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                <Label Text="Record card prices by hand. Type, condition, grade, and currency are stored so a sold PSA 9 never mixes with a raw listing."
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            </VerticalStackLayout>
+
+            <Button Text="Sign in"
+                    Command="{Binding OpenAccountCommand}"
+                    IsVisible="{Binding IsAnonymous}" />
+
+            <Border IsVisible="{Binding IsAuthenticated}"
+                    Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10">
+                        <Entry Text="{Binding Symbol}"
+                               Placeholder="Card code e.g. SV3-125"
+                               MaxLength="32" />
+                        <Entry Grid.Column="1"
+                               Text="{Binding Name}"
+                               Placeholder="Card name optional" />
+                        <Entry Grid.Row="1"
+                               Text="{Binding Date}"
+                               Placeholder="Date yyyy-mm-dd" />
+                        <Entry Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding Price}"
+                               Keyboard="Numeric"
+                               Placeholder="Price e.g. 120.50" />
+                        <Picker Grid.Row="2"
+                                ItemsSource="{Binding PriceTypes}"
+                                SelectedItem="{Binding PriceType}" />
+                        <Entry Grid.Row="2"
+                               Grid.Column="1"
+                               Text="{Binding Condition}"
+                               Placeholder="Condition e.g. Near Mint" />
+                        <Entry Grid.Row="3"
+                               Text="{Binding Grade}"
+                               Placeholder="Grade e.g. PSA 9" />
+                        <Entry Grid.Row="3"
+                               Grid.Column="1"
+                               Text="{Binding Currency}"
+                               MaxLength="8"
+                               Placeholder="Currency" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*"
+                          ColumnSpacing="10">
+                        <Button Text="Save price"
+                                Command="{Binding SaveCommand}"
+                                IsEnabled="{Binding CanSave}" />
+                        <Button Grid.Column="1"
+                                Text="Load stored"
+                                Command="{Binding LoadCommand}"
+                                IsEnabled="{Binding CanLoad}" />
+                    </Grid>
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}" />
+                    <Label Text="{Binding MessageText}"
+                           IsVisible="{Binding ShowMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <CollectionView ItemsSource="{Binding Points}"
+                            SelectionMode="None"
+                            IsVisible="{Binding HasPoints}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14"
+                                Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  ColumnSpacing="12">
+                                <Label Text="{Binding Date}"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Price}"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Row="1"
+                                       Text="{Binding Meta}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                <Label Grid.Row="1"
+                                       Grid.Column="1"
+                                       Text="{Binding Source}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
