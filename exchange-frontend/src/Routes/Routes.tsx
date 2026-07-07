@@ -13,6 +13,7 @@ const LoginPage = lazy(() => import("../Pages/AuthPage/LoginPage"));
 const RegisterPage = lazy(() => import("../Pages/AuthPage/RegisterPage"));
 const PriceHistoryPage = lazy(() => import("../Pages/PriceHistoryPage/PriceHistoryPage"));
 const TcgPage = lazy(() => import("../Pages/TcgPage/TcgPage"));
+const TcgRecordPage = lazy(() => import("../Pages/TcgRecordPage/TcgRecordPage"));
 const TradingAgentsPage = lazy(() => import("../Pages/TradingAgentsPage/TradingAgentsPage"));
 const CompanyPage = lazy(() => import("../Pages/CompanyPage/CompanyPage"));
 const CompanyProfile = lazy(() => import("../Components/CompanyProfile/CompanyProfile"));
@@ -35,7 +36,8 @@ export const router = createBrowserRouter([
       { path: "portfolio", element: protectedPage(<PortfolioPage />) },
       { path: "predictions", element: protectedPage(<PredictionsPage />) },
       { path: "price-history", element: page(<PriceHistoryPage />) },
-      { path: "tcg", element: protectedPage(<TcgPage />) },
+      { path: "tcg", element: page(<TcgPage />) },
+      { path: "tcg/record", element: protectedPage(<TcgRecordPage />) },
       { path: "trading-agents", element: page(<TradingAgentsPage />) },
       {
         path: "company/:ticker",

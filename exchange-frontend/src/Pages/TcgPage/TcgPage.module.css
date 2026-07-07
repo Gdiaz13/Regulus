@@ -1,84 +1,215 @@
 .page {
-  max-width: min(1080px, 100% - 2rem);
+  width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 2rem 0 3rem;
-  display: grid;
-  gap: 1.5rem;
+  padding: 4rem 0;
+  text-align: left;
 }
 
 .header {
-  display: grid;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .eyebrow {
-  text-transform: uppercase;
+  color: hsl(var(--accent));
+  font-size: 0.85rem;
+  font-weight: 800;
   letter-spacing: 0.08em;
-  font-size: 0.8rem;
-  color: hsl(var(--primary));
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
 }
 
 .title {
-  margin: 0;
-  font-size: 2rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  margin: 0 0 0.75rem;
 }
 
 .note {
   margin: 0;
-  opacity: 0.75;
-  max-width: 60ch;
+  max-width: 66ch;
+  opacity: 0.78;
 }
 
-.form {
-  display: grid;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
-  background: var(--portfolio-card-bg);
-}
-
-.row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 0.75rem;
-}
-
-.actions {
+.searchPanel {
+  align-items: center;
+  background: hsl(var(--foreground) / 0.02);
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 0.5rem;
   display: flex;
   gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
 }
 
-.message {
-  margin: 0;
-  opacity: 0.85;
+.searchInput {
+  flex: 1 1 16rem;
+  min-width: 0;
 }
 
-.results {
+.layout {
+  align-items: start;
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
 }
 
-.summary {
+.hint,
+.detailPanel,
+.resultsPanel {
+  background: hsl(var(--foreground) / 0.02);
+  border: 1px solid hsl(var(--border) / 0.55);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.hint {
+  border-style: dashed;
+  color: hsl(var(--foreground) / 0.74);
   margin: 0;
-  font-weight: 600;
+  min-height: 10rem;
+}
+
+.resultsPanel {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cardButton {
+  align-items: center;
+  background: transparent;
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 0.45rem;
+  color: inherit;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 2.8rem minmax(0, 1fr) auto;
+  padding: 0.65rem;
+  text-align: left;
+  width: 100%;
+}
+
+.cardButtonSelected {
+  border-color: hsl(var(--accent));
+  box-shadow: inset 0 0 0 1px hsl(var(--accent) / 0.35);
+}
+
+.thumb,
+.thumbFallback {
+  aspect-ratio: 5 / 7;
+  border-radius: 0.35rem;
+  display: block;
+  width: 2.8rem;
+}
+
+.thumbFallback {
+  background: hsl(var(--foreground) / 0.1);
+}
+
+.cardText {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.cardText strong,
+.cardText span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardText span,
+.meta,
+.source,
+.sourceLink,
+.historySummary span {
+  color: hsl(var(--foreground) / 0.7);
+}
+
+.price {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.detailPanel {
+  min-width: 0;
+}
+
+.detailHeader {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(7rem, 12rem) minmax(0, 1fr);
+  margin-bottom: 1.25rem;
+}
+
+.cardImage {
+  border-radius: 0.5rem;
+  width: 100%;
+}
+
+.detailHeader h2 {
+  font-size: clamp(1.65rem, 3vw, 2.5rem);
+  line-height: 1.05;
+  margin: 0 0 0.6rem;
+}
+
+.meta {
+  margin: 0 0 0.75rem;
+}
+
+.source,
+.sourceLink {
+  font-weight: 700;
+  margin: 0;
 }
 
 .table {
-  width: 100%;
   border-collapse: collapse;
+  margin-top: 1rem;
+  width: 100%;
 }
 
 .table th,
 .table td {
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  padding: 0.75rem 0.5rem;
   text-align: left;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid hsl(var(--border));
 }
 
-.table th {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.7;
+.historyPanel {
+  margin-top: 1.25rem;
+}
+
+.historySummary {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.hintCompact {
+  border: 1px dashed hsl(var(--border) / 0.65);
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground) / 0.74);
+  margin: 1rem 0 0;
+  padding: 1rem;
+}
+
+@media (max-width: 760px) {
+  .searchPanel,
+  .layout,
+  .detailHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .searchPanel {
+    display: grid;
+  }
+
+  .cardButton {
+    grid-template-columns: 2.8rem minmax(0, 1fr);
+  }
+
+  .price {
+    grid-column: 2;
+  }
 }

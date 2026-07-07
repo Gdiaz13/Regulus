@@ -7,11 +7,10 @@ export interface IPricePoint {
   close: number;
   volume: number;
   source: string;
-  // TCG source metadata; null on provider stock rows.
-  priceType?: string | null;
-  cardCondition?: string | null;
-  grade?: string | null;
-  currency?: string | null;
+  priceType: string | null;
+  cardCondition: string | null;
+  grade: string | null;
+  currency: string | null;
 }
 
 // What the manual capture endpoint accepts (TCG cards first).
