@@ -37,6 +37,7 @@ builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient
 builder.Services.AddHostedService<PriceSnapshotService>();
 builder.Services.AddHostedService<PredictionScoringService>();
 builder.Services.AddHostedService<ModelAccuracyRecalculationService>();
+builder.Services.AddHostedService<ModelTrainingService>();
 
 var app = builder.Build();
 

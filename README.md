@@ -284,6 +284,7 @@ Done and real:
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 - Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
 - Background prediction-scoring and accuracy-recalculation jobs that persist and refresh `model_accuracy_results`, including the original confidence, risk, bullish/bearish, and horizon signals, so accuracy history improves as stored prices fill in. Tune them with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` and `BackgroundJobs:ModelAccuracyRecalculationEnabled` / `ModelAccuracyRecalculationIntervalMinutes` (daily by default).
+- Background model-training job slot is wired but disabled by default until real trainers exist. Enable it with `BackgroundJobs:ModelTrainingEnabled` and tune `ModelTrainingIntervalMinutes` when training is ready.
 
 Done but mock:
 
@@ -293,6 +294,6 @@ Done but mock:
 
 Still planned:
 
-- Add more background jobs for model training alongside the price-snapshot and prediction-scoring jobs.
-- Add more stock specialists, TCG detail screens, and future crypto support.
+- Connect the model-training job to real trainers when model training is ready.
+- Add more stock specialists, more TCG coverage, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
