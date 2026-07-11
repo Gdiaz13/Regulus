@@ -34,8 +34,25 @@ public static class BackgroundJobsConfiguration
         return TimeSpan.FromMinutes(configuration.GetValue("BackgroundJobs:ModelAccuracyRecalculationIntervalMinutes", 1440));
     }
 
+    public static bool ModelTrainingEnabled(IConfiguration configuration)
+    {
+        return configuration.GetValue("BackgroundJobs:ModelTrainingEnabled", false);
+    }
+
+    // Disabled by default until real trainers exist; when enabled, run daily.
+    public static TimeSpan ModelTrainingInterval(IConfiguration configuration)
+    {
+        return TimeSpan.FromMinutes(PositiveMinutes(configuration, "BackgroundJobs:ModelTrainingIntervalMinutes", 1440));
+    }
+
     public static TimeSpan StartupDelay(IConfiguration configuration)
     {
         return TimeSpan.FromSeconds(configuration.GetValue("BackgroundJobs:StartupDelaySeconds", 15));
+    }
+
+    private static int PositiveMinutes(IConfiguration configuration, string key, int fallback)
+    {
+        var minutes = configuration.GetValue(key, fallback);
+        return minutes > 0 ? minutes : fallback;
     }
 }

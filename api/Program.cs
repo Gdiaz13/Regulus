@@ -31,12 +31,14 @@ builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddSingleton<ModelAccuracyResultStore>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
+builder.Services.AddHttpClient<MagicTcgClient>(ConfigureMagicTcgClient);
 builder.Services.AddHttpClient<PokemonTcgClient>(ConfigurePokemonTcgClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 builder.Services.AddHostedService<PriceSnapshotService>();
 builder.Services.AddHostedService<PredictionScoringService>();
 builder.Services.AddHostedService<ModelAccuracyRecalculationService>();
+builder.Services.AddHostedService<ModelTrainingService>();
 
 var app = builder.Build();
 
@@ -87,6 +89,12 @@ static void ConfigureRegulasAiClient(IServiceProvider services, HttpClient clien
 static void ConfigurePokemonTcgClient(HttpClient client)
 {
     client.BaseAddress = new Uri("https://api.pokemontcg.io/v2/");
+    client.Timeout = TimeSpan.FromSeconds(10);
+}
+
+static void ConfigureMagicTcgClient(HttpClient client)
+{
+    client.BaseAddress = new Uri("https://api.scryfall.com/");
     client.Timeout = TimeSpan.FromSeconds(10);
 }
 

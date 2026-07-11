@@ -160,6 +160,7 @@ cd ai
 - `/trading-agents` runs stock TradingAgents research through the C# gateway.
 - `/price-history` captures and reads stored price history.
 - `/tcg` searches Pokemon cards, opens card details, and reads stored TCG price history. Opening a card also stores its provider market price, so browsing builds history over time.
+- `/tcg/record` records TCG card prices by hand (signed-in) with type/condition/grade/currency, and shows what is stored.
 - `/company/:ticker` opens the company dashboard.
 - `/company/:ticker/company-profile` shows key metrics.
 - `/company/:ticker/income-statement` shows income statement data.
@@ -173,7 +174,7 @@ Regulas needs to track more than stocks. The schema is shaped around flexible as
 - `assets` holds stocks, ETFs, TCG cards, crypto, and collectibles through Dapper.
 - `asset_categories` groups assets into markets or segments like Technology or Pokemon through Dapper.
 - `users`, `refresh_tokens`, and `user_settings` are the auth foundation for user-owned app data.
-- `price_history` stores end-of-day prices and source metadata through Dapper. TCG rows also track price type (market/listed/sold), card condition, grade, and currency, so a sold PSA 9 price never mixes silently with a raw-card listing.
+- `price_history` stores end-of-day prices and source metadata through Dapper. TCG rows also track game/category, price type (market/listed/sold), card condition, grade, and currency, so a sold PSA 9 price never mixes silently with a raw-card listing.
 - `predictions` stores every user-owned AI prediction so accuracy can be checked later.
 - `prediction_reasons` stores reasons and warnings separately from the main row.
 - `stocks` and `comments` keep each user's portfolio and notes working through Dapper.
@@ -228,10 +229,12 @@ Current mock services include:
 - `DELETE /api/comments/{id}` requires auth.
 - `GET /api/market-data/{providerPath}`
 - `POST /api/price-history/{symbol}/capture` stores provider history and returns capture counts plus source metadata.
-- `POST /api/price-history/{symbol}/manual` requires auth and records a hand-entered price (TCG cards first) with price type, condition, grade, and currency.
+- `POST /api/price-history/{symbol}/manual` requires auth and records a hand-entered price (TCG cards first) with game/category, price type, condition, grade, and currency.
 - `GET /api/price-history/{symbol}` defaults to the latest 365 stored points, accepts `?take=` up to 1000, and returns source metadata per point.
 - `GET /api/tcg/pokemon/cards?query=charizard` searches Pokemon cards through the backend gateway.
 - `GET /api/tcg/pokemon/cards/{id}` returns one Pokemon card detail with provider price variants and source metadata.
+- `GET /api/tcg/magic/cards?query=lightning%20bolt` searches Magic cards through the backend Scryfall gateway.
+- `GET /api/tcg/magic/cards/{id}` returns one Magic card detail with set, oracle text, image, price, and source metadata.
 - `POST /api/predict` requires auth and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
@@ -265,6 +268,8 @@ Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
 - Web Pokemon TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
+- Backend Magic TCG search/detail gateway through Scryfall with source and price metadata.
+- Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI asset-detail screen for company profile data through the API market-data proxy.
@@ -283,6 +288,7 @@ Done and real:
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 - Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
 - Background prediction-scoring and accuracy-recalculation jobs that persist and refresh `model_accuracy_results`, including the original confidence, risk, bullish/bearish, and horizon signals, so accuracy history improves as stored prices fill in. Tune them with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` and `BackgroundJobs:ModelAccuracyRecalculationEnabled` / `ModelAccuracyRecalculationIntervalMinutes` (daily by default).
+- Background model-training job slot is wired but disabled by default until real trainers exist. Enable it with `BackgroundJobs:ModelTrainingEnabled` and tune `ModelTrainingIntervalMinutes` when training is ready.
 
 Done but mock:
 
@@ -292,6 +298,6 @@ Done but mock:
 
 Still planned:
 
-- Add more background jobs for model training alongside the price-snapshot and prediction-scoring jobs.
-- Add more stock specialists, TCG detail screens, and future crypto support.
+- Connect the model-training job to real trainers when model training is ready.
+- Add more stock specialists, One Piece provider/detail flows, web/MAUI Magic browse UI, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.

@@ -28,7 +28,7 @@ public static class TcgCardPriceCapture
         {
             return;
         }
-        var asset = await store.EnsureAssetAsync(card.Id, AssetType.TcgCard, card.Name);
+        var asset = await store.EnsureAssetAsync(card.Id, AssetType.TcgCard, card.Name, "Pokemon");
         await store.SaveProviderCardPriceAsync(asset.Id, PriceDate(card), price.Value, card.Source);
     }
 

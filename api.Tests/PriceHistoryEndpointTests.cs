@@ -5,6 +5,7 @@ using api.Contracts;
 using api.Endpoints;
 using api.Models;
 using api.Services;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -29,6 +30,36 @@ public class PriceHistoryEndpointTests
         Assert.Equal(PriceHistoryStore.ProviderSource, result.Source);
     }
 
+    [Fact]
+    public async Task Manual_capture_attaches_tcg_game_category()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        var request = Request("Magic");
+        var result = await StoreManual(store, "lea-161", AssetType.TcgCard, request);
+        Assert.Equal("LEA-161", result.Symbol);
+        Assert.Equal("Magic", await AssetCategory(factory, result.AssetId));
+    }
+
+    [Fact]
+    public async Task Manual_capture_rejects_conflicting_tcg_game_category()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        await store.EnsureAssetAsync("lea-161", AssetType.TcgCard, "Lightning Bolt", "Pokemon");
+        var response = await StoreManualResponse(store, "lea-161", AssetType.TcgCard, Request("Magic"));
+        Assert.Equal(StatusCodes.Status409Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Manual_capture_rejects_unknown_tcg_game_category()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        var response = await StoreManualResponse(store, "lea-161", AssetType.TcgCard, Request("Digimon"));
+        Assert.Equal(StatusCodes.Status400BadRequest, response.StatusCode);
+    }
+
     private static async Task<CaptureResult> StoreCapture(
         PriceHistoryStore store,
         string symbol,
@@ -45,10 +76,61 @@ public class PriceHistoryEndpointTests
         return JsonSerializer.Deserialize<CaptureResult>(snapshot.Body, JsonOptions)!;
     }
 
+    private static async Task<CaptureResult> StoreManual(
+        PriceHistoryStore store,
+        string symbol,
+        AssetType type,
+        ManualPriceRequest request
+    )
+    {
+        var snapshot = await StoreManualResponse(store, symbol, type, request);
+        Assert.Equal(StatusCodes.Status200OK, snapshot.StatusCode);
+        return JsonSerializer.Deserialize<CaptureResult>(snapshot.Body, JsonOptions)!;
+    }
+
+    private static async Task<ResponseSnapshot> StoreManualResponse(
+        PriceHistoryStore store,
+        string symbol,
+        AssetType type,
+        ManualPriceRequest request
+    )
+    {
+        var method = typeof(PriceHistoryEndpoints).GetMethod("StoreManual", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new MissingMethodException(nameof(PriceHistoryEndpoints), "StoreManual");
+        var task = (Task<IResult>?)method.Invoke(null, [store, symbol, type, request])
+            ?? throw new InvalidOperationException("Manual price capture did not return a result task.");
+        return await Execute(await task);
+    }
+
     private static FmpHistoricalPrice Price(string date)
     {
         var day = DateOnly.Parse(date, CultureInfo.InvariantCulture);
         return new FmpHistoricalPrice("AMD", day, 10m, 11m, 9m, 10m, 1000);
+    }
+
+    private static ManualPriceRequest Request(string category)
+    {
+        return new ManualPriceRequest(
+            DateOnly.Parse("2026-02-03", CultureInfo.InvariantCulture),
+            5.25m,
+            "Sold",
+            null,
+            null,
+            "USD",
+            "Lightning Bolt",
+            category
+        );
+    }
+
+    private static async Task<string?> AssetCategory(SqliteDapperConnectionFactory factory, int assetId)
+    {
+        await using var connection = await factory.OpenDatabaseConnectionAsync();
+        return await connection.ExecuteScalarAsync<string?>("""
+            select c.name
+            from assets a
+            join asset_categories c on c.id = a.category_id
+            where a.id = @AssetId;
+            """, new { AssetId = assetId });
     }
 
     private static async Task<ResponseSnapshot> Execute(IResult result)

@@ -36,14 +36,38 @@ public static class PriceHistoryEndpoints
         return await StoreManual(store, symbol, ParseManualType(assetType), request);
     }
 
-    private static async Task<IResult> StoreManual(
+    private static async Task<IResult> StoreManual(PriceHistoryStore store, string symbol, AssetType type, ManualPriceRequest request)
+    {
+        try
+        {
+            return await SaveManual(store, symbol, type, request);
+        }
+        catch (Exception exception) when (IsManualCategoryException(exception))
+        {
+            return ManualCategoryError(exception);
+        }
+    }
+
+    private static bool IsManualCategoryException(Exception exception)
+    {
+        return exception is InvalidTcgAssetCategoryException or TcgAssetCategoryConflictException;
+    }
+
+    private static IResult ManualCategoryError(Exception exception)
+    {
+        return exception is InvalidTcgAssetCategoryException
+            ? Results.BadRequest(exception.Message)
+            : Results.Conflict(exception.Message);
+    }
+
+    private static async Task<IResult> SaveManual(
         PriceHistoryStore store,
         string symbol,
         AssetType type,
         ManualPriceRequest request
     )
     {
-        var asset = await store.EnsureAssetAsync(symbol, type, request.Name);
+        var asset = await store.EnsureAssetAsync(symbol, type, request.Name, request.Category);
         var captured = await store.SaveManualAsync(asset.Id, request);
         return Results.Ok(new CaptureResult(asset.Symbol, type.ToString(), (int)asset.Id, captured, 1 - captured, PriceHistoryStore.ManualSource));
     }

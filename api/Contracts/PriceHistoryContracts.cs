@@ -40,8 +40,8 @@ public sealed record PricePoint(
 );
 
 // A hand-entered price point, mainly for TCG cards where no provider feed exists
-// yet. Tracks what kind of price it was (market/listed/sold), the card's
-// condition and grade, and the currency, so different prices never mix silently.
+// yet. Tracks the card game/category plus price kind, condition, grade, and
+// currency so different card markets never mix silently.
 public sealed record ManualPriceRequest(
     DateOnly Date,
     decimal Price,
@@ -49,7 +49,8 @@ public sealed record ManualPriceRequest(
     string? CardCondition,
     string? Grade,
     string? Currency,
-    string? Name
+    string? Name,
+    string? Category = null
 );
 
 // The GET history response for a symbol.
