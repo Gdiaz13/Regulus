@@ -23,6 +23,19 @@ public class TcgCardPriceCaptureTests
     }
 
     [Fact]
+    public async Task Browsed_magic_card_market_price_is_stored_with_provider_currency()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        await TcgCardPriceCapture.TryStoreAsync(store, MagicCard("lea-161", Price("eur", 1.23m)), NullLogger.Instance);
+        var point = Assert.Single(await store.ListPointsAsync("LEA-161", AssetType.TcgCard, 10));
+        Assert.Equal(1.23m, point.Close);
+        Assert.Equal(MagicTcgClient.SourceName, point.Source);
+        Assert.Equal("Market", point.PriceType);
+        Assert.Equal("EUR", point.Currency);
+    }
+
+    [Fact]
     public async Task Card_without_market_price_stores_nothing()
     {
         using var factory = new SqliteDapperConnectionFactory();
@@ -60,8 +73,21 @@ public class TcgCardPriceCaptureTests
         );
     }
 
+    private static MagicCardDetail MagicCard(string id, params MagicCardPrice[] prices)
+    {
+        return new MagicCardDetail(
+            id, "Lightning Bolt", "Instant", "{R}", "Deal 3 damage.", ["R"], "Limited Edition Alpha",
+            "lea", "161", null, "common", null, null, null, MagicTcgClient.SourceName, null, [.. prices]
+        );
+    }
+
     private static PokemonCardPrice Variant(decimal? market)
     {
         return new PokemonCardPrice("holofoil", 100m, 110m, 130m, market, null);
+    }
+
+    private static MagicCardPrice Price(string currency, decimal market)
+    {
+        return new MagicCardPrice(currency, "normal", market);
     }
 }

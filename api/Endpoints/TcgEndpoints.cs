@@ -77,14 +77,36 @@ public static class TcgEndpoints
         return await ProviderRequest(() => client.SearchAsync(clean, ClampPageSize(pageSize), token), "Magic");
     }
 
-    private static async Task<IResult> GetMagicCard(string id, MagicTcgClient client, CancellationToken token)
+    private static async Task<IResult> GetMagicCard(
+        string id,
+        MagicTcgClient client,
+        PriceHistoryStore store,
+        ILoggerFactory loggers,
+        CancellationToken token
+    )
     {
         var clean = Clean(id);
         if (string.IsNullOrWhiteSpace(clean))
         {
             return Results.BadRequest("A card id is required.");
         }
-        return await ProviderRequest(() => client.GetCardAsync(clean, token), "Magic");
+        return await ProviderRequest(() => FetchAndStoreAsync(clean, client, store, loggers, token), "Magic");
+    }
+
+    private static async Task<Contracts.MagicCardDetail?> FetchAndStoreAsync(
+        string id,
+        MagicTcgClient client,
+        PriceHistoryStore store,
+        ILoggerFactory loggers,
+        CancellationToken token
+    )
+    {
+        var card = await client.GetCardAsync(id, token);
+        if (card is not null)
+        {
+            await TcgCardPriceCapture.TryStoreAsync(store, card, loggers.CreateLogger(nameof(TcgEndpoints)));
+        }
+        return card;
     }
 
     private static async Task<IResult> ProviderRequest<T>(Func<Task<T?>> request, string game)

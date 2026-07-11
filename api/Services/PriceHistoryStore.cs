@@ -44,11 +44,11 @@ public sealed class PriceHistoryStore
         return await connection.ExecuteAsync(Sql.InsertManualPrice, ManualParams(assetId, request));
     }
 
-    // A browsed card's provider market price; tcgplayer prices are USD market quotes.
-    public async Task<int> SaveProviderCardPriceAsync(long assetId, DateOnly date, decimal price, string source)
+    // A browsed card's provider market price; currency comes from the provider feed.
+    public async Task<int> SaveProviderCardPriceAsync(long assetId, DateOnly date, decimal price, string source, string currency = "USD")
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
-        return await connection.ExecuteAsync(Sql.InsertManualPrice, CardPriceParams(assetId, date, price, source));
+        return await connection.ExecuteAsync(Sql.InsertManualPrice, CardPriceParams(assetId, date, price, source, currency));
     }
 
     public async Task<List<PricePoint>> ListPointsAsync(string symbol, AssetType type, int take)
@@ -176,7 +176,7 @@ public sealed class PriceHistoryStore
         };
     }
 
-    private static object CardPriceParams(long assetId, DateOnly date, decimal price, string source)
+    private static object CardPriceParams(long assetId, DateOnly date, decimal price, string source, string currency)
     {
         return new
         {
@@ -187,7 +187,7 @@ public sealed class PriceHistoryStore
             PriceType = "Market",
             CardCondition = (string?)null,
             Grade = (string?)null,
-            Currency = "USD",
+            Currency = CleanOrNull(currency)?.ToUpperInvariant() ?? "USD",
         };
     }
 

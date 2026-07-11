@@ -21,6 +21,18 @@ public static class TcgCardPriceCapture
         }
     }
 
+    public static async Task TryStoreAsync(PriceHistoryStore store, MagicCardDetail card, ILogger logger)
+    {
+        try
+        {
+            await StoreAsync(store, card);
+        }
+        catch (Exception exception) when (IsStorageException(exception))
+        {
+            logger.LogWarning(exception, "Market price for card {Card} was not stored.", card.Id);
+        }
+    }
+
     private static async Task StoreAsync(PriceHistoryStore store, PokemonCardDetail card)
     {
         var price = MarketPrice(card);
@@ -32,10 +44,26 @@ public static class TcgCardPriceCapture
         await store.SaveProviderCardPriceAsync(asset.Id, PriceDate(card), price.Value, card.Source);
     }
 
+    private static async Task StoreAsync(PriceHistoryStore store, MagicCardDetail card)
+    {
+        var price = MarketPrice(card);
+        if (price is null)
+        {
+            return;
+        }
+        var asset = await store.EnsureAssetAsync(card.Id, AssetType.TcgCard, card.Name, "Magic");
+        await store.SaveProviderCardPriceAsync(asset.Id, DateOnly.FromDateTime(DateTime.UtcNow), price.MarketPrice, card.Source, price.Currency);
+    }
+
     // First variant with a market price, matching what the search list shows.
     private static decimal? MarketPrice(PokemonCardDetail card)
     {
         return card.Prices.Select(price => price.Market).FirstOrDefault(market => market is not null);
+    }
+
+    private static MagicCardPrice? MarketPrice(MagicCardDetail card)
+    {
+        return card.Prices.FirstOrDefault();
     }
 
     // The provider stamps prices with its own update date (yyyy/MM/dd); fall
