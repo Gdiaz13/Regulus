@@ -18,6 +18,10 @@ public interface IRegulasApiClient
 
     Task<ApiClientResult<PriceCaptureResult>> RecordManualPriceAsync(string symbol, ManualPriceRequest request, CancellationToken token);
 
+    Task<ApiClientResult<MagicCardSearchResponse>> SearchMagicCardsAsync(string query, int pageSize, CancellationToken token);
+
+    Task<ApiClientResult<MagicCardDetail>> GetMagicCardAsync(string id, CancellationToken token);
+
     Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token);
 
     Task<ApiClientResult<IReadOnlyList<PredictionHistoryItem>>> GetPredictionHistoryAsync(int take, CancellationToken token);

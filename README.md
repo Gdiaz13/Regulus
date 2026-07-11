@@ -133,7 +133,7 @@ Build the MAUI app (Windows):
 dotnet build Regulas.MauiApp -f net10.0-windows10.0.19041.0
 ```
 
-It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal). Apple packaging, signing, and device runs still need the Apple toolchain.
+It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The TCG tab can browse Magic cards through the backend Scryfall gateway and record manual card prices. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal). Apple packaging, signing, and device runs still need the Apple toolchain.
 
 Run the mock RegulasCoreAI service:
 

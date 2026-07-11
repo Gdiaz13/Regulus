@@ -17,6 +17,90 @@
                        TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
             </VerticalStackLayout>
 
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Browse Magic"
+                               FontSize="20"
+                               FontAttributes="Bold" />
+                        <Label Text="Search Scryfall through Regulas.Api, then open details to capture provider market price when available."
+                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    </VerticalStackLayout>
+                    <Grid ColumnDefinitions="*,Auto"
+                          ColumnSpacing="10">
+                        <Entry Text="{Binding MagicQuery}"
+                               Placeholder="Card name e.g. Lightning Bolt" />
+                        <Button Grid.Column="1"
+                                Text="Search"
+                                Command="{Binding SearchMagicCommand}"
+                                IsEnabled="{Binding CanSearchMagic}" />
+                    </Grid>
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}" />
+                    <Label Text="{Binding MagicMessageText}"
+                           IsVisible="{Binding ShowMagicMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <CollectionView ItemsSource="{Binding MagicCards}"
+                                    SelectionMode="None"
+                                    IsVisible="{Binding HasMagicCards}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="10"
+                                        Margin="0,0,0,8">
+                                    <Grid ColumnDefinitions="*,Auto"
+                                          RowDefinitions="Auto,Auto"
+                                          ColumnSpacing="10">
+                                        <Label Text="{Binding Name}"
+                                               FontAttributes="Bold" />
+                                        <Label Grid.Row="1"
+                                               Text="{Binding Details}"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Price}"
+                                               FontAttributes="Bold" />
+                                        <Button Grid.Row="1"
+                                                Grid.Column="1"
+                                                Text="Open"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenMagicCardCommand}"
+                                                CommandParameter="{Binding Id}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Border IsVisible="{Binding HasMagicDetail}"
+                            Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding MagicDetailName}"
+                                   FontSize="18"
+                                   FontAttributes="Bold" />
+                            <Label Text="{Binding MagicDetailText}"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                            <CollectionView ItemsSource="{Binding MagicPrices}"
+                                            SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Text="{Binding Label}" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Price}"
+                                                   FontAttributes="Bold" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
             <Button Text="Sign in"
                     Command="{Binding OpenAccountCommand}"
                     IsVisible="{Binding IsAnonymous}" />

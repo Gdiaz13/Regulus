@@ -64,6 +64,16 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return PostAsync<PriceCaptureResult>($"api/price-history/{Esc(symbol)}/manual?assetType=TcgCard", request, token);
     }
 
+    public Task<ApiClientResult<MagicCardSearchResponse>> SearchMagicCardsAsync(string query, int pageSize, CancellationToken token)
+    {
+        return GetAsync<MagicCardSearchResponse>(MagicSearchPath(query, pageSize), token);
+    }
+
+    public Task<ApiClientResult<MagicCardDetail>> GetMagicCardAsync(string id, CancellationToken token)
+    {
+        return GetAsync<MagicCardDetail>($"api/tcg/magic/cards/{Esc(id)}", token);
+    }
+
     public Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token)
     {
         return PostAsync<AiOverview>("api/predict", new PredictBatchRequest(assets), token);
@@ -145,6 +155,11 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static string PriceCapturePath(string symbol, string assetType)
     {
         return $"api/price-history/{Esc(symbol)}/capture?assetType={Esc(assetType)}";
+    }
+
+    private static string MagicSearchPath(string query, int pageSize)
+    {
+        return $"api/tcg/magic/cards?query={Esc(query)}&pageSize={Math.Clamp(pageSize, 1, 24)}";
     }
 
     private static string PredictionHistoryPath(int take)
