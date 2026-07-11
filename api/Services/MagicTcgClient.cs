@@ -80,18 +80,27 @@ public sealed class MagicTcgClient
     private static MagicCardSummary ToSummary(ScryfallCard card)
     {
         var price = MarketPrice(card.Prices);
+        var images = Images(card);
         return new MagicCardSummary(
             card.Id, card.Name, card.SetName, card.SetCode, card.CollectorNumber, card.Rarity,
-            card.Images?.Small, price?.Price, price?.Currency, SourceName, card.ReleasedAt
+            images?.Small, price?.Price, price?.Currency, SourceName, card.ReleasedAt
         );
+    }
+
+    private static ScryfallImages? Images(ScryfallCard card)
+    {
+        return card.Images ?? card.CardFaces?.FirstOrDefault()?.Images;
     }
 
     private static MagicCardDetail ToDetail(ScryfallCard card)
     {
+        var face = card.CardFaces?.FirstOrDefault();
+        var images = Images(card);
         return new MagicCardDetail(
-            card.Id, card.Name, card.TypeLine, card.ManaCost, card.OracleText, card.Colors ?? [],
+            card.Id, card.Name, card.TypeLine ?? face?.TypeLine, card.ManaCost ?? face?.ManaCost,
+            card.OracleText ?? face?.OracleText, card.Colors ?? face?.Colors ?? [],
             card.SetName, card.SetCode, card.CollectorNumber, card.Artist, card.Rarity,
-            card.Images?.Small, card.Images?.Large, card.ScryfallUri, SourceName, card.ReleasedAt, Prices(card.Prices)
+            images?.Small, images?.Large, card.ScryfallUri, SourceName, card.ReleasedAt, Prices(card.Prices)
         );
     }
 
@@ -154,7 +163,16 @@ public sealed class MagicTcgClient
         string? Artist,
         [property: JsonPropertyName("image_uris")] ScryfallImages? Images,
         [property: JsonPropertyName("scryfall_uri")] string? ScryfallUri,
+        [property: JsonPropertyName("card_faces")] List<ScryfallCardFace>? CardFaces,
         ScryfallPrices? Prices
+    );
+
+    private sealed record ScryfallCardFace(
+        [property: JsonPropertyName("type_line")] string? TypeLine,
+        [property: JsonPropertyName("mana_cost")] string? ManaCost,
+        [property: JsonPropertyName("oracle_text")] string? OracleText,
+        List<string>? Colors,
+        [property: JsonPropertyName("image_uris")] ScryfallImages? Images
     );
 
     private sealed record ScryfallImages(string? Small, string? Normal, string? Large);
