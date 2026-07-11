@@ -79,9 +79,10 @@ public sealed class MagicTcgClient
 
     private static MagicCardSummary ToSummary(ScryfallCard card)
     {
+        var price = MarketPrice(card.Prices);
         return new MagicCardSummary(
             card.Id, card.Name, card.SetName, card.SetCode, card.CollectorNumber, card.Rarity,
-            card.Images?.Small, MarketPrice(card.Prices), SourceName, card.ReleasedAt
+            card.Images?.Small, price?.Price, price?.Currency, SourceName, card.ReleasedAt
         );
     }
 
@@ -94,9 +95,9 @@ public sealed class MagicTcgClient
         );
     }
 
-    private static decimal? MarketPrice(ScryfallPrices? prices)
+    private static PriceValue? MarketPrice(ScryfallPrices? prices)
     {
-        return PriceValues(prices).Select(value => value.Price).Cast<decimal?>().FirstOrDefault();
+        return PriceValues(prices).FirstOrDefault();
     }
 
     private static List<MagicCardPrice> Prices(ScryfallPrices? prices)

@@ -41,6 +41,27 @@
   padding: 1rem;
 }
 
+.gameTabs {
+  background: hsl(var(--foreground) / 0.05);
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 999px;
+  display: inline-flex;
+  padding: 0.2rem;
+}
+
+.gameTab {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: hsl(var(--foreground) / 0.72);
+  padding: 0.45rem 0.8rem;
+}
+
+.gameTabActive {
+  background: hsl(var(--accent));
+  color: hsl(var(--background));
+}
+
 .searchInput {
   flex: 1 1 16rem;
   min-width: 0;
@@ -155,6 +176,14 @@
 
 .meta {
   margin: 0 0 0.75rem;
+}
+
+.oracleText {
+  border-left: 2px solid hsl(var(--accent) / 0.65);
+  color: hsl(var(--foreground) / 0.78);
+  margin: 0 0 1rem;
+  padding-left: 0.85rem;
+  white-space: pre-line;
 }
 
 .source,

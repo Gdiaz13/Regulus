@@ -17,6 +17,16 @@ public class MagicTcgClientTests
         Assert.Equal("00000000-0000-0000-0000-000000000001", result!.Cards.Single().Id);
         Assert.Equal("Limited Edition Alpha", result.Cards.Single().SetName);
         Assert.Equal(399.99m, result.Cards.Single().MarketPrice);
+        Assert.Equal("usd", result.Cards.Single().MarketCurrency);
+    }
+
+    [Fact]
+    public async Task Search_tracks_summary_currency_when_usd_is_missing()
+    {
+        var handler = new CapturingHandler(JsonResponse(EuroSearchJson));
+        var result = await Client(handler).SearchAsync("euro card", 12, CancellationToken.None);
+        Assert.Equal(1.23m, result!.Cards.Single().MarketPrice);
+        Assert.Equal("eur", result.Cards.Single().MarketCurrency);
     }
 
     [Fact]
@@ -83,6 +93,10 @@ public class MagicTcgClientTests
 
     private const string SearchJson = """
         {"data":[{"id":"00000000-0000-0000-0000-000000000001","name":"Lightning Bolt","set_name":"Limited Edition Alpha","set":"lea","collector_number":"161","rarity":"common","released_at":"1993-08-05","image_uris":{"small":"small.jpg","normal":"normal.jpg","large":"large.jpg"},"prices":{"usd":"399.99","usd_foil":null,"usd_etched":null,"eur":null,"tix":null}}],"total_cards":1,"has_more":false}
+        """;
+
+    private const string EuroSearchJson = """
+        {"data":[{"id":"00000000-0000-0000-0000-000000000002","name":"Euro Card","set_name":"Foreign Set","set":"for","collector_number":"2","rarity":"rare","released_at":"2024-01-01","image_uris":{"small":"small.jpg","normal":"normal.jpg","large":"large.jpg"},"prices":{"usd":null,"usd_foil":null,"usd_etched":null,"eur":"1.23","tix":null}}],"total_cards":1,"has_more":false}
         """;
 
     private const string DetailJson = """

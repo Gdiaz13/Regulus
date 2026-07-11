@@ -67,6 +67,7 @@ public sealed record MagicCardSummary(
     string? Rarity,
     string? SmallImageUrl,
     decimal? MarketPrice,
+    string? MarketCurrency,
     string Source,
     string? UpdatedAt
 );

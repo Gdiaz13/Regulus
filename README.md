@@ -62,8 +62,8 @@ Or use an environment variable:
 $env:FMP_API_KEY="your_fmp_key"
 ```
 
-Pokemon TCG search/detail calls also run through the API. A key is optional for
-local development, but if you have one, keep it on the API side:
+Pokemon and Magic TCG search/detail calls also run through the API. A Pokemon key is optional for
+local development, but if you have one, keep it on the API side. Magic uses Scryfall without a key:
 
 ```powershell
 dotnet user-secrets set "PokemonTcg:ApiKey" "your_pokemon_tcg_key"
@@ -159,7 +159,7 @@ cd ai
 - `/predictions` stages assets and asks the mock AI hierarchy for research signals.
 - `/trading-agents` runs stock TradingAgents research through the C# gateway.
 - `/price-history` captures and reads stored price history.
-- `/tcg` searches Pokemon cards, opens card details, and reads stored TCG price history. Opening a card also stores its provider market price, so browsing builds history over time.
+- `/tcg` searches Pokemon and Magic cards, opens card details, and reads stored TCG price history. Opening a card also stores its provider market price, so browsing builds history over time.
 - `/tcg/record` records TCG card prices by hand (signed-in) with type/condition/grade/currency, and shows what is stored.
 - `/company/:ticker` opens the company dashboard.
 - `/company/:ticker/company-profile` shows key metrics.
@@ -267,8 +267,7 @@ cd ..\ai
 Done and real:
 
 - Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
-- Web Pokemon TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
-- Backend Magic TCG search/detail gateway through Scryfall with source and price metadata.
+- Web Pokemon and Magic TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
 - Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
@@ -299,5 +298,5 @@ Done but mock:
 Still planned:
 
 - Connect the model-training job to real trainers when model training is ready.
-- Add more stock specialists, One Piece provider/detail flows, web/MAUI Magic browse UI, and future crypto support.
+- Add more stock specialists, One Piece provider/detail flows, MAUI Magic browse UI, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
