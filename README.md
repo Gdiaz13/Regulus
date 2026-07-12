@@ -238,7 +238,7 @@ Current mock services include:
 - `GET /api/tcg/pokemon/cards/{id}` returns one Pokemon card detail with provider price variants and source metadata.
 - `GET /api/tcg/magic/cards?query=lightning%20bolt` searches Magic cards through the backend Scryfall gateway.
 - `GET /api/tcg/magic/cards/{id}` returns one Magic card detail with set, oracle text, image, price, and source metadata.
-- `POST /api/predict` requires auth and saves predictions for the current user.
+- `POST /api/predict` requires auth, rejects blank asset symbols, and saves predictions for the current user.
 - `GET /api/predict/history` requires auth.
 - `GET /api/predict/accuracy` requires auth.
 - `GET /api/predict/accuracy/summary` requires auth and rolls the current user's accuracy up per model (win rate, avg error, confidence/risk calibration, bull/bear bias, horizon buckets).

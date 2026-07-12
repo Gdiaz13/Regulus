@@ -27,11 +27,21 @@ public static class PredictionEndpoints
         ILoggerFactory loggers
     )
     {
+        var validation = Validate(request);
+        if (validation is not null)
+        {
+            return validation;
+        }
+        return await RunPrediction(request, UserId(context), client, store, loggers);
+    }
+
+    private static IResult? Validate(PredictBatchRequest request)
+    {
         if (IsEmpty(request))
         {
             return Results.BadRequest("Send at least one asset to predict.");
         }
-        return await RunPrediction(request, UserId(context), client, store, loggers);
+        return HasBlankSymbol(request) ? Results.BadRequest("Every prediction asset needs a symbol.") : null;
     }
 
     private static async Task<IResult> RunPrediction(PredictBatchRequest request, Guid userId, RegulasAiClient client, PredictionStore store, ILoggerFactory loggers)
@@ -120,6 +130,11 @@ public static class PredictionEndpoints
     private static bool IsEmpty(PredictBatchRequest request)
     {
         return request.Assets is null || request.Assets.Count == 0;
+    }
+
+    private static bool HasBlankSymbol(PredictBatchRequest request)
+    {
+        return request.Assets.Any(asset => asset is null || string.IsNullOrWhiteSpace(asset.Symbol));
     }
 
     private static IResult AiUnavailable()
