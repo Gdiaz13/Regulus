@@ -68,8 +68,13 @@ public sealed class PredictionStore
         var symbol = (asset.Symbol ?? string.Empty).Trim().ToUpperInvariant();
         return new AiPredictRequest(
             symbol, asset.Name?.Trim() ?? symbol, asset.AssetType?.Trim() ?? nameof(AssetType.Stock),
-            asset.Category?.Trim() ?? string.Empty, asset.CurrentPrice, asset.TimeHorizonDays ?? DefaultHorizonDays
+            asset.Category?.Trim() ?? string.Empty, asset.CurrentPrice, CleanHorizon(asset.TimeHorizonDays)
         );
+    }
+
+    private static int CleanHorizon(int? horizon)
+    {
+        return horizon is > 0 ? horizon.Value : DefaultHorizonDays;
     }
 
     private static IEnumerable<AiPrediction> Flatten(AiOverview overview)

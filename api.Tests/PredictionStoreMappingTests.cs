@@ -49,6 +49,15 @@ public class PredictionStoreMappingTests
         Assert.Equal(90, result.TimeHorizonDays);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-30)]
+    public void TimeHorizon_defaults_to_90_when_non_positive(int horizon)
+    {
+        var result = MapOne(new PredictAssetRequest("amd", null, null, null, 100m, horizon));
+        Assert.Equal(90, result.TimeHorizonDays);
+    }
+
     [Fact]
     public void Provided_fields_are_trimmed_and_passed_through()
     {
