@@ -217,3 +217,35 @@ def test_commander_has_standard_manager_routes():
     assert client.get("/model-info").json()["category"] == "Core"
     assert client.post("/train").json()["isMock"] is True
     assert client.post("/explain", json=[STOCK_REQUEST]).json()["requestCount"] == 1
+
+
+def _stock_sector_client() -> TestClient:
+    config = CategoryConfig(
+        "StockAI", "0.1.0", "Stocks", "Stock",
+        {
+            "technology": SpecialistRef("http://localhost:8101", "StockTechAI"),
+            "energy": SpecialistRef("http://localhost:8103", "StockEnergyAI"),
+            "memory": SpecialistRef("http://localhost:8104", "StockMemoryAI"),
+            "dividend": SpecialistRef("http://localhost:8105", "StockDividendAI"),
+        },
+    )
+    return TestClient(create_category_app(config))
+
+
+def test_stock_category_routes_energy_memory_and_dividend():
+    cases = [("Energy", "StockEnergyAI"), ("Memory", "StockMemoryAI"), ("Dividend", "StockDividendAI")]
+    for category, expected in cases:
+        request = {**STOCK_REQUEST, "category": category}
+        body = _stock_sector_client().post("/predict", json=[request]).json()
+        assert body["predictions"][0]["modelName"] == expected
+
+
+def test_new_stock_specialist_services_are_loadable():
+    cases = [
+        ("regulas.ai.stocks.energy", "StockEnergyAI"),
+        ("regulas.ai.stocks.memory", "StockMemoryAI"),
+        ("regulas.ai.stocks.dividend", "StockDividendAI"),
+    ]
+    for folder, name in cases:
+        module = _load_service(folder)
+        assert module.CONFIG.model_name == name and module.app.title == name
