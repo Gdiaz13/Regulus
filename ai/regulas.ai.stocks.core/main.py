@@ -23,6 +23,9 @@ CONFIG = CategoryConfig(
     specialists={
         "technology": SpecialistRef(os.getenv("STOCK_TECH_AI_URL", "http://localhost:8101"), "StockTechAI"),
         "semiconductor": SpecialistRef(os.getenv("STOCK_SEMI_AI_URL", "http://localhost:8102"), "StockSemiconductorAI"),
+        "energy": SpecialistRef(os.getenv("STOCK_ENERGY_AI_URL", "http://localhost:8103"), "StockEnergyAI"),
+        "memory": SpecialistRef(os.getenv("STOCK_MEMORY_AI_URL", "http://localhost:8104"), "StockMemoryAI"),
+        "dividend": SpecialistRef(os.getenv("STOCK_DIVIDEND_AI_URL", "http://localhost:8105"), "StockDividendAI"),
     },
 )
 

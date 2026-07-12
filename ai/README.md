@@ -76,6 +76,9 @@ calls instead of fallbacks:
 ```powershell
 uvicorn main:app --app-dir "regulas.ai.stocks.tech"          --port 8101   # StockTechAI
 uvicorn main:app --app-dir "regulas.ai.stocks.semiconductor" --port 8102   # StockSemiconductorAI
+uvicorn main:app --app-dir "regulas.ai.stocks.energy"        --port 8103   # StockEnergyAI
+uvicorn main:app --app-dir "regulas.ai.stocks.memory"        --port 8104   # StockMemoryAI
+uvicorn main:app --app-dir "regulas.ai.stocks.dividend"      --port 8105   # StockDividendAI
 uvicorn main:app --app-dir "regulas.ai.tcg.pokemon"          --port 8111   # PokemonAI
 uvicorn main:app --app-dir "regulas.ai.tcg.magic"            --port 8112   # MagicAI
 uvicorn main:app --app-dir "regulas.ai.tcg.onepiece"         --port 8113   # OnePieceAI
@@ -103,6 +106,9 @@ pytest
 |------------------|------|---------------|
 | StockTechAI      | 8101 | mock          |
 | StockSemiconductorAI | 8102 | mock      |
+| StockEnergyAI    | 8103 | mock          |
+| StockMemoryAI    | 8104 | mock          |
+| StockDividendAI  | 8105 | mock          |
 | PokemonAI        | 8111 | mock          |
 | MagicAI          | 8112 | mock          |
 | OnePieceAI       | 8113 | mock          |
