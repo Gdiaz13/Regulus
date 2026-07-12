@@ -67,9 +67,21 @@ public sealed class PredictionStore
     {
         var symbol = (asset.Symbol ?? string.Empty).Trim().ToUpperInvariant();
         return new AiPredictRequest(
-            symbol, asset.Name?.Trim() ?? symbol, asset.AssetType?.Trim() ?? nameof(AssetType.Stock),
+            symbol, CleanName(asset.Name, symbol), CleanAssetType(asset.AssetType),
             asset.Category?.Trim() ?? string.Empty, asset.CurrentPrice, CleanHorizon(asset.TimeHorizonDays)
         );
+    }
+
+    private static string CleanName(string? name, string symbol)
+    {
+        var clean = name?.Trim();
+        return string.IsNullOrWhiteSpace(clean) ? symbol : clean;
+    }
+
+    private static string CleanAssetType(string? assetType)
+    {
+        var clean = assetType?.Trim();
+        return string.IsNullOrWhiteSpace(clean) ? nameof(AssetType.Stock) : clean;
     }
 
     private static int CleanHorizon(int? horizon)

@@ -29,9 +29,23 @@ public class PredictionStoreMappingTests
     }
 
     [Fact]
+    public void Name_defaults_to_symbol_when_blank()
+    {
+        var result = MapOne(new PredictAssetRequest("amd", "   ", null, null, 100m, null));
+        Assert.Equal("AMD", result.AssetName);
+    }
+
+    [Fact]
     public void AssetType_defaults_to_stock()
     {
         var result = MapOne(new PredictAssetRequest("amd", null, null, null, 100m, null));
+        Assert.Equal(nameof(AssetType.Stock), result.AssetType);
+    }
+
+    [Fact]
+    public void AssetType_defaults_to_stock_when_blank()
+    {
+        var result = MapOne(new PredictAssetRequest("amd", null, "   ", null, 100m, null));
         Assert.Equal(nameof(AssetType.Stock), result.AssetType);
     }
 
