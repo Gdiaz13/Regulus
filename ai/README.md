@@ -19,6 +19,9 @@ Specialist AI  ->  Category AI  ->  Market AI  ->  RegulasCoreAI  ->  C# gateway
   asset.
 - **Category AIs** (`StockAI`, `TCGAI`) route each asset to the right specialist
   and summarize the group.
+- `StockAI` accepts common stock category aliases such as `Oil & Gas`,
+  `Data Storage`, and `Dividend Growth` and routes them to the energy, memory,
+  or dividend specialists instead of falling back to technology.
 - **Market AIs** (`FinanceAI`, `CollectiblesAI`) compare category AIs under one
   market. Finance has `StockAI` and `StockTradingAgentsAI` now, plus a crypto
   slot later; Collectibles has `TCGAI` now and room for more categories.

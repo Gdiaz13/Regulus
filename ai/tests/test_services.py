@@ -240,6 +240,20 @@ def test_stock_category_routes_energy_memory_and_dividend():
         assert body["predictions"][0]["modelName"] == expected
 
 
+def test_stock_core_routes_common_sector_aliases():
+    module = _load_service("regulas.ai.stocks.core")
+    client = TestClient(module.app)
+    cases = [
+        ("Oil & Gas", "StockEnergyAI"),
+        ("Data Storage", "StockMemoryAI"),
+        ("Dividend Growth", "StockDividendAI"),
+    ]
+    for category, expected in cases:
+        request = {**STOCK_REQUEST, "category": category}
+        body = client.post("/predict", json=[request]).json()
+        assert body["predictions"][0]["modelName"] == expected
+
+
 def test_new_stock_specialist_services_are_loadable():
     cases = [
         ("regulas.ai.stocks.energy", "StockEnergyAI"),
