@@ -133,7 +133,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         var result = await _apiClient.SearchMagicCardsAsync(MagicQuery.Trim(), 12, CancellationToken.None);
         if (!result.Ok || result.Data is null)
         {
-            ApplyMagicFailure(result.Message);
+            ApplyMagicSearchFailure(result.Message);
             return;
         }
         ReplaceMagicCards(result.Data.Cards);
@@ -145,7 +145,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         var result = await _apiClient.GetMagicCardAsync(id, CancellationToken.None);
         if (!result.Ok || result.Data is null)
         {
-            ApplyMagicFailure(result.Message);
+            ApplyMagicDetailFailure(result.Message);
             return;
         }
         ApplyMagicDetail(result.Data);
@@ -185,9 +185,15 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         MessageText = message;
     }
 
-    private void ApplyMagicFailure(string message)
+    private void ApplyMagicSearchFailure(string message)
     {
         ReplaceMagicCards([]);
+        ClearMagicDetail();
+        MagicMessageText = message;
+    }
+
+    private void ApplyMagicDetailFailure(string message)
+    {
         ClearMagicDetail();
         MagicMessageText = message;
     }

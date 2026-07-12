@@ -258,7 +258,10 @@ cd ..\api
 dotnet build --no-restore
 dotnet test ..\api.Tests
 
-cd ..\ai
+cd ..
+dotnet test .\Regulas.MauiApp.Tests\Regulas.MauiApp.Tests.csproj --no-restore
+
+cd .\ai
 .\.venv\Scripts\python.exe -m pytest
 ```
 
@@ -273,6 +276,7 @@ Done and real:
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI asset-detail screen for company profile data through the API market-data proxy.
 - MAUI price-history screen for stored reads and provider capture through `Regulas.Api`.
+- MAUI Magic TCG browse/detail flow through `Regulas.Api`, with ViewModel regression tests for result-state handling.
 - MAUI predictions screen for staged assets, saved history, and mock AI research through `Regulas.Api`.
 - MAUI TradingAgents research screen for stock research through the separate service boundary via `Regulas.Api`.
 - MAUI Settings tab for the Regulas.Api base URL.
@@ -298,5 +302,5 @@ Done but mock:
 Still planned:
 
 - Connect the model-training job to real trainers when model training is ready.
-- Add more stock specialists, One Piece provider/detail flows, MAUI Magic browse UI, and future crypto support.
+- Add more stock specialists, One Piece provider/detail flows, and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
