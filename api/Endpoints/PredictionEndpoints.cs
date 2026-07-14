@@ -24,15 +24,12 @@ public static class PredictionEndpoints
         HttpContext context,
         RegulasAiClient client,
         PredictionStore store,
+        PredictionRequestEnricher enricher,
         ILoggerFactory loggers
     )
     {
         var validation = Validate(request);
-        if (validation is not null)
-        {
-            return validation;
-        }
-        return await RunPrediction(request, UserId(context), client, store, loggers);
+        return validation ?? await RunPrediction(request, UserId(context), client, store, enricher, loggers);
     }
 
     private static IResult? Validate(PredictBatchRequest request)
@@ -44,9 +41,11 @@ public static class PredictionEndpoints
         return HasBlankSymbol(request) ? Results.BadRequest("Every prediction asset needs a symbol.") : null;
     }
 
-    private static async Task<IResult> RunPrediction(PredictBatchRequest request, Guid userId, RegulasAiClient client, PredictionStore store, ILoggerFactory loggers)
+    private static async Task<IResult> RunPrediction(PredictBatchRequest request, Guid userId, RegulasAiClient client, PredictionStore store, PredictionRequestEnricher enricher, ILoggerFactory loggers)
     {
-        var overview = await CallAi(request, client, loggers);
+        // Stored closes ride along so real specialist models see actual prices.
+        var requests = await enricher.EnrichAsync(PredictionStore.ToAiRequests(request.Assets));
+        var overview = await CallAi(requests, client, loggers);
         if (overview is null)
         {
             return AiUnavailable();
@@ -55,11 +54,11 @@ public static class PredictionEndpoints
         return Results.Ok(overview);
     }
 
-    private static async Task<AiOverview?> CallAi(PredictBatchRequest request, RegulasAiClient client, ILoggerFactory loggers)
+    private static async Task<AiOverview?> CallAi(List<AiPredictRequest> requests, RegulasAiClient client, ILoggerFactory loggers)
     {
         try
         {
-            return await client.PredictAsync(PredictionStore.ToAiRequests(request.Assets));
+            return await client.PredictAsync(requests);
         }
         catch (Exception exception) when (RegulasAiClient.IsAiException(exception))
         {

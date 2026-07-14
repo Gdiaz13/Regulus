@@ -16,14 +16,17 @@ public sealed record PredictAssetRequest(
     int? TimeHorizonDays
 );
 
-// What the gateway sends down to the AI services for one asset.
+// What the gateway sends down to the AI services for one asset. RecentCloses
+// are stored end-of-day closes (oldest first) so real models have data; null
+// or empty means no stored history and specialists fall back to their mocks.
 public sealed record AiPredictRequest(
     string AssetId,
     string AssetName,
     string AssetType,
     string Category,
     decimal CurrentPrice,
-    int TimeHorizonDays
+    int TimeHorizonDays,
+    List<decimal>? RecentCloses = null
 );
 
 // One specialist prediction coming back up the hierarchy.
