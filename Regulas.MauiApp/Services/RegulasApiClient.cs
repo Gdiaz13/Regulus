@@ -87,6 +87,14 @@ public sealed class RegulasApiClient : IRegulasApiClient
             : ApiClientResult<IReadOnlyList<PredictionHistoryItem>>.Failure(result.Message);
     }
 
+    public async Task<ApiClientResult<IReadOnlyList<ModelAccuracySummary>>> GetPredictionAccuracySummaryAsync(CancellationToken token)
+    {
+        var result = await GetAsync<List<ModelAccuracySummary>>("api/predict/accuracy/summary", token);
+        return result.Ok && result.Data is not null
+            ? ApiClientResult<IReadOnlyList<ModelAccuracySummary>>.Success(result.Data)
+            : ApiClientResult<IReadOnlyList<ModelAccuracySummary>>.Failure(result.Message);
+    }
+
     public Task<ApiClientResult<PredictionHealth>> GetPredictionHealthAsync(CancellationToken token)
     {
         return GetAsync<PredictionHealth>("api/predict/health", token);

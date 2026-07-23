@@ -26,6 +26,8 @@ public interface IRegulasApiClient
 
     Task<ApiClientResult<IReadOnlyList<PredictionHistoryItem>>> GetPredictionHistoryAsync(int take, CancellationToken token);
 
+    Task<ApiClientResult<IReadOnlyList<ModelAccuracySummary>>> GetPredictionAccuracySummaryAsync(CancellationToken token);
+
     Task<ApiClientResult<PredictionHealth>> GetPredictionHealthAsync(CancellationToken token);
 
     Task<ApiClientResult<StockTradingAgentsResponse>> AnalyzeStockWithTradingAgentsAsync(StockTradingAgentsRequest request, CancellationToken token);

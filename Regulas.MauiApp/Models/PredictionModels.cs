@@ -116,3 +116,39 @@ public sealed record PredictionHistoryRow(
     bool HasReasons,
     bool HasWarnings
 );
+
+public sealed record ModelHorizonAccuracySummary(
+    string Horizon,
+    int ScoredCount,
+    double WinRate,
+    double AverageAbsolutePercentError
+);
+
+public sealed record ModelAccuracySummary(
+    string ModelName,
+    int ScoredCount,
+    double WinRate,
+    double AverageAbsolutePercentError,
+    double AveragePredictedPercentChange,
+    double AverageActualPercentChange,
+    double AverageTimeHorizonDays,
+    double AverageConfidenceScore,
+    double AverageRiskScore,
+    double AverageBullishScore,
+    double AverageBearishScore,
+    double AverageDirectionalBias,
+    double BullishBiasRate,
+    double BearishBiasRate,
+    double ConfidenceCalibrationError,
+    double RiskCalibrationError,
+    List<ModelHorizonAccuracySummary> Horizons
+);
+
+public sealed record ModelAccuracySummaryRow(
+    string ModelName,
+    string ScoredText,
+    string WinRateText,
+    string AverageErrorText,
+    string ConfidenceGapText,
+    string AverageHorizonText
+);

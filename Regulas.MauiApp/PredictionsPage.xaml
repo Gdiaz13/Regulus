@@ -177,6 +177,88 @@
                   ColumnSpacing="12"
                   IsVisible="{Binding IsAuthenticated}">
                 <VerticalStackLayout Spacing="2">
+                    <Label Text="Model accuracy"
+                           FontSize="20"
+                           FontAttributes="Bold" />
+                    <Label Text="Scores compare saved mock predictions with stored prices after their target dates."
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1"
+                        Text="Refresh"
+                        Command="{Binding RefreshAccuracyCommand}"
+                        IsEnabled="{Binding CanRefreshAccuracy}" />
+            </Grid>
+
+            <ActivityIndicator IsRunning="{Binding IsAccuracyBusy}"
+                               IsVisible="{Binding IsAccuracyBusy}" />
+            <Label Text="{Binding AccuracyMessageText}"
+                   IsVisible="{Binding ShowAccuracyMessage}"
+                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+
+            <CollectionView ItemsSource="{Binding AccuracySummaries}"
+                            SelectionMode="None"
+                            IsVisible="{Binding ShowAccuracySummaries}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                                StrokeShape="RoundRectangle 8"
+                                Padding="14"
+                                Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="10">
+                                    <Label Text="{Binding ModelName}"
+                                           FontAttributes="Bold"
+                                           FontSize="18" />
+                                    <Label Grid.Column="1"
+                                           Text="{Binding ScoredText}"
+                                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*"
+                                      RowDefinitions="Auto,Auto"
+                                      ColumnSpacing="12"
+                                      RowSpacing="10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="Direction wins"
+                                               FontSize="12"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        <Label Text="{Binding WinRateText}"
+                                               FontAttributes="Bold"
+                                               TextColor="{StaticResource Primary}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="Average error"
+                                               FontSize="12"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        <Label Text="{Binding AverageErrorText}"
+                                               FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Spacing="2">
+                                        <Label Text="Confidence gap"
+                                               FontSize="12"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        <Label Text="{Binding ConfidenceGapText}"
+                                               FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" Spacing="2">
+                                        <Label Text="Average horizon"
+                                               FontSize="12"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        <Label Text="{Binding AverageHorizonText}"
+                                               FontAttributes="Bold" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12"
+                  IsVisible="{Binding IsAuthenticated}">
+                <VerticalStackLayout Spacing="2">
                     <Label Text="Saved history"
                            FontSize="20"
                            FontAttributes="Bold" />
