@@ -272,7 +272,7 @@ cd .\ai
 
 Done and real:
 
-- Web app screens for search, portfolio, prices, predictions, and TradingAgents research.
+- Web app screens for search, portfolio, prices, predictions with model-accuracy summaries, and TradingAgents research.
 - Web Pokemon and Magic TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
 - Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.

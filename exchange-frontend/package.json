@@ -10,6 +10,7 @@
     "build": "tsc -b && node scripts/build.mjs",
     "lint": "eslint src --ext .ts,.tsx --no-error-on-unmatched-pattern",
     "lint:functions": "node scripts/check-function-length.mjs",
+    "test": "node --experimental-strip-types --test tests/modelAccuracy.test.ts",
     "preview": "node scripts/preview.mjs"
   },
   "dependencies": {
