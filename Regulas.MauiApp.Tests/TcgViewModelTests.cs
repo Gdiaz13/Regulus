@@ -9,21 +9,176 @@ namespace Regulas.MauiApp.Tests;
 public class TcgViewModelTests
 {
     [Fact]
-    public async Task Failed_magic_detail_keeps_existing_search_results()
+    public async Task Pokemon_search_populates_provider_cards()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            SearchPokemonResult = ApiClientResult<PokemonCardSearchResponse>.Success(PokemonSearchResponse())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()))
+        {
+            BrowseGame = "Pokemon",
+            BrowseQuery = "charizard"
+        };
+
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        var card = Assert.Single(viewModel.ProviderCards);
+        Assert.Equal("Pokemon", card.Game);
+        Assert.Equal("Charizard ex", card.Name);
+        Assert.Equal("Scarlet & Violet · 125 · Double Rare", card.Details);
+        Assert.Equal("$120.50", card.Price);
+        Assert.Equal("/charizard-small.png", card.ImageUrl);
+        Assert.Equal("Found 1 Pokemon card.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task Pokemon_detail_prefills_manual_market_entry()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            SearchPokemonResult = ApiClientResult<PokemonCardSearchResponse>.Success(PokemonSearchResponse()),
+            PokemonDetailResult = ApiClientResult<PokemonCardDetail>.Success(PokemonDetail())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore())) { BrowseQuery = "charizard" };
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", Assert.Single(viewModel.ProviderCards));
+
+        Assert.Equal("Charizard ex", viewModel.BrowseDetailName);
+        Assert.Equal("/charizard-large.png", viewModel.BrowseDetailImageUrl);
+        Assert.Equal("SV3-125", viewModel.Symbol);
+        Assert.Equal("Pokemon", viewModel.Category);
+        Assert.Equal("Market", viewModel.PriceType);
+        Assert.Equal("115.25", viewModel.Price);
+        Assert.Equal("USD", viewModel.Currency);
+        Assert.Single(viewModel.ProviderPrices);
+    }
+
+    [Fact]
+    public async Task Failed_magic_detail_keeps_existing_provider_results()
     {
         var api = new FakeRegulasApiClient
         {
             SearchMagicResult = ApiClientResult<MagicCardSearchResponse>.Success(SearchResponse()),
             MagicDetailResult = ApiClientResult<MagicCardDetail>.Failure("Magic detail unavailable.")
         };
-        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore())) { MagicQuery = "lightning bolt" };
-        await InvokePrivateAsync(viewModel, "SearchMagicAsync");
-        Assert.Single(viewModel.MagicCards);
-        await InvokePrivateAsync(viewModel, "OpenMagicAsync", "missing");
-        Assert.Single(viewModel.MagicCards);
-        Assert.True(viewModel.HasMagicCards);
-        Assert.False(viewModel.HasMagicDetail);
-        Assert.Equal("Magic detail unavailable.", viewModel.MagicMessageText);
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()))
+        {
+            BrowseGame = "Magic",
+            BrowseQuery = "lightning bolt"
+        };
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+        var card = Assert.Single(viewModel.ProviderCards);
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", card);
+
+        Assert.Single(viewModel.ProviderCards);
+        Assert.True(viewModel.HasProviderCards);
+        Assert.False(viewModel.HasProviderDetail);
+        Assert.Equal("Magic detail unavailable.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task Empty_pokemon_search_shows_empty_message()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            SearchPokemonResult = ApiClientResult<PokemonCardSearchResponse>.Success(new PokemonCardSearchResponse([], 1, 12, 0, 0))
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore())) { BrowseQuery = "missing" };
+
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        Assert.Empty(viewModel.ProviderCards);
+        Assert.Equal("No Pokemon cards matched that search.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task Switching_browse_game_clears_previous_results()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            SearchPokemonResult = ApiClientResult<PokemonCardSearchResponse>.Success(PokemonSearchResponse())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore())) { BrowseQuery = "charizard" };
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        viewModel.BrowseGame = "Magic";
+
+        Assert.Empty(viewModel.ProviderCards);
+        Assert.False(viewModel.HasProviderCards);
+        Assert.Equal("Search Magic cards through Regulas.Api.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task Pokemon_prefill_prefers_any_market_price_before_mid_fallbacks()
+    {
+        var detail = PokemonDetail(
+            new PokemonCardPrice("normal", 90m, 110m, 130m, null, null),
+            new PokemonCardPrice("holofoil", 100m, 115m, 140m, 120m, null));
+        var api = new FakeRegulasApiClient
+        {
+            PokemonDetailResult = ApiClientResult<PokemonCardDetail>.Success(detail)
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", PokemonRow());
+
+        Assert.Equal("120", viewModel.Price);
+    }
+
+    [Fact]
+    public async Task Unpriced_magic_detail_clears_previous_manual_price_and_currency()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            PokemonDetailResult = ApiClientResult<PokemonCardDetail>.Success(PokemonDetail()),
+            SearchMagicResult = ApiClientResult<MagicCardSearchResponse>.Success(SearchResponse())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", PokemonRow());
+        viewModel.BrowseGame = "Magic";
+        viewModel.BrowseQuery = "lightning bolt";
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+        api.MagicDetailResult = ApiClientResult<MagicCardDetail>.Success(UnpricedMagicDetail());
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", Assert.Single(viewModel.ProviderCards));
+
+        Assert.Equal(string.Empty, viewModel.Price);
+        Assert.Equal(string.Empty, viewModel.Currency);
+    }
+
+    [Fact]
+    public async Task Provider_switch_discards_pending_search_response()
+    {
+        var pending = new TaskCompletionSource<ApiClientResult<PokemonCardSearchResponse>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var api = new FakeRegulasApiClient { SearchPokemonTask = pending.Task };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore())) { BrowseQuery = "charizard" };
+        var search = InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        viewModel.BrowseGame = "Magic";
+        pending.SetResult(ApiClientResult<PokemonCardSearchResponse>.Success(PokemonSearchResponse()));
+        await search;
+
+        Assert.Empty(viewModel.ProviderCards);
+        Assert.Equal("Search Magic cards through Regulas.Api.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task Provider_switch_discards_pending_detail_response()
+    {
+        var pending = new TaskCompletionSource<ApiClientResult<PokemonCardDetail>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var api = new FakeRegulasApiClient { PokemonDetailTask = pending.Task };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+        var detail = InvokePrivateAsync(viewModel, "OpenCardAsync", PokemonRow());
+
+        viewModel.BrowseGame = "Magic";
+        pending.SetResult(ApiClientResult<PokemonCardDetail>.Success(PokemonDetail()));
+        await detail;
+
+        Assert.False(viewModel.HasProviderDetail);
+        Assert.Equal(string.Empty, viewModel.Symbol);
     }
 
     private static Task InvokePrivateAsync(TcgViewModel viewModel, string name, params object?[] args)
@@ -38,6 +193,39 @@ public class TcgViewModelTests
         return new MagicCardSearchResponse([Summary()], 1, 12, 1, 1);
     }
 
+    private static PokemonCardSearchResponse PokemonSearchResponse()
+    {
+        return new PokemonCardSearchResponse(
+            [new PokemonCardSummary("sv3-125", "Charizard ex", "Scarlet & Violet", "Scarlet & Violet", "125", "Double Rare", "/charizard-small.png", 120.50m, "Pokemon TCG API", null)],
+            1, 12, 1, 1
+        );
+    }
+
+    private static PokemonCardDetail PokemonDetail(params PokemonCardPrice[] prices)
+    {
+        List<PokemonCardPrice> detailPrices = prices.Length == 0
+            ? [new PokemonCardPrice("holofoil", 100m, 110m, 140m, 115.25m, null)]
+            : [.. prices];
+        return new PokemonCardDetail(
+            "sv3-125", "Charizard ex", "Pokemon", ["Stage 2"], "330", ["Fire"],
+            "Scarlet & Violet", "Scarlet & Violet", "125", "5ban Graphics", "Double Rare",
+            "/charizard-small.png", "/charizard-large.png", null, "Pokemon TCG API", null,
+            detailPrices
+        );
+    }
+
+    private static TcgProviderCardRow PokemonRow()
+    {
+        return new TcgProviderCardRow("sv3-125", "Pokemon", "Charizard ex", "Scarlet & Violet", null, "$120.50");
+    }
+
+    private static MagicCardDetail UnpricedMagicDetail()
+    {
+        return new MagicCardDetail(
+            "card-1", "Lightning Bolt", "Instant", "R", "Lightning Bolt deals 3 damage.", [],
+            "Limited Edition Alpha", "lea", "161", null, "common", null, null, null, "Scryfall", null, []);
+    }
+
     private static MagicCardSummary Summary()
     {
         return new MagicCardSummary("card-1", "Lightning Bolt", "Limited Edition Alpha", "lea", "161", "common", null, 399.99m, "usd", "Scryfall", null);
@@ -45,8 +233,14 @@ public class TcgViewModelTests
 
     private sealed class FakeRegulasApiClient : IRegulasApiClient
     {
+        public ApiClientResult<PokemonCardSearchResponse> SearchPokemonResult { get; init; } = ApiClientResult<PokemonCardSearchResponse>.Failure("not set");
+        public ApiClientResult<PokemonCardDetail> PokemonDetailResult { get; set; } = ApiClientResult<PokemonCardDetail>.Failure("not set");
         public ApiClientResult<MagicCardSearchResponse> SearchMagicResult { get; init; } = ApiClientResult<MagicCardSearchResponse>.Failure("not set");
-        public ApiClientResult<MagicCardDetail> MagicDetailResult { get; init; } = ApiClientResult<MagicCardDetail>.Failure("not set");
+        public ApiClientResult<MagicCardDetail> MagicDetailResult { get; set; } = ApiClientResult<MagicCardDetail>.Failure("not set");
+        public Task<ApiClientResult<PokemonCardSearchResponse>>? SearchPokemonTask { get; init; }
+        public Task<ApiClientResult<PokemonCardDetail>>? PokemonDetailTask { get; init; }
+        public Task<ApiClientResult<PokemonCardSearchResponse>> SearchPokemonCardsAsync(string query, int pageSize, CancellationToken token) => SearchPokemonTask ?? Task.FromResult(SearchPokemonResult);
+        public Task<ApiClientResult<PokemonCardDetail>> GetPokemonCardAsync(string id, CancellationToken token) => PokemonDetailTask ?? Task.FromResult(PokemonDetailResult);
         public Task<ApiClientResult<MagicCardSearchResponse>> SearchMagicCardsAsync(string query, int pageSize, CancellationToken token) => Task.FromResult(SearchMagicResult);
         public Task<ApiClientResult<MagicCardDetail>> GetMagicCardAsync(string id, CancellationToken token) => Task.FromResult(MagicDetailResult);
         public Task<ApiClientResult<ApiHealth>> GetHealthAsync(CancellationToken cancellationToken) => throw new NotImplementedException();

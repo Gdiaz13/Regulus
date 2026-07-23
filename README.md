@@ -279,7 +279,7 @@ Done and real:
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI asset-detail screen for company profile data through the API market-data proxy.
 - MAUI price-history screen for stored reads and provider capture through `Regulas.Api`.
-- MAUI Magic TCG browse/detail flow through `Regulas.Api`, with ViewModel regression tests for result-state handling.
+- MAUI Pokemon and Magic TCG browse/detail flow through `Regulas.Api`, with ViewModel regression tests for provider switching and result-state handling.
 - MAUI predictions screen for staged assets, saved history, model-accuracy summaries, and mock AI research through `Regulas.Api`.
 - MAUI TradingAgents research screen for stock research through the separate service boundary via `Regulas.Api`.
 - MAUI Settings tab for the Regulas.Api base URL.

@@ -64,6 +64,16 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return PostAsync<PriceCaptureResult>($"api/price-history/{Esc(symbol)}/manual?assetType=TcgCard", request, token);
     }
 
+    public Task<ApiClientResult<PokemonCardSearchResponse>> SearchPokemonCardsAsync(string query, int pageSize, CancellationToken token)
+    {
+        return GetAsync<PokemonCardSearchResponse>($"api/tcg/pokemon/cards?query={Esc(query)}&pageSize={pageSize}", token);
+    }
+
+    public Task<ApiClientResult<PokemonCardDetail>> GetPokemonCardAsync(string id, CancellationToken token)
+    {
+        return GetAsync<PokemonCardDetail>($"api/tcg/pokemon/cards/{Esc(id)}", token);
+    }
+
     public Task<ApiClientResult<MagicCardSearchResponse>> SearchMagicCardsAsync(string query, int pageSize, CancellationToken token)
     {
         return GetAsync<MagicCardSearchResponse>(MagicSearchPath(query, pageSize), token);
