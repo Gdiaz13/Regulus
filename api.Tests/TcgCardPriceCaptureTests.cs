@@ -36,6 +36,33 @@ public class TcgCardPriceCaptureTests
     }
 
     [Fact]
+    public async Task Browsed_one_piece_card_market_price_is_stored_with_provider_metadata()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+
+        await TcgCardPriceCapture.TryStoreAsync(store, OnePieceCard(), NullLogger.Instance);
+
+        var point = Assert.Single(await store.ListPointsAsync("OP03-070", AssetType.TcgCard, 10));
+        Assert.Equal(new DateOnly(2026, 6, 1), point.Date);
+        Assert.Equal(0.31m, point.Close);
+        Assert.Equal(OnePieceTcgClient.SourceName, point.Source);
+        Assert.Equal("USD", point.Currency);
+    }
+
+    [Fact]
+    public async Task One_piece_category_conflict_does_not_break_best_effort_capture()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new PriceHistoryStore(factory);
+        await store.EnsureAssetAsync("OP03-070", AssetType.TcgCard, "Existing card", "Pokemon");
+
+        await TcgCardPriceCapture.TryStoreAsync(store, OnePieceCard(), NullLogger.Instance);
+
+        Assert.Empty(await store.ListPointsAsync("OP03-070", AssetType.TcgCard, 10));
+    }
+
+    [Fact]
     public async Task Card_without_market_price_stores_nothing()
     {
         using var factory = new SqliteDapperConnectionFactory();
@@ -78,6 +105,15 @@ public class TcgCardPriceCaptureTests
         return new MagicCardDetail(
             id, "Lightning Bolt", "Instant", "{R}", "Deal 3 damage.", ["R"], "Limited Edition Alpha",
             "lea", "161", null, "common", null, null, null, MagicTcgClient.SourceName, null, [.. prices]
+        );
+    }
+
+    private static OnePieceCardDetail OnePieceCard()
+    {
+        return new OnePieceCardDetail(
+            "1024", "Monkey.D.Luffy", "Leader card", "Pillars of Strength", "OP03-070", "070",
+            "R", "Purple", "7000", null, null, null, OnePieceTcgClient.SourceName,
+            "2026-06-01T08:30:00.000Z", [new OnePieceCardPrice("tcgplayer", "USD", 0.15m, 0.35m, 2.5m, 0.31m)]
         );
     }
 

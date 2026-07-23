@@ -97,3 +97,51 @@ public sealed record MagicCardPrice(
     string Finish,
     decimal MarketPrice
 );
+
+public sealed record OnePieceCardSearchResponse(
+    List<OnePieceCardSummary> Cards,
+    int Page,
+    int PageSize,
+    int Count,
+    int TotalCount
+);
+
+public sealed record OnePieceCardSummary(
+    string Id,
+    string Name,
+    string? SetName,
+    string? Code,
+    string? Rarity,
+    string? Color,
+    string? SmallImageUrl,
+    decimal? MarketPrice,
+    string Source,
+    string? UpdatedAt
+);
+
+public sealed record OnePieceCardDetail(
+    string Id,
+    string Name,
+    string? Description,
+    string? SetName,
+    string? Code,
+    string? CardNumber,
+    string? Rarity,
+    string? Color,
+    string? Power,
+    string? SmallImageUrl,
+    string? LargeImageUrl,
+    string? TcgPlayerUrl,
+    string Source,
+    string? UpdatedAt,
+    List<OnePieceCardPrice> Prices
+);
+
+public sealed record OnePieceCardPrice(
+    string Market,
+    string Currency,
+    decimal? Low,
+    decimal? Mid,
+    decimal? High,
+    decimal? MarketPrice
+);

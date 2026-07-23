@@ -62,12 +62,16 @@ Or use an environment variable:
 $env:FMP_API_KEY="your_fmp_key"
 ```
 
-Pokemon and Magic TCG search/detail calls also run through the API. A Pokemon key is optional for
-local development, but if you have one, keep it on the API side. Magic uses Scryfall without a key:
+Pokemon, Magic, and One Piece TCG search/detail calls also run through the API. A Pokemon key is
+optional for local development, while APITCG requires a free server-side key for One Piece. Magic
+uses Scryfall without a key:
 
 ```powershell
 dotnet user-secrets set "PokemonTcg:ApiKey" "your_pokemon_tcg_key"
 $env:POKEMON_TCG_API_KEY="your_pokemon_tcg_key"
+
+dotnet user-secrets set "ApiTcg:ApiKey" "your_apitcg_key"
+$env:APITCG_API_KEY="your_apitcg_key"
 ```
 
 The default PostgreSQL connection is:
@@ -133,7 +137,7 @@ Build the MAUI app (Windows):
 dotnet build Regulas.MauiApp -f net10.0-windows10.0.19041.0
 ```
 
-It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The TCG tab can browse Magic cards through the backend Scryfall gateway and record manual card prices. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal). Apple packaging, signing, and device runs still need the Apple toolchain.
+It calls the same API (`http://localhost:5052`, or `http://10.0.2.2:5052` from the Android emulator) and the base URL is editable on the Settings screen. The TCG tab can browse Pokemon and Magic cards through backend gateways and record manual card prices. The Android/iOS/macCatalyst targets need their MAUI workloads installed (`dotnet workload restore Regulas.MauiApp` from an admin terminal). Apple packaging, signing, and device runs still need the Apple toolchain.
 
 Run the mock RegulasCoreAI service:
 
@@ -274,6 +278,7 @@ Done and real:
 
 - Web app screens for search, portfolio, prices, predictions with model-accuracy summaries, and TradingAgents research.
 - Web Pokemon and Magic TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
+- Backend One Piece search/detail gateway through APITCG, including server-side key handling and browsed-card market-price capture.
 - Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
@@ -305,5 +310,5 @@ Done but mock:
 Still planned:
 
 - Connect the model-training job to real trainers when model training is ready.
-- Add more stock specialists, One Piece provider/detail flows, and future crypto support.
+- Add more stock specialists, expose the One Piece gateway in web/MAUI, and add future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.
