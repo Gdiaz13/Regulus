@@ -84,6 +84,16 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return GetAsync<MagicCardDetail>($"api/tcg/magic/cards/{Esc(id)}", token);
     }
 
+    public Task<ApiClientResult<OnePieceCardSearchResponse>> SearchOnePieceCardsAsync(string query, int pageSize, CancellationToken token)
+    {
+        return GetAsync<OnePieceCardSearchResponse>(OnePieceSearchPath(query, pageSize), token);
+    }
+
+    public Task<ApiClientResult<OnePieceCardDetail>> GetOnePieceCardAsync(string id, CancellationToken token)
+    {
+        return GetAsync<OnePieceCardDetail>($"api/tcg/one-piece/cards/{Esc(id)}", token);
+    }
+
     public Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token)
     {
         return PostAsync<AiOverview>("api/predict", new PredictBatchRequest(assets), token);
@@ -178,6 +188,11 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private static string MagicSearchPath(string query, int pageSize)
     {
         return $"api/tcg/magic/cards?query={Esc(query)}&pageSize={Math.Clamp(pageSize, 1, 24)}";
+    }
+
+    private static string OnePieceSearchPath(string query, int pageSize)
+    {
+        return $"api/tcg/one-piece/cards?query={Esc(query)}&pageSize={Math.Clamp(pageSize, 1, 24)}";
     }
 
     private static string PredictionHistoryPath(int take)

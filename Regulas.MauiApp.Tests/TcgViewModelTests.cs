@@ -181,6 +181,122 @@ public class TcgViewModelTests
         Assert.Equal(string.Empty, viewModel.Symbol);
     }
 
+    [Fact]
+    public async Task One_piece_search_populates_provider_cards()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            SearchOnePieceResult = ApiClientResult<OnePieceCardSearchResponse>.Success(OnePieceSearchResponse())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()))
+        {
+            BrowseGame = "One Piece",
+            BrowseQuery = "luffy"
+        };
+
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        var card = Assert.Single(viewModel.ProviderCards);
+        Assert.Equal("One Piece", card.Game);
+        Assert.Equal("Monkey.D.Luffy", card.Name);
+        Assert.Equal("Pillars of Strength · OP03-070 · SR", card.Details);
+        Assert.Equal("$0.31", card.Price);
+        Assert.Equal("/luffy-small.png", card.ImageUrl);
+        Assert.Equal("Found 1 One Piece card.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task Empty_one_piece_search_shows_empty_message()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            SearchOnePieceResult = ApiClientResult<OnePieceCardSearchResponse>.Success(new OnePieceCardSearchResponse([], 1, 12, 0, 0))
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()))
+        {
+            BrowseGame = "One Piece",
+            BrowseQuery = "missing"
+        };
+
+        await InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        Assert.Empty(viewModel.ProviderCards);
+        Assert.Equal("No One Piece cards matched that search.", viewModel.BrowseMessageText);
+    }
+
+    [Fact]
+    public async Task One_piece_detail_prefills_entry_with_card_code()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            OnePieceDetailResult = ApiClientResult<OnePieceCardDetail>.Success(OnePieceDetail())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", OnePieceRow());
+
+        Assert.Equal("Monkey.D.Luffy", viewModel.BrowseDetailName);
+        Assert.Equal("/luffy-large.png", viewModel.BrowseDetailImageUrl);
+        Assert.Contains("7000 power", viewModel.BrowseDetailText);
+        Assert.Equal("OP03-070", viewModel.Symbol);
+        Assert.Equal("One Piece", viewModel.Category);
+        Assert.Equal("Market", viewModel.PriceType);
+        Assert.Equal("0.31", viewModel.Price);
+        Assert.Equal("USD", viewModel.Currency);
+    }
+
+    [Fact]
+    public async Task One_piece_detail_without_code_falls_back_to_provider_id()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            OnePieceDetailResult = ApiClientResult<OnePieceCardDetail>.Success(OnePieceDetail(code: "  "))
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", OnePieceRow());
+
+        Assert.Equal("1024", viewModel.Symbol);
+    }
+
+    [Fact]
+    public async Task One_piece_detail_renders_a_price_row_per_market()
+    {
+        var api = new FakeRegulasApiClient
+        {
+            OnePieceDetailResult = ApiClientResult<OnePieceCardDetail>.Success(OnePieceDetail())
+        };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+
+        await InvokePrivateAsync(viewModel, "OpenCardAsync", OnePieceRow());
+
+        Assert.Equal(2, viewModel.ProviderPrices.Count);
+        Assert.Equal("Tcgplayer USD", viewModel.ProviderPrices[0].Label);
+        Assert.Equal("Market $0.31 · Low $0.15 · High $2.50", viewModel.ProviderPrices[0].Price);
+        Assert.Equal("Tcgmatch USD", viewModel.ProviderPrices[1].Label);
+        Assert.Equal("Market $0.28", viewModel.ProviderPrices[1].Price);
+    }
+
+    [Fact]
+    public async Task Provider_switch_discards_pending_one_piece_search_response()
+    {
+        var pending = new TaskCompletionSource<ApiClientResult<OnePieceCardSearchResponse>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var api = new FakeRegulasApiClient { SearchOnePieceTask = pending.Task };
+        var viewModel = new TcgViewModel(api, new AuthSession(api, new MemoryTokenStore()))
+        {
+            BrowseGame = "One Piece",
+            BrowseQuery = "luffy"
+        };
+        var search = InvokePrivateAsync(viewModel, "SearchCardsAsync");
+
+        viewModel.BrowseGame = "Magic";
+        pending.SetResult(ApiClientResult<OnePieceCardSearchResponse>.Success(OnePieceSearchResponse()));
+        await search;
+
+        Assert.Empty(viewModel.ProviderCards);
+        Assert.Equal("Search Magic cards through Regulas.Api.", viewModel.BrowseMessageText);
+    }
+
     private static Task InvokePrivateAsync(TcgViewModel viewModel, string name, params object?[] args)
     {
         var method = typeof(TcgViewModel).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic)
@@ -231,18 +347,45 @@ public class TcgViewModelTests
         return new MagicCardSummary("card-1", "Lightning Bolt", "Limited Edition Alpha", "lea", "161", "common", null, 399.99m, "usd", "Scryfall", null);
     }
 
+    private static OnePieceCardSearchResponse OnePieceSearchResponse()
+    {
+        return new OnePieceCardSearchResponse(
+            [new OnePieceCardSummary("1024", "Monkey.D.Luffy", "Pillars of Strength", "OP03-070", "SR", "Red", "/luffy-small.png", 0.31m, "APITCG", null)],
+            1, 12, 1, 1
+        );
+    }
+
+    private static OnePieceCardDetail OnePieceDetail(string? code = "OP03-070")
+    {
+        return new OnePieceCardDetail(
+            "1024", "Monkey.D.Luffy", "The captain of the Straw Hat Pirates.", "Pillars of Strength", code,
+            "OP03-070", "SR", "Red", "7000", "/luffy-small.png", "/luffy-large.png", null, "APITCG", null,
+            [new OnePieceCardPrice("tcgplayer", "USD", 0.15m, 0.24m, 2.50m, 0.31m), new OnePieceCardPrice("tcgmatch", "USD", null, null, null, 0.28m)]
+        );
+    }
+
+    private static TcgProviderCardRow OnePieceRow()
+    {
+        return new TcgProviderCardRow("1024", "One Piece", "Monkey.D.Luffy", "Pillars of Strength", null, "$0.31");
+    }
+
     private sealed class FakeRegulasApiClient : IRegulasApiClient
     {
         public ApiClientResult<PokemonCardSearchResponse> SearchPokemonResult { get; init; } = ApiClientResult<PokemonCardSearchResponse>.Failure("not set");
         public ApiClientResult<PokemonCardDetail> PokemonDetailResult { get; set; } = ApiClientResult<PokemonCardDetail>.Failure("not set");
         public ApiClientResult<MagicCardSearchResponse> SearchMagicResult { get; init; } = ApiClientResult<MagicCardSearchResponse>.Failure("not set");
         public ApiClientResult<MagicCardDetail> MagicDetailResult { get; set; } = ApiClientResult<MagicCardDetail>.Failure("not set");
+        public ApiClientResult<OnePieceCardSearchResponse> SearchOnePieceResult { get; init; } = ApiClientResult<OnePieceCardSearchResponse>.Failure("not set");
+        public ApiClientResult<OnePieceCardDetail> OnePieceDetailResult { get; set; } = ApiClientResult<OnePieceCardDetail>.Failure("not set");
         public Task<ApiClientResult<PokemonCardSearchResponse>>? SearchPokemonTask { get; init; }
         public Task<ApiClientResult<PokemonCardDetail>>? PokemonDetailTask { get; init; }
+        public Task<ApiClientResult<OnePieceCardSearchResponse>>? SearchOnePieceTask { get; init; }
         public Task<ApiClientResult<PokemonCardSearchResponse>> SearchPokemonCardsAsync(string query, int pageSize, CancellationToken token) => SearchPokemonTask ?? Task.FromResult(SearchPokemonResult);
         public Task<ApiClientResult<PokemonCardDetail>> GetPokemonCardAsync(string id, CancellationToken token) => PokemonDetailTask ?? Task.FromResult(PokemonDetailResult);
         public Task<ApiClientResult<MagicCardSearchResponse>> SearchMagicCardsAsync(string query, int pageSize, CancellationToken token) => Task.FromResult(SearchMagicResult);
         public Task<ApiClientResult<MagicCardDetail>> GetMagicCardAsync(string id, CancellationToken token) => Task.FromResult(MagicDetailResult);
+        public Task<ApiClientResult<OnePieceCardSearchResponse>> SearchOnePieceCardsAsync(string query, int pageSize, CancellationToken token) => SearchOnePieceTask ?? Task.FromResult(SearchOnePieceResult);
+        public Task<ApiClientResult<OnePieceCardDetail>> GetOnePieceCardAsync(string id, CancellationToken token) => Task.FromResult(OnePieceDetailResult);
         public Task<ApiClientResult<ApiHealth>> GetHealthAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ApiClientResult<IReadOnlyList<PortfolioStock>>> GetPortfolioStocksAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ApiClientResult<IReadOnlyList<CompanySearchResult>>> SearchCompaniesAsync(string query, CancellationToken token) => throw new NotImplementedException();
