@@ -21,7 +21,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     private string? _browseDetailImageUrl;
     private string _browseDetailText = string.Empty;
     private string _browseGame = "Pokemon";
-    private string _browseMessageText = "Search Pokemon or Magic cards through Regulas.Api.";
+    private string _browseMessageText = "Search Pokemon, Magic, or One Piece cards through Regulas.Api.";
     private string _browseQuery = string.Empty;
     private int _browseGeneration;
     private string _condition = string.Empty;
@@ -58,7 +58,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     public ObservableCollection<TcgProviderPriceRow> ProviderPrices { get; } = [];
 
     public IReadOnlyList<string> TcgGames { get; } = ["Pokemon", "Magic", "One Piece"];
-    public IReadOnlyList<string> BrowseGames { get; } = ["Pokemon", "Magic"];
+    public IReadOnlyList<string> BrowseGames { get; } = ["Pokemon", "Magic", "One Piece"];
     public IReadOnlyList<string> PriceTypes { get; } = ["Sold", "Listed", "Market"];
     public ICommand SaveCommand => _saveCommand;
     public ICommand LoadCommand => _loadCommand;
@@ -138,12 +138,12 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     private async Task SearchCardsCoreAsync(int generation, string game, string query)
     {
         ClearProviderDetail();
-        if (game == "Pokemon")
+        await (game switch
         {
-            await SearchPokemonAsync(query, generation);
-            return;
-        }
-        await SearchMagicProviderAsync(query, generation);
+            "Pokemon" => SearchPokemonAsync(query, generation),
+            "One Piece" => SearchOnePieceAsync(query, generation),
+            _ => SearchMagicProviderAsync(query, generation),
+        });
     }
 
     private async Task SearchPokemonAsync(string query, int generation)
@@ -178,6 +178,22 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         BrowseMessageText = FoundMessage("Magic", ProviderCards.Count);
     }
 
+    private async Task SearchOnePieceAsync(string query, int generation)
+    {
+        var result = await _apiClient.SearchOnePieceCardsAsync(query, 12, CancellationToken.None);
+        if (!IsCurrentBrowse(generation))
+        {
+            return;
+        }
+        if (!result.Ok || result.Data is null)
+        {
+            ApplyProviderSearchFailure(result.Message);
+            return;
+        }
+        ReplaceProviderCards(result.Data.Cards.Select(OnePieceRow));
+        BrowseMessageText = FoundMessage("One Piece", ProviderCards.Count);
+    }
+
     private async Task OpenCardAsync(TcgProviderCardRow? card)
     {
         if (card is null)
@@ -190,9 +206,12 @@ public sealed class TcgViewModel : INotifyPropertyChanged
 
     private Task OpenCardCoreAsync(TcgProviderCardRow card, int generation)
     {
-        return card.Game == "Pokemon"
-            ? OpenPokemonProviderAsync(card.Id, generation)
-            : OpenMagicProviderAsync(card.Id, generation);
+        return card.Game switch
+        {
+            "Pokemon" => OpenPokemonProviderAsync(card.Id, generation),
+            "One Piece" => OpenOnePieceProviderAsync(card.Id, generation),
+            _ => OpenMagicProviderAsync(card.Id, generation),
+        };
     }
 
     private async Task OpenPokemonProviderAsync(string id, int generation)
@@ -225,6 +244,20 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         ApplyMagicProviderDetail(result.Data);
     }
 
+    private async Task OpenOnePieceProviderAsync(string id, int generation)
+    {
+        var result = await _apiClient.GetOnePieceCardAsync(id, CancellationToken.None);
+        if (!IsCurrentBrowse(generation))
+        {
+            return;
+        }
+        if (!result.Ok || result.Data is null)
+        {
+            ApplyProviderDetailFailure(result.Message);
+            return;
+        }
+        ApplyOnePieceDetail(result.Data);
+    }
 
     // Saving always re-reads storage so the list shows saved truth, not hope.
     private async Task SaveThenReloadAsync()
@@ -293,6 +326,16 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         BrowseMessageText = $"{card.Name} loaded. Provider price was captured by the API when available.";
     }
 
+    private void ApplyOnePieceDetail(OnePieceCardDetail card)
+    {
+        BrowseDetailName = card.Name;
+        BrowseDetailImageUrl = card.LargeImageUrl ?? card.SmallImageUrl;
+        BrowseDetailText = OnePieceDetailText(card);
+        ReplaceProviderPrices(card.Prices.Select(OnePieceProviderPriceRow));
+        FillOnePieceEntry(card);
+        BrowseMessageText = $"{card.Name} loaded. Provider price was captured by the API when available.";
+    }
+
     private void FillPokemonEntry(PokemonCardDetail card)
     {
         Symbol = card.Id;
@@ -314,6 +357,19 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         var price = card.Prices.FirstOrDefault();
         Currency = price?.Currency?.ToUpperInvariant() ?? string.Empty;
         Price = price?.MarketPrice.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    // History lives under the card code (matching the API's browse capture);
+    // the numeric provider id is only the fallback when a code is missing.
+    private void FillOnePieceEntry(OnePieceCardDetail card)
+    {
+        Symbol = BlankToNull(card.Code) ?? card.Id;
+        Name = card.Name;
+        Category = "One Piece";
+        PriceType = "Market";
+        var price = card.Prices.FirstOrDefault(item => item.MarketPrice is not null);
+        Currency = price?.Currency.ToUpperInvariant() ?? string.Empty;
+        Price = price?.MarketPrice?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
     private ManualPriceRequest ToRequest()
@@ -381,6 +437,13 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     }
 
 
+    private static TcgProviderCardRow OnePieceRow(OnePieceCardSummary card)
+    {
+        var details = Join(card.SetName, card.Code, card.Rarity);
+        var price = card.MarketPrice is null ? "No provider price" : ProviderMoney(card.MarketPrice.Value, "USD");
+        return new TcgProviderCardRow(card.Id, "One Piece", card.Name, details, card.SmallImageUrl, price);
+    }
+
     private static TcgProviderPriceRow PokemonPriceRow(PokemonCardPrice price)
     {
         var selected = PokemonVariantPrice(price);
@@ -391,6 +454,24 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     private static TcgProviderPriceRow MagicProviderPriceRow(MagicCardPrice price)
     {
         return new TcgProviderPriceRow($"{Title(price.Finish)} {price.Currency.ToUpperInvariant()}", ProviderMoney(price.MarketPrice, price.Currency));
+    }
+
+    private static TcgProviderPriceRow OnePieceProviderPriceRow(OnePieceCardPrice price)
+    {
+        return new TcgProviderPriceRow($"{Title(price.Market)} {price.Currency.ToUpperInvariant()}", OnePieceRangeText(price));
+    }
+
+    // One row per market, shown as Market/Low/High like the web page (mid is noise).
+    private static string OnePieceRangeText(OnePieceCardPrice price)
+    {
+        var parts = new[]
+        {
+            price.MarketPrice is null ? null : $"Market {ProviderMoney(price.MarketPrice.Value, price.Currency)}",
+            price.Low is null ? null : $"Low {ProviderMoney(price.Low.Value, price.Currency)}",
+            price.High is null ? null : $"High {ProviderMoney(price.High.Value, price.Currency)}",
+        };
+        var text = string.Join(" · ", parts.Where(part => part is not null));
+        return string.IsNullOrEmpty(text) ? "Unavailable" : text;
     }
 
     private static decimal? BestPokemonPrice(IReadOnlyList<PokemonCardPrice> prices)
@@ -442,6 +523,12 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     {
         var parts = new[] { card.TypeLine, card.ManaCost, card.OracleText };
         return string.Join(Environment.NewLine, parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+    }
+
+    private static string OnePieceDetailText(OnePieceCardDetail card)
+    {
+        var meta = Join(card.SetName, card.Rarity, card.Color, string.IsNullOrWhiteSpace(card.Power) ? null : $"{card.Power} power");
+        return string.Join(Environment.NewLine, new[] { meta, card.Description }.Where(part => !string.IsNullOrWhiteSpace(part)));
     }
 
     private static string PokemonDetailText(PokemonCardDetail card)

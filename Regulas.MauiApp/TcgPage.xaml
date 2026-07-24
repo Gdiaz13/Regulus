@@ -23,7 +23,7 @@
                     Padding="14">
                 <VerticalStackLayout Spacing="12">
                     <VerticalStackLayout Spacing="2">
-                        <Label Text="Browse Pokemon and Magic"
+                        <Label Text="Browse Pokemon, Magic, and One Piece"
                                FontSize="20"
                                FontAttributes="Bold" />
                         <Label Text="Search provider data through Regulas.Api, then open details to capture market price when available."
