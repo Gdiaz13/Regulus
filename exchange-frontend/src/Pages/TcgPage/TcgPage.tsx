@@ -2,14 +2,13 @@ import type { FormEvent } from 'react';
 import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
 import PriceChart from '../../Components/PriceChart/PriceChart';
 import type { IPriceHistory, IPricePoint } from '../../Interfaces/APIResponses/IPriceHistory';
-import type { IMagicCardDetail, IMagicCardPrice } from '../../Interfaces/APIResponses/IMagicCard';
-import type { IPokemonCardPrice } from '../../Interfaces/APIResponses/IPokemonCard';
 import { useTcgCards } from '../../hooks/useTcgCards';
 import type { TcgCardDetail, TcgCardSummary, TcgGame } from '../../hooks/useTcgCards';
+import { cardDescription, cardNumber, gameLabel, metaValues, placeholder, providerMoney, providerPriceRow, sourceUrl } from '../../lib/tcgPresentation';
+import type { TcgProviderPrice } from '../../lib/tcgPresentation';
 import styles from './TcgPage.module.css';
 
 type Cards = ReturnType<typeof useTcgCards>;
-type CardPrice = IPokemonCardPrice | IMagicCardPrice;
 
 const TcgPage = () => {
   const cards = useTcgCards();
@@ -30,7 +29,7 @@ function Header() {
     <header className={styles.header}>
       <p className={styles.eyebrow}>TCG markets</p>
       <h1 className={styles.title}>Card detail and price context.</h1>
-      <p className={styles.note}>Search Pokemon and Magic cards through Regulas.Api, then read stored prices from the same history foundation.</p>
+      <p className={styles.note}>Search Pokemon, Magic, and One Piece cards through Regulas.Api, then read stored prices from the same history foundation.</p>
     </header>
   );
 }
@@ -50,7 +49,7 @@ function GameTabs({ game, onSelect }: { game: TcgGame; onSelect: (game: TcgGame)
 }
 
 function GameButton({ value, game, onSelect }: { value: TcgGame; game: TcgGame; onSelect: (game: TcgGame) => void }) {
-  return <button className={gameClass(value === game)} type="button" onClick={() => onSelect(value)}>{gameLabel(value)}</button>;
+  return <button aria-pressed={value === game} className={gameClass(value === game)} type="button" onClick={() => onSelect(value)}>{gameLabel(value)}</button>;
 }
 
 function submit(event: FormEvent<HTMLFormElement>, cards: Cards) {
@@ -104,7 +103,7 @@ function CardDetail({ card, history, historyStatus, historyMessage }: DetailProp
   return (
     <article className={styles.detailPanel}>
       <DetailHeader card={card} />
-      <OracleText card={card} />
+      <CardDescription card={card} />
       <PriceTable prices={card.prices} />
       <StoredHistory history={history} status={historyStatus} message={historyMessage} />
     </article>
@@ -119,8 +118,9 @@ function MetaList({ card }: { card: TcgCardDetail }) {
   return <p className={styles.meta}>{metaValues(card).join(' | ')}</p>;
 }
 
-function OracleText({ card }: { card: TcgCardDetail }) {
-  return isMagicDetail(card) && card.oracleText ? <p className={styles.oracleText}>{card.oracleText}</p> : null;
+function CardDescription({ card }: { card: TcgCardDetail }) {
+  const description = cardDescription(card);
+  return description ? <p className={styles.oracleText}>{description}</p> : null;
 }
 
 function SourceLink({ card }: { card: TcgCardDetail }) {
@@ -128,23 +128,16 @@ function SourceLink({ card }: { card: TcgCardDetail }) {
   return url ? <a className={styles.sourceLink} href={url} target="_blank" rel="noreferrer">Source {card.source}</a> : <p className={styles.source}>Source {card.source}</p>;
 }
 
-function PriceTable({ prices }: { prices: CardPrice[] }) {
+function PriceTable({ prices }: { prices: TcgProviderPrice[] }) {
   if (prices.length === 0) {
     return <p className={styles.hintCompact}>No provider prices returned for this card.</p>;
   }
-  return <table className={styles.table}><tbody>{prices.map((price) => <PriceRow key={priceKey(price)} price={price} />)}</tbody></table>;
+  return <table className={styles.table}><tbody>{prices.map((price) => <PriceRow key={providerPriceRow(price).key} price={price} />)}</tbody></table>;
 }
 
-function PriceRow({ price }: { price: CardPrice }) {
-  return isMagicPrice(price) ? <MagicPriceRow price={price} /> : <PokemonPriceRow price={price} />;
-}
-
-function PokemonPriceRow({ price }: { price: IPokemonCardPrice }) {
-  return <tr><th>{label(price.variant)}</th><td>Market {money(price.market)}</td><td>Low {money(price.low)}</td><td>High {money(price.high)}</td></tr>;
-}
-
-function MagicPriceRow({ price }: { price: IMagicCardPrice }) {
-  return <tr><th>{label(price.finish)}</th><td>{price.currency.toUpperCase()}</td><td>Market {providerMoney(price.marketPrice, price.currency)}</td><td /></tr>;
+function PriceRow({ price }: { price: TcgProviderPrice }) {
+  const row = providerPriceRow(price);
+  return <tr><th>{row.label}</th>{row.values.map((value, index) => <td key={`${row.key}-${index}`}>{value}</td>)}</tr>;
 }
 
 function StoredHistory({ history, status, message }: HistoryProps) {
@@ -163,24 +156,8 @@ function HistorySummary({ history, latest }: { history: IPriceHistory; latest: I
   return <div className={styles.historySummary}><strong>Stored prices</strong><span>{history.count} points | Latest {providerMoney(latest.close, latest.currency)} | Source {latest.source}</span><span>{metadata(latest)}</span></div>;
 }
 
-function metaValues(card: TcgCardDetail) {
-  return isMagicDetail(card) ? [card.setName, card.rarity, card.typeLine, card.manaCost, card.colors.join(', ')] : [card.setName, card.rarity, card.types.join(', '), card.hp ? `${card.hp} HP` : null].filter(Boolean);
-}
-
-function sourceUrl(card: TcgCardDetail) {
-  return isMagicDetail(card) ? card.scryfallUrl : card.tcgPlayerUrl;
-}
-
-function cardNumber(card: TcgCardSummary) {
-  return 'collectorNumber' in card ? card.collectorNumber ?? 'n/a' : card.number ?? 'n/a';
-}
-
 function summaryPrice(card: TcgCardSummary) {
-  return 'marketCurrency' in card ? providerMoney(card.marketPrice, card.marketCurrency) : money(card.marketPrice);
-}
-
-function priceKey(price: CardPrice) {
-  return isMagicPrice(price) ? `${price.currency}-${price.finish}` : price.variant;
+  return 'marketCurrency' in card ? providerMoney(card.marketPrice, card.marketCurrency) : providerMoney(card.marketPrice, 'USD');
 }
 
 function latestPoint(history: IPriceHistory) {
@@ -191,14 +168,6 @@ function metadata(point: IPricePoint) {
   return [point.priceType, point.cardCondition, point.grade, point.currency].filter(Boolean).join(' | ') || 'No card-specific metadata';
 }
 
-function isMagicDetail(card: TcgCardDetail): card is IMagicCardDetail {
-  return 'typeLine' in card;
-}
-
-function isMagicPrice(price: CardPrice): price is IMagicCardPrice {
-  return 'finish' in price;
-}
-
 function gameClass(selected: boolean) {
   return `${styles.gameTab} ${selected ? styles.gameTabActive : ''}`;
 }
@@ -207,38 +176,7 @@ function cardClass(selected: boolean) {
   return `${styles.cardButton} ${selected ? styles.cardButtonSelected : ''}`;
 }
 
-function label(value: string) {
-  return value.replace(/([A-Z])/g, ' $1').replace(/^./, (text) => text.toUpperCase());
-}
-
-function money(value: number | null) {
-  return providerMoney(value, 'USD');
-}
-
-function providerMoney(value: number | null, currency: string | null) {
-  if (value === null) {
-    return 'n/a';
-  }
-  return currencyAmount(value, currency);
-}
-
-function currencyAmount(value: number, currency: string | null) {
-  const code = (currency ?? 'USD').toUpperCase();
-  if (code === 'USD') {
-    return `$${value.toFixed(2)}`;
-  }
-  return code === 'EUR' ? `€${value.toFixed(2)}` : `${value.toFixed(2)} ${code}`;
-}
-
-function gameLabel(game: TcgGame) {
-  return game === 'pokemon' ? 'Pokemon' : 'Magic';
-}
-
-function placeholder(game: TcgGame) {
-  return game === 'pokemon' ? 'Charizard, Pikachu, Moonbreon' : 'Lightning Bolt, Black Lotus, Ragavan';
-}
-
-const games: TcgGame[] = ['pokemon', 'magic'];
+const games: TcgGame[] = ['pokemon', 'magic', 'one-piece'];
 
 type CardResultsProps = {
   cards: TcgCardSummary[];

@@ -67,6 +67,10 @@
   min-width: 0;
 }
 
+.searchPanel > button:disabled {
+  color: hsl(240 10% 15%);
+}
+
 .layout {
   align-items: start;
   display: grid;
