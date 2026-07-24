@@ -26,6 +26,10 @@ public interface IRegulasApiClient
 
     Task<ApiClientResult<MagicCardDetail>> GetMagicCardAsync(string id, CancellationToken token);
 
+    Task<ApiClientResult<OnePieceCardSearchResponse>> SearchOnePieceCardsAsync(string query, int pageSize, CancellationToken token);
+
+    Task<ApiClientResult<OnePieceCardDetail>> GetOnePieceCardAsync(string id, CancellationToken token);
+
     Task<ApiClientResult<AiOverview>> PredictAsync(IReadOnlyList<PredictAssetRequest> assets, CancellationToken token);
 
     Task<ApiClientResult<IReadOnlyList<PredictionHistoryItem>>> GetPredictionHistoryAsync(int take, CancellationToken token);

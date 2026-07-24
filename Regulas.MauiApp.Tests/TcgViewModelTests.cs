@@ -237,12 +237,17 @@ public class TcgViewModelTests
         public ApiClientResult<PokemonCardDetail> PokemonDetailResult { get; set; } = ApiClientResult<PokemonCardDetail>.Failure("not set");
         public ApiClientResult<MagicCardSearchResponse> SearchMagicResult { get; init; } = ApiClientResult<MagicCardSearchResponse>.Failure("not set");
         public ApiClientResult<MagicCardDetail> MagicDetailResult { get; set; } = ApiClientResult<MagicCardDetail>.Failure("not set");
+        public ApiClientResult<OnePieceCardSearchResponse> SearchOnePieceResult { get; init; } = ApiClientResult<OnePieceCardSearchResponse>.Failure("not set");
+        public ApiClientResult<OnePieceCardDetail> OnePieceDetailResult { get; set; } = ApiClientResult<OnePieceCardDetail>.Failure("not set");
         public Task<ApiClientResult<PokemonCardSearchResponse>>? SearchPokemonTask { get; init; }
         public Task<ApiClientResult<PokemonCardDetail>>? PokemonDetailTask { get; init; }
+        public Task<ApiClientResult<OnePieceCardSearchResponse>>? SearchOnePieceTask { get; init; }
         public Task<ApiClientResult<PokemonCardSearchResponse>> SearchPokemonCardsAsync(string query, int pageSize, CancellationToken token) => SearchPokemonTask ?? Task.FromResult(SearchPokemonResult);
         public Task<ApiClientResult<PokemonCardDetail>> GetPokemonCardAsync(string id, CancellationToken token) => PokemonDetailTask ?? Task.FromResult(PokemonDetailResult);
         public Task<ApiClientResult<MagicCardSearchResponse>> SearchMagicCardsAsync(string query, int pageSize, CancellationToken token) => Task.FromResult(SearchMagicResult);
         public Task<ApiClientResult<MagicCardDetail>> GetMagicCardAsync(string id, CancellationToken token) => Task.FromResult(MagicDetailResult);
+        public Task<ApiClientResult<OnePieceCardSearchResponse>> SearchOnePieceCardsAsync(string query, int pageSize, CancellationToken token) => SearchOnePieceTask ?? Task.FromResult(SearchOnePieceResult);
+        public Task<ApiClientResult<OnePieceCardDetail>> GetOnePieceCardAsync(string id, CancellationToken token) => Task.FromResult(OnePieceDetailResult);
         public Task<ApiClientResult<ApiHealth>> GetHealthAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ApiClientResult<IReadOnlyList<PortfolioStock>>> GetPortfolioStocksAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ApiClientResult<IReadOnlyList<CompanySearchResult>>> SearchCompaniesAsync(string query, CancellationToken token) => throw new NotImplementedException();
