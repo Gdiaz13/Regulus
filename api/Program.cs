@@ -34,6 +34,7 @@ builder.Services.AddSingleton<PredictionRequestEnricher>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<MagicTcgClient>(ConfigureMagicTcgClient);
 builder.Services.AddHttpClient<PokemonTcgClient>(ConfigurePokemonTcgClient);
+builder.Services.AddHttpClient<OnePieceTcgClient>(ConfigureOnePieceTcgClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 builder.Services.AddHostedService<PriceSnapshotService>();
@@ -96,6 +97,12 @@ static void ConfigurePokemonTcgClient(HttpClient client)
 static void ConfigureMagicTcgClient(HttpClient client)
 {
     client.BaseAddress = new Uri("https://api.scryfall.com/");
+    client.Timeout = TimeSpan.FromSeconds(10);
+}
+
+static void ConfigureOnePieceTcgClient(HttpClient client)
+{
+    client.BaseAddress = new Uri("https://api.apitcg.com/");
     client.Timeout = TimeSpan.FromSeconds(10);
 }
 

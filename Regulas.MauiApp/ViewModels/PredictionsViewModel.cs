@@ -15,15 +15,18 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
     ];
     private readonly IRegulasApiClient _apiClient;
     private readonly AuthSession _authSession;
+    private readonly Command _accuracyCommand;
     private readonly Command _historyCommand;
     private readonly Command<PredictAssetRow> _removeCommand;
     private readonly Command _runCommand;
     private readonly Command _stageCommand;
+    private string _accuracyMessageText = "Sign in to load model accuracy.";
     private string _assetName = string.Empty;
     private string _assetType = "Stock";
     private string _category = string.Empty;
     private string _currentPrice = string.Empty;
     private string _historyMessageText = "Sign in to load saved prediction history.";
+    private bool _isAccuracyBusy;
     private bool _isAuthenticated;
     private bool _isBusy;
     private bool _isHistoryBusy;
@@ -38,6 +41,7 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         _authSession = authSession;
         _stageCommand = new Command(StageAsset, () => CanStage);
         _runCommand = new Command(async () => await RunPredictionAsync(), () => CanRun);
+        _accuracyCommand = new Command(async () => await LoadAccuracyAsync(), () => CanRefreshAccuracy);
         _historyCommand = new Command(async () => await LoadHistoryAsync(), () => CanRefreshHistory);
         _removeCommand = new Command<PredictAssetRow>(RemoveAsset);
         OpenAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
@@ -48,10 +52,12 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<PredictAssetRow> StagedAssets { get; } = [];
     public ObservableCollection<PredictionResultRow> Predictions { get; } = [];
+    public ObservableCollection<ModelAccuracySummaryRow> AccuracySummaries { get; } = [];
     public ObservableCollection<PredictionHistoryRow> History { get; } = [];
     public IReadOnlyList<string> AssetTypes { get; } = ["Stock", "Etf", "TcgCard", "Crypto", "Collectible"];
     public ICommand StageCommand => _stageCommand;
     public ICommand RunCommand => _runCommand;
+    public ICommand RefreshAccuracyCommand => _accuracyCommand;
     public ICommand RefreshHistoryCommand => _historyCommand;
     public ICommand RemoveStagedCommand => _removeCommand;
     public ICommand OpenAccountCommand { get; }
@@ -62,19 +68,25 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
     public string CurrentPrice { get => _currentPrice; set => SetInput(ref _currentPrice, value, nameof(CurrentPrice)); }
     public string TimeHorizonDays { get => _timeHorizonDays; set => SetInput(ref _timeHorizonDays, value, nameof(TimeHorizonDays)); }
     public string MessageText { get => _messageText; private set => SetMessage(value); }
+    public string AccuracyMessageText { get => _accuracyMessageText; private set => SetAccuracyMessage(value); }
     public string HistoryMessageText { get => _historyMessageText; private set => SetHistoryMessage(value); }
     public bool IsBusy { get => _isBusy; private set => SetBusy(value); }
+    public bool IsAccuracyBusy { get => _isAccuracyBusy; private set => SetAccuracyBusy(value); }
     public bool IsHistoryBusy { get => _isHistoryBusy; private set => SetHistoryBusy(value); }
     public bool IsAuthenticated { get => _isAuthenticated; private set => SetAuthenticated(value); }
     public bool IsAnonymous => !IsAuthenticated;
     public bool HasStaged => StagedAssets.Count > 0;
     public bool HasPredictionResults => Predictions.Count > 0;
+    public bool HasAccuracySummaries => AccuracySummaries.Count > 0;
+    public bool ShowAccuracySummaries => IsAuthenticated && HasAccuracySummaries;
     public bool HasHistory => History.Count > 0;
     public bool ShowMessage => !IsBusy && !string.IsNullOrWhiteSpace(MessageText);
+    public bool ShowAccuracyMessage => !IsAccuracyBusy && !string.IsNullOrWhiteSpace(AccuracyMessageText);
     public bool ShowHistoryMessage => !IsHistoryBusy && !string.IsNullOrWhiteSpace(HistoryMessageText);
     public bool ShowPredictionSummary => _overview is not null;
     public bool CanStage => IsAuthenticated && !IsBusy && HasValidAsset();
     public bool CanRun => IsAuthenticated && !IsBusy && HasStaged;
+    public bool CanRefreshAccuracy => IsAuthenticated && !IsAccuracyBusy;
     public bool CanRefreshHistory => IsAuthenticated && !IsHistoryBusy;
     public string SummaryText => _overview?.Summary ?? "Run a prediction to see the RegulasCoreAI overview.";
     public string ModelText => _overview is null ? "No model response yet." : $"{_overview.ModelName} v{_overview.ModelVersion}";
@@ -85,6 +97,7 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         SyncAuthState();
         if (IsAuthenticated)
         {
+            await LoadAccuracyAsync();
             await LoadHistoryAsync();
         }
     }
@@ -131,6 +144,25 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         await RunHistoryBusyAsync(async () => ApplyHistory(await _apiClient.GetPredictionHistoryAsync(10, CancellationToken.None)));
     }
 
+    private async Task LoadAccuracyAsync()
+    {
+        if (!CanRefreshAccuracy)
+        {
+            return;
+        }
+        var generation = _authSession.Generation;
+        await RunAccuracyBusyAsync(() => LoadAccuracyForSessionAsync(generation));
+    }
+
+    private async Task LoadAccuracyForSessionAsync(int generation)
+    {
+        var result = await _apiClient.GetPredictionAccuracySummaryAsync(CancellationToken.None);
+        if (_authSession.Generation == generation)
+        {
+            ApplyAccuracy(result);
+        }
+    }
+
     private async Task ApplyPrediction(ApiClientResult<AiOverview> result)
     {
         if (!result.Ok || result.Data is null)
@@ -175,6 +207,17 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         HistoryMessageText = message;
     }
 
+    private void ApplyAccuracy(ApiClientResult<IReadOnlyList<ModelAccuracySummary>> result)
+    {
+        if (!result.Ok || result.Data is null)
+        {
+            AccuracyMessageText = result.Message;
+            return;
+        }
+        ReplaceAccuracy(result.Data.Select(AccuracyRow));
+        AccuracyMessageText = AccuracySummaries.Count == 0 ? "No scored predictions yet." : string.Empty;
+    }
+
     private async Task RunBusyAsync(Func<Task> action)
     {
         IsBusy = true;
@@ -198,6 +241,19 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         finally
         {
             IsHistoryBusy = false;
+        }
+    }
+
+    private async Task RunAccuracyBusyAsync(Func<Task> action)
+    {
+        IsAccuracyBusy = true;
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            IsAccuracyBusy = false;
         }
     }
 
@@ -276,6 +332,15 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         );
     }
 
+    private static ModelAccuracySummaryRow AccuracyRow(ModelAccuracySummary summary)
+    {
+        return new ModelAccuracySummaryRow(
+            summary.ModelName, ScoredText(summary.ScoredCount), Percent(summary.WinRate),
+            Percent(summary.AverageAbsolutePercentError), Percent(summary.ConfidenceCalibrationError),
+            AverageHorizon(summary.AverageTimeHorizonDays)
+        );
+    }
+
     private static string CategoryText(AiCategoryPrediction category, AiPrediction prediction)
     {
         var value = string.IsNullOrWhiteSpace(prediction.Category) ? category.Category : prediction.Category;
@@ -310,6 +375,22 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
     private static string Change(double value)
     {
         return $"{value:N2}%";
+    }
+
+    private static string ScoredText(int count)
+    {
+        return $"{count} scored {(count == 1 ? "prediction" : "predictions")}";
+    }
+
+    private static string Percent(double value)
+    {
+        return $"{value:N2}%";
+    }
+
+    private static string AverageHorizon(double value)
+    {
+        var days = (int)Math.Round(value, MidpointRounding.AwayFromZero);
+        return $"{days} {(days == 1 ? "day" : "days")}";
     }
 
     private static string Score(double value)
@@ -406,6 +487,16 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         RefreshHistoryState();
     }
 
+    private void ReplaceAccuracy(IEnumerable<ModelAccuracySummaryRow> rows)
+    {
+        AccuracySummaries.Clear();
+        foreach (var row in rows)
+        {
+            AccuracySummaries.Add(row);
+        }
+        RefreshAccuracyState();
+    }
+
     private void SyncAuthState()
     {
         IsAuthenticated = _authSession.IsAuthenticated;
@@ -422,8 +513,10 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         _overview = null;
         StagedAssets.Clear();
         ReplacePredictions([]);
+        ReplaceAccuracy([]);
         ReplaceHistory([]);
         MessageText = "Sign in to run predictions.";
+        AccuracyMessageText = "Sign in to load model accuracy.";
         HistoryMessageText = "Sign in to load saved prediction history.";
         RefreshStagedState();
         NotifyOverviewChanged();
@@ -445,6 +538,14 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         }
     }
 
+    private void SetAccuracyBusy(bool value)
+    {
+        if (SetField(ref _isAccuracyBusy, value, nameof(IsAccuracyBusy)))
+        {
+            RefreshAccuracyState();
+        }
+    }
+
     private void SetAuthenticated(bool value)
     {
         if (!SetField(ref _isAuthenticated, value, nameof(IsAuthenticated)))
@@ -453,6 +554,7 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         }
         OnPropertyChanged(nameof(IsAnonymous));
         RefreshCommands();
+        RefreshAccuracyState();
         RefreshHistoryState();
     }
 
@@ -469,6 +571,14 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         if (SetField(ref _historyMessageText, value, nameof(HistoryMessageText)))
         {
             OnPropertyChanged(nameof(ShowHistoryMessage));
+        }
+    }
+
+    private void SetAccuracyMessage(string value)
+    {
+        if (SetField(ref _accuracyMessageText, value, nameof(AccuracyMessageText)))
+        {
+            OnPropertyChanged(nameof(ShowAccuracyMessage));
         }
     }
 
@@ -501,6 +611,15 @@ public sealed class PredictionsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanRefreshHistory));
         OnPropertyChanged(nameof(ShowHistoryMessage));
         _historyCommand.ChangeCanExecute();
+    }
+
+    private void RefreshAccuracyState()
+    {
+        OnPropertyChanged(nameof(HasAccuracySummaries));
+        OnPropertyChanged(nameof(ShowAccuracySummaries));
+        OnPropertyChanged(nameof(CanRefreshAccuracy));
+        OnPropertyChanged(nameof(ShowAccuracyMessage));
+        _accuracyCommand.ChangeCanExecute();
     }
 
     private void NotifyOverviewChanged()

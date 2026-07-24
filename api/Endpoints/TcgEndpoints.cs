@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using api.Services;
 
@@ -12,6 +13,8 @@ public static class TcgEndpoints
         group.MapGet("pokemon/cards/{id}", GetPokemonCard);
         group.MapGet("magic/cards", SearchMagicCards);
         group.MapGet("magic/cards/{id}", GetMagicCard);
+        group.MapGet("one-piece/cards", SearchOnePieceCards);
+        group.MapGet("one-piece/cards/{id}", GetOnePieceCard);
     }
 
     private static async Task<IResult> SearchPokemonCards(
@@ -77,6 +80,37 @@ public static class TcgEndpoints
         return await ProviderRequest(() => client.SearchAsync(clean, ClampPageSize(pageSize), token), "Magic");
     }
 
+    private static async Task<IResult> SearchOnePieceCards(
+        string? query,
+        int? pageSize,
+        OnePieceTcgClient client,
+        CancellationToken token
+    )
+    {
+        var clean = Clean(query);
+        if (string.IsNullOrWhiteSpace(clean))
+        {
+            return Results.BadRequest("A card name is required.");
+        }
+        return await ProviderRequest(() => client.SearchAsync(clean, ClampPageSize(pageSize), token), "One Piece");
+    }
+
+    private static async Task<IResult> GetOnePieceCard(
+        string id,
+        OnePieceTcgClient client,
+        PriceHistoryStore store,
+        ILoggerFactory loggers,
+        CancellationToken token
+    )
+    {
+        var clean = Clean(id);
+        if (!IsPositiveProviderId(id, clean))
+        {
+            return Results.BadRequest("A numeric card id is required.");
+        }
+        return await ProviderRequest(() => FetchAndStoreAsync(clean, client, store, loggers, token), "One Piece");
+    }
+
     private static async Task<IResult> GetMagicCard(
         string id,
         MagicTcgClient client,
@@ -96,6 +130,22 @@ public static class TcgEndpoints
     private static async Task<Contracts.MagicCardDetail?> FetchAndStoreAsync(
         string id,
         MagicTcgClient client,
+        PriceHistoryStore store,
+        ILoggerFactory loggers,
+        CancellationToken token
+    )
+    {
+        var card = await client.GetCardAsync(id, token);
+        if (card is not null)
+        {
+            await TcgCardPriceCapture.TryStoreAsync(store, card, loggers.CreateLogger(nameof(TcgEndpoints)));
+        }
+        return card;
+    }
+
+    private static async Task<Contracts.OnePieceCardDetail?> FetchAndStoreAsync(
+        string id,
+        OnePieceTcgClient client,
         PriceHistoryStore store,
         ILoggerFactory loggers,
         CancellationToken token
@@ -130,6 +180,13 @@ public static class TcgEndpoints
     private static string Clean(string? value)
     {
         return value?.Trim() ?? string.Empty;
+    }
+
+    private static bool IsPositiveProviderId(string original, string clean)
+    {
+        return original == clean
+            && long.TryParse(clean, NumberStyles.None, CultureInfo.InvariantCulture, out var value)
+            && value > 0;
     }
 
     private static bool IsProviderException(Exception exception)

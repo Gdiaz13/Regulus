@@ -33,6 +33,18 @@ public static class TcgCardPriceCapture
         }
     }
 
+    public static async Task TryStoreAsync(PriceHistoryStore store, OnePieceCardDetail card, ILogger logger)
+    {
+        try
+        {
+            await StoreAsync(store, card);
+        }
+        catch (Exception exception) when (IsStorageException(exception))
+        {
+            logger.LogWarning(exception, "Market price for card {Card} was not stored.", card.Id);
+        }
+    }
+
     private static async Task StoreAsync(PriceHistoryStore store, PokemonCardDetail card)
     {
         var price = MarketPrice(card);
@@ -55,6 +67,18 @@ public static class TcgCardPriceCapture
         await store.SaveProviderCardPriceAsync(asset.Id, DateOnly.FromDateTime(DateTime.UtcNow), price.MarketPrice, card.Source, price.Currency);
     }
 
+    private static async Task StoreAsync(PriceHistoryStore store, OnePieceCardDetail card)
+    {
+        var price = MarketPrice(card);
+        if (price?.MarketPrice is null)
+        {
+            return;
+        }
+        var symbol = string.IsNullOrWhiteSpace(card.Code) ? card.Id : card.Code;
+        var asset = await store.EnsureAssetAsync(symbol, AssetType.TcgCard, card.Name, "One Piece");
+        await store.SaveProviderCardPriceAsync(asset.Id, PriceDate(card), price.MarketPrice.Value, card.Source, price.Currency);
+    }
+
     // First variant with a market price, matching what the search list shows.
     private static decimal? MarketPrice(PokemonCardDetail card)
     {
@@ -66,6 +90,13 @@ public static class TcgCardPriceCapture
         return card.Prices.FirstOrDefault();
     }
 
+    private static OnePieceCardPrice? MarketPrice(OnePieceCardDetail card)
+    {
+        return card.Prices
+            .OrderBy(price => price.Market == "tcgplayer" ? 0 : 1)
+            .FirstOrDefault(price => price.MarketPrice is not null);
+    }
+
     // The provider stamps prices with its own update date (yyyy/MM/dd); fall
     // back to today so a missing stamp still lands on a valid day.
     private static DateOnly PriceDate(PokemonCardDetail card)
@@ -75,8 +106,15 @@ public static class TcgCardPriceCapture
             : DateOnly.FromDateTime(DateTime.UtcNow);
     }
 
+    private static DateOnly PriceDate(OnePieceCardDetail card)
+    {
+        return DateTimeOffset.TryParse(card.UpdatedAt, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var updated)
+            ? DateOnly.FromDateTime(updated.UtcDateTime)
+            : DateOnly.FromDateTime(DateTime.UtcNow);
+    }
+
     private static bool IsStorageException(Exception exception)
     {
-        return exception is DbException or InvalidOperationException;
+        return exception is DbException or InvalidOperationException or TcgAssetCategoryConflictException;
     }
 }

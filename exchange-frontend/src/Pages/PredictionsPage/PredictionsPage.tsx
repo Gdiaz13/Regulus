@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import ResourceStatus from '../../Components/AsyncResource/ResourceStatus';
+import PredictionAccuracySummary from '../../Components/Prediction/PredictionAccuracySummary/PredictionAccuracySummary';
 import PredictionForm from '../../Components/Prediction/PredictionForm/PredictionForm';
 import PredictionHistory from '../../Components/Prediction/PredictionHistory/PredictionHistory';
 import PredictionOverview from '../../Components/Prediction/PredictionOverview/PredictionOverview';
 import StagedAssets from '../../Components/Prediction/StagedAssets/StagedAssets';
 import type { IPredictAsset } from '../../Interfaces/APIResponses/IPrediction';
 import { usePrediction } from '../../hooks/usePrediction';
+import { usePredictionAccuracySummary } from '../../hooks/usePredictionAccuracySummary';
 import { usePredictionHistory } from '../../hooks/usePredictionHistory';
 import styles from './PredictionsPage.module.css';
 
@@ -16,8 +18,7 @@ type History = ReturnType<typeof usePredictionHistory>;
 // Stage one or more assets, ask RegulasCoreAI through the gateway, and show the result.
 const PredictionsPage = () => {
   const [staged, setStaged] = useState<IPredictAsset[]>([]);
-  const prediction = usePrediction();
-  const history = usePredictionHistory();
+  const { prediction, history, accuracy } = usePredictionResources();
   const stage = useStaging(setStaged);
   return (
     <main className={styles.page}>
@@ -25,10 +26,18 @@ const PredictionsPage = () => {
       <PredictionForm onAdd={stage.add} />
       <StagedAssets assets={staged} onRemove={stage.remove} onRun={() => runPrediction(staged, prediction, history)} running={prediction.status === 'loading'} />
       <PredictionResults prediction={prediction} />
+      <PredictionAccuracySummary values={accuracy.values} status={accuracy.status} message={accuracy.message} />
       <PredictionHistory values={history.values} status={history.status} message={history.message} />
     </main>
   );
 };
+
+function usePredictionResources() {
+  const prediction = usePrediction();
+  const history = usePredictionHistory();
+  const accuracy = usePredictionAccuracySummary();
+  return { prediction, history, accuracy };
+}
 
 function useStaging(setStaged: SetStaged) {
   const add = (asset: IPredictAsset) => setStaged((list) => [...list, asset]);

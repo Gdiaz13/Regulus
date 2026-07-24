@@ -8,15 +8,22 @@ using Regulas.MauiApp.Services;
 
 namespace Regulas.MauiApp.ViewModels;
 
-// Records manual TCG prices and browses Magic provider data through Regulas.Api.
+// Records manual TCG prices and browses provider data through Regulas.Api.
 public sealed class TcgViewModel : INotifyPropertyChanged
 {
     private readonly IRegulasApiClient _apiClient;
     private readonly AuthSession _authSession;
     private readonly Command _loadCommand;
-    private readonly Command<string> _openMagicCommand;
+    private readonly Command<TcgProviderCardRow> _openCardCommand;
     private readonly Command _saveCommand;
-    private readonly Command _searchMagicCommand;
+    private readonly Command _searchCardsCommand;
+    private string _browseDetailName = string.Empty;
+    private string? _browseDetailImageUrl;
+    private string _browseDetailText = string.Empty;
+    private string _browseGame = "Pokemon";
+    private string _browseMessageText = "Search Pokemon or Magic cards through Regulas.Api.";
+    private string _browseQuery = string.Empty;
+    private int _browseGeneration;
     private string _condition = string.Empty;
     private string _currency = "USD";
     private string _category = "Pokemon";
@@ -24,10 +31,7 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     private string _grade = string.Empty;
     private bool _isAuthenticated;
     private bool _isBusy;
-    private string _magicDetailName = string.Empty;
-    private string _magicDetailText = string.Empty;
-    private string _magicMessageText = "Search Magic cards through Regulas.Api.";
-    private string _magicQuery = string.Empty;
+
     private string _messageText = "Sign in to record card prices.";
     private string _name = string.Empty;
     private string _price = string.Empty;
@@ -40,8 +44,9 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         _authSession = authSession;
         _saveCommand = new Command(async () => await SaveAsync(), () => CanSave);
         _loadCommand = new Command(async () => await LoadStoredAsync(), () => CanLoad);
-        _searchMagicCommand = new Command(async () => await SearchMagicAsync(), () => CanSearchMagic);
-        _openMagicCommand = new Command<string>(async id => await OpenMagicAsync(id), _ => CanOpenMagic);
+        _searchCardsCommand = new Command(async () => await SearchCardsAsync(), () => CanSearchCards);
+        _openCardCommand = new Command<TcgProviderCardRow>(async card => await OpenCardAsync(card), _ => CanOpenCard);
+
         OpenAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
@@ -49,14 +54,17 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<TcgPointRow> Points { get; } = [];
-    public ObservableCollection<MagicCardSummaryRow> MagicCards { get; } = [];
-    public ObservableCollection<MagicCardPriceRow> MagicPrices { get; } = [];
+    public ObservableCollection<TcgProviderCardRow> ProviderCards { get; } = [];
+    public ObservableCollection<TcgProviderPriceRow> ProviderPrices { get; } = [];
+
     public IReadOnlyList<string> TcgGames { get; } = ["Pokemon", "Magic", "One Piece"];
+    public IReadOnlyList<string> BrowseGames { get; } = ["Pokemon", "Magic"];
     public IReadOnlyList<string> PriceTypes { get; } = ["Sold", "Listed", "Market"];
     public ICommand SaveCommand => _saveCommand;
     public ICommand LoadCommand => _loadCommand;
-    public ICommand SearchMagicCommand => _searchMagicCommand;
-    public ICommand OpenMagicCardCommand => _openMagicCommand;
+    public ICommand SearchCardsCommand => _searchCardsCommand;
+    public ICommand OpenCardCommand => _openCardCommand;
+
     public ICommand OpenAccountCommand { get; }
     public string Symbol { get => _symbol; set => SetInput(ref _symbol, value.ToUpperInvariant(), nameof(Symbol)); }
     public string Name { get => _name; set => SetInput(ref _name, value, nameof(Name)); }
@@ -68,22 +76,28 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     public string Grade { get => _grade; set => SetInput(ref _grade, value, nameof(Grade)); }
     public string Currency { get => _currency; set => SetInput(ref _currency, value, nameof(Currency)); }
     public string MessageText { get => _messageText; private set => SetMessage(value); }
-    public string MagicQuery { get => _magicQuery; set => SetInput(ref _magicQuery, value, nameof(MagicQuery)); }
-    public string MagicMessageText { get => _magicMessageText; private set => SetMagicMessage(value); }
-    public string MagicDetailName { get => _magicDetailName; private set => SetMagicDetailName(value); }
-    public string MagicDetailText { get => _magicDetailText; private set => SetField(ref _magicDetailText, value, nameof(MagicDetailText)); }
+    public string BrowseGame { get => _browseGame; set => SetBrowseGame(value); }
+    public string BrowseQuery { get => _browseQuery; set => SetInput(ref _browseQuery, value, nameof(BrowseQuery)); }
+    public string BrowseMessageText { get => _browseMessageText; private set => SetBrowseMessage(value); }
+    public string BrowseDetailName { get => _browseDetailName; private set => SetBrowseDetailName(value); }
+    public string? BrowseDetailImageUrl { get => _browseDetailImageUrl; private set => SetField(ref _browseDetailImageUrl, value, nameof(BrowseDetailImageUrl)); }
+    public string BrowseDetailText { get => _browseDetailText; private set => SetField(ref _browseDetailText, value, nameof(BrowseDetailText)); }
+
     public bool IsBusy { get => _isBusy; private set => SetBusy(value); }
     public bool IsAuthenticated { get => _isAuthenticated; private set => SetAuthenticated(value); }
     public bool IsAnonymous => !IsAuthenticated;
     public bool HasPoints => Points.Count > 0;
-    public bool HasMagicCards => MagicCards.Count > 0;
-    public bool HasMagicDetail => !string.IsNullOrWhiteSpace(MagicDetailName);
+    public bool HasProviderCards => ProviderCards.Count > 0;
+    public bool HasProviderDetail => !string.IsNullOrWhiteSpace(BrowseDetailName);
+
     public bool ShowMessage => !IsBusy && !string.IsNullOrWhiteSpace(MessageText);
-    public bool ShowMagicMessage => !IsBusy && !string.IsNullOrWhiteSpace(MagicMessageText);
+    public bool ShowBrowseMessage => !IsBusy && !string.IsNullOrWhiteSpace(BrowseMessageText);
+
     public bool CanSave => IsAuthenticated && !IsBusy && HasValidEntry();
     public bool CanLoad => !IsBusy && !string.IsNullOrWhiteSpace(Symbol);
-    public bool CanSearchMagic => !IsBusy && !string.IsNullOrWhiteSpace(MagicQuery);
-    public bool CanOpenMagic => !IsBusy;
+    public bool CanSearchCards => !IsBusy && !string.IsNullOrWhiteSpace(BrowseQuery);
+    public bool CanOpenCard => !IsBusy;
+
 
     public async Task LoadAsync()
     {
@@ -109,47 +123,108 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         await RunBusyAsync(async () => ApplyHistory(await FetchHistoryAsync(), string.Empty));
     }
 
-    private async Task SearchMagicAsync()
+    private async Task SearchCardsAsync()
     {
-        if (!CanSearchMagic)
+        if (!CanSearchCards)
         {
             return;
         }
-        await RunBusyAsync(async () => await SearchMagicCoreAsync());
+        var generation = _browseGeneration;
+        var game = BrowseGame;
+        var query = BrowseQuery.Trim();
+        await RunBusyAsync(() => SearchCardsCoreAsync(generation, game, query));
     }
 
-    private async Task OpenMagicAsync(string? id)
+    private async Task SearchCardsCoreAsync(int generation, string game, string query)
     {
-        if (string.IsNullOrWhiteSpace(id))
+        ClearProviderDetail();
+        if (game == "Pokemon")
+        {
+            await SearchPokemonAsync(query, generation);
+            return;
+        }
+        await SearchMagicProviderAsync(query, generation);
+    }
+
+    private async Task SearchPokemonAsync(string query, int generation)
+    {
+        var result = await _apiClient.SearchPokemonCardsAsync(query, 12, CancellationToken.None);
+        if (!IsCurrentBrowse(generation))
         {
             return;
         }
-        await RunBusyAsync(async () => await OpenMagicCoreAsync(id));
-    }
-
-    private async Task SearchMagicCoreAsync()
-    {
-        ClearMagicDetail();
-        var result = await _apiClient.SearchMagicCardsAsync(MagicQuery.Trim(), 12, CancellationToken.None);
         if (!result.Ok || result.Data is null)
         {
-            ApplyMagicSearchFailure(result.Message);
+            ApplyProviderSearchFailure(result.Message);
             return;
         }
-        ReplaceMagicCards(result.Data.Cards);
-        MagicMessageText = MagicCards.Count == 0 ? "No Magic cards matched that search." : $"Found {MagicCards.Count} Magic cards.";
+        ReplaceProviderCards(result.Data.Cards.Select(PokemonRow));
+        BrowseMessageText = FoundMessage("Pokemon", ProviderCards.Count);
     }
 
-    private async Task OpenMagicCoreAsync(string id)
+    private async Task SearchMagicProviderAsync(string query, int generation)
+    {
+        var result = await _apiClient.SearchMagicCardsAsync(query, 12, CancellationToken.None);
+        if (!IsCurrentBrowse(generation))
+        {
+            return;
+        }
+        if (!result.Ok || result.Data is null)
+        {
+            ApplyProviderSearchFailure(result.Message);
+            return;
+        }
+        ReplaceProviderCards(result.Data.Cards.Select(MagicProviderRow));
+        BrowseMessageText = FoundMessage("Magic", ProviderCards.Count);
+    }
+
+    private async Task OpenCardAsync(TcgProviderCardRow? card)
+    {
+        if (card is null)
+        {
+            return;
+        }
+        var generation = _browseGeneration;
+        await RunBusyAsync(() => OpenCardCoreAsync(card, generation));
+    }
+
+    private Task OpenCardCoreAsync(TcgProviderCardRow card, int generation)
+    {
+        return card.Game == "Pokemon"
+            ? OpenPokemonProviderAsync(card.Id, generation)
+            : OpenMagicProviderAsync(card.Id, generation);
+    }
+
+    private async Task OpenPokemonProviderAsync(string id, int generation)
+    {
+        var result = await _apiClient.GetPokemonCardAsync(id, CancellationToken.None);
+        if (!IsCurrentBrowse(generation))
+        {
+            return;
+        }
+        if (!result.Ok || result.Data is null)
+        {
+            ApplyProviderDetailFailure(result.Message);
+            return;
+        }
+        ApplyPokemonDetail(result.Data);
+    }
+
+    private async Task OpenMagicProviderAsync(string id, int generation)
     {
         var result = await _apiClient.GetMagicCardAsync(id, CancellationToken.None);
-        if (!result.Ok || result.Data is null)
+        if (!IsCurrentBrowse(generation))
         {
-            ApplyMagicDetailFailure(result.Message);
             return;
         }
-        ApplyMagicDetail(result.Data);
+        if (!result.Ok || result.Data is null)
+        {
+            ApplyProviderDetailFailure(result.Message);
+            return;
+        }
+        ApplyMagicProviderDetail(result.Data);
     }
+
 
     // Saving always re-reads storage so the list shows saved truth, not hope.
     private async Task SaveThenReloadAsync()
@@ -185,27 +260,50 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         MessageText = message;
     }
 
-    private void ApplyMagicSearchFailure(string message)
+    private void ApplyProviderSearchFailure(string message)
     {
-        ReplaceMagicCards([]);
-        ClearMagicDetail();
-        MagicMessageText = message;
+        ReplaceProviderCards([]);
+        ClearProviderDetail();
+        BrowseMessageText = message;
     }
 
-    private void ApplyMagicDetailFailure(string message)
+    private void ApplyProviderDetailFailure(string message)
     {
-        ClearMagicDetail();
-        MagicMessageText = message;
+        ClearProviderDetail();
+        BrowseMessageText = message;
     }
 
-    private void ApplyMagicDetail(MagicCardDetail card)
+    private void ApplyPokemonDetail(PokemonCardDetail card)
     {
-        MagicDetailName = card.Name;
-        MagicDetailText = DetailText(card);
-        ReplaceMagicPrices(card.Prices);
+        BrowseDetailName = card.Name;
+        BrowseDetailImageUrl = card.LargeImageUrl ?? card.SmallImageUrl;
+        BrowseDetailText = PokemonDetailText(card);
+        ReplaceProviderPrices(card.Prices.Select(PokemonPriceRow));
+        FillPokemonEntry(card);
+        BrowseMessageText = $"{card.Name} loaded. Provider price was captured by the API when available.";
+    }
+
+    private void ApplyMagicProviderDetail(MagicCardDetail card)
+    {
+        BrowseDetailName = card.Name;
+        BrowseDetailImageUrl = card.LargeImageUrl ?? card.SmallImageUrl;
+        BrowseDetailText = DetailText(card);
+        ReplaceProviderPrices(card.Prices.Select(MagicProviderPriceRow));
         FillManualEntry(card);
-        MagicMessageText = $"{card.Name} loaded. Provider price was captured by the API when available.";
+        BrowseMessageText = $"{card.Name} loaded. Provider price was captured by the API when available.";
     }
+
+    private void FillPokemonEntry(PokemonCardDetail card)
+    {
+        Symbol = card.Id;
+        Name = card.Name;
+        Category = "Pokemon";
+        PriceType = "Market";
+        Currency = "USD";
+        var price = BestPokemonPrice(card.Prices);
+        Price = price?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
 
     private void FillManualEntry(MagicCardDetail card)
     {
@@ -214,8 +312,8 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         Category = "Magic";
         PriceType = "Market";
         var price = card.Prices.FirstOrDefault();
-        Currency = price?.Currency?.ToUpperInvariant() ?? Currency;
-        Price = price is null ? Price : price.MarketPrice.ToString("0.##", CultureInfo.InvariantCulture);
+        Currency = price?.Currency?.ToUpperInvariant() ?? string.Empty;
+        Price = price?.MarketPrice.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
     private ManualPriceRequest ToRequest()
@@ -236,51 +334,103 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasPoints));
     }
 
-    private void ReplaceMagicCards(IEnumerable<MagicCardSummary> cards)
+    private void ReplaceProviderCards(IEnumerable<TcgProviderCardRow> cards)
     {
-        MagicCards.Clear();
+        ProviderCards.Clear();
         foreach (var card in cards)
         {
-            MagicCards.Add(SummaryRow(card));
+            ProviderCards.Add(card);
         }
-        OnPropertyChanged(nameof(HasMagicCards));
+        OnPropertyChanged(nameof(HasProviderCards));
     }
 
-    private void ReplaceMagicPrices(IEnumerable<MagicCardPrice> prices)
+    private void ReplaceProviderPrices(IEnumerable<TcgProviderPriceRow> prices)
     {
-        MagicPrices.Clear();
+        ProviderPrices.Clear();
         foreach (var price in prices)
         {
-            MagicPrices.Add(PriceRow(price));
+            ProviderPrices.Add(price);
         }
     }
 
-    private void ClearMagicDetail()
+    private void ClearProviderDetail()
     {
-        MagicDetailName = string.Empty;
-        MagicDetailText = string.Empty;
-        ReplaceMagicPrices([]);
+        BrowseDetailName = string.Empty;
+        BrowseDetailImageUrl = null;
+        BrowseDetailText = string.Empty;
+        ProviderPrices.Clear();
     }
+
 
     private static TcgPointRow Row(PricePoint point)
     {
         return new TcgPointRow(point.Date.ToString("yyyy-MM-dd"), $"{point.Close:N2}", Meta(point), $"Source: {point.Source}");
     }
 
-    private static MagicCardSummaryRow SummaryRow(MagicCardSummary card)
+
+    private static TcgProviderCardRow PokemonRow(PokemonCardSummary card)
     {
-        return new MagicCardSummaryRow(card.Id, card.Name, SummaryDetails(card), SummaryPrice(card));
+        var details = Join(card.SetName, card.Number, card.Rarity);
+        var price = card.MarketPrice is null ? "No provider price" : ProviderMoney(card.MarketPrice.Value, "USD");
+        return new TcgProviderCardRow(card.Id, "Pokemon", card.Name, details, card.SmallImageUrl, price);
     }
 
-    private static MagicCardPriceRow PriceRow(MagicCardPrice price)
+    private static TcgProviderCardRow MagicProviderRow(MagicCardSummary card)
     {
-        return new MagicCardPriceRow($"{Title(price.Finish)} {price.Currency.ToUpperInvariant()}", ProviderMoney(price.MarketPrice, price.Currency));
+        return new TcgProviderCardRow(card.Id, "Magic", card.Name, SummaryDetails(card), card.SmallImageUrl, SummaryPrice(card));
+    }
+
+
+    private static TcgProviderPriceRow PokemonPriceRow(PokemonCardPrice price)
+    {
+        var selected = PokemonVariantPrice(price);
+        var value = selected.Value is null ? "Unavailable" : ProviderMoney(selected.Value.Value, "USD");
+        return new TcgProviderPriceRow($"{Title(price.Variant)} {selected.Label}", value);
+    }
+
+    private static TcgProviderPriceRow MagicProviderPriceRow(MagicCardPrice price)
+    {
+        return new TcgProviderPriceRow($"{Title(price.Finish)} {price.Currency.ToUpperInvariant()}", ProviderMoney(price.MarketPrice, price.Currency));
+    }
+
+    private static decimal? BestPokemonPrice(IReadOnlyList<PokemonCardPrice> prices)
+    {
+        return FirstValue(prices.Select(price => price.Market))
+            ?? FirstValue(prices.Select(price => price.Mid))
+            ?? FirstValue(prices.Select(price => price.Low))
+            ?? FirstValue(prices.Select(price => price.High))
+            ?? FirstValue(prices.Select(price => price.DirectLow));
+    }
+
+    private static decimal? FirstValue(IEnumerable<decimal?> values)
+    {
+        return values.FirstOrDefault(value => value is not null);
+    }
+
+    private static (string Label, decimal? Value) PokemonVariantPrice(PokemonCardPrice price)
+    {
+        if (price.Market is not null) return ("market", price.Market);
+        if (price.Mid is not null) return ("mid", price.Mid);
+        if (price.Low is not null) return ("low", price.Low);
+        if (price.High is not null) return ("high", price.High);
+        if (price.DirectLow is not null) return ("direct low", price.DirectLow);
+        return ("price", null);
     }
 
     private static string SummaryDetails(MagicCardSummary card)
     {
         var parts = new[] { card.SetName, card.CollectorNumber, card.Rarity };
         return string.Join(" · ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+    }
+
+    private static string Join(params string?[] parts)
+    {
+        return string.Join(" · ", parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+    }
+
+    private static string FoundMessage(string game, int count)
+    {
+        return count == 0 ? $"No {game} cards matched that search." : $"Found {count} {game} {(count == 1 ? "card" : "cards")}.";
     }
 
     private static string SummaryPrice(MagicCardSummary card)
@@ -292,6 +442,13 @@ public sealed class TcgViewModel : INotifyPropertyChanged
     {
         var parts = new[] { card.TypeLine, card.ManaCost, card.OracleText };
         return string.Join(Environment.NewLine, parts.Where(part => !string.IsNullOrWhiteSpace(part)));
+    }
+
+    private static string PokemonDetailText(PokemonCardDetail card)
+    {
+        var kind = Join(card.Supertype, string.Join(", ", card.Subtypes));
+        var stats = Join(string.IsNullOrWhiteSpace(card.Hp) ? null : $"HP {card.Hp}", string.Join(", ", card.Types));
+        return string.Join(Environment.NewLine, new[] { kind, stats }.Where(part => !string.IsNullOrWhiteSpace(part)));
     }
 
     private static string Meta(PricePoint point)
@@ -404,34 +561,64 @@ public sealed class TcgViewModel : INotifyPropertyChanged
         }
     }
 
-    private void SetMagicMessage(string value)
+    private void SetBrowseGame(string value)
     {
-        if (SetField(ref _magicMessageText, value, nameof(MagicMessageText)))
+        if (!SetField(ref _browseGame, value, nameof(BrowseGame)))
         {
-            OnPropertyChanged(nameof(ShowMagicMessage));
+            return;
+        }
+        _browseGeneration++;
+        ReplaceProviderCards([]);
+        ClearProviderDetail();
+        BrowseMessageText = $"Search {value} cards through Regulas.Api.";
+        RefreshCommands();
+    }
+
+    private bool IsCurrentBrowse(int generation)
+    {
+        return generation == _browseGeneration;
+    }
+
+    private void SetBrowseMessage(string value)
+    {
+        if (SetField(ref _browseMessageText, value, nameof(BrowseMessageText)))
+        {
+            OnPropertyChanged(nameof(ShowBrowseMessage));
         }
     }
 
-    private void SetMagicDetailName(string value)
+    private void SetBrowseDetailName(string value)
     {
-        if (SetField(ref _magicDetailName, value, nameof(MagicDetailName)))
+        if (SetField(ref _browseDetailName, value, nameof(BrowseDetailName)))
         {
-            OnPropertyChanged(nameof(HasMagicDetail));
+            OnPropertyChanged(nameof(HasProviderDetail));
         }
     }
+
 
     private void RefreshCommands()
     {
+        NotifyCommandStates();
+        RefreshCommandExecution();
+    }
+
+    private void NotifyCommandStates()
+    {
         OnPropertyChanged(nameof(CanSave));
         OnPropertyChanged(nameof(CanLoad));
-        OnPropertyChanged(nameof(CanSearchMagic));
-        OnPropertyChanged(nameof(CanOpenMagic));
+        OnPropertyChanged(nameof(CanSearchCards));
+        OnPropertyChanged(nameof(CanOpenCard));
         OnPropertyChanged(nameof(ShowMessage));
-        OnPropertyChanged(nameof(ShowMagicMessage));
+        OnPropertyChanged(nameof(ShowBrowseMessage));
+    }
+
+    private void RefreshCommandExecution()
+    {
         _saveCommand.ChangeCanExecute();
         _loadCommand.ChangeCanExecute();
-        _searchMagicCommand.ChangeCanExecute();
-        _openMagicCommand.ChangeCanExecute();
+        _searchCardsCommand.ChangeCanExecute();
+        _openCardCommand.ChangeCanExecute();
+
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? name = null)

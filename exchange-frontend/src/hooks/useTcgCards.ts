@@ -1,18 +1,22 @@
 import { useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { ApiResult, LoadStatus } from '../API/types';
-import { getMagicCard, getPokemonCard, searchMagicCards, searchPokemonCards } from '../API/tcgClient';
+import { getMagicCard, getOnePieceCard, getPokemonCard, searchMagicCards, searchOnePieceCards, searchPokemonCards } from '../API/tcgClient';
 import { getPriceHistory } from '../API/priceHistoryClient';
 import type { IPriceHistory } from '../Interfaces/APIResponses/IPriceHistory';
 import type { IMagicCardDetail, IMagicCardSearchResponse, IMagicCardSummary } from '../Interfaces/APIResponses/IMagicCard';
+import type { IOnePieceCardDetail, IOnePieceCardSearchResponse, IOnePieceCardSummary } from '../Interfaces/APIResponses/IOnePieceCard';
 import type { IPokemonCardDetail, IPokemonCardSearchResponse, IPokemonCardSummary } from '../Interfaces/APIResponses/IPokemonCard';
+import { gameLabel } from '../lib/tcgPresentation';
 import { useActiveFlag } from './useActiveFlag';
 import type { ActiveFlag } from './useActiveFlag';
 
-export type TcgGame = 'pokemon' | 'magic';
-export type TcgCardSummary = IPokemonCardSummary | IMagicCardSummary;
-export type TcgCardDetail = IPokemonCardDetail | IMagicCardDetail;
-type SearchResponse = IPokemonCardSearchResponse | IMagicCardSearchResponse;
+export { gameLabel } from '../lib/tcgPresentation';
+
+export type TcgGame = 'pokemon' | 'magic' | 'one-piece';
+export type TcgCardSummary = IPokemonCardSummary | IMagicCardSummary | IOnePieceCardSummary;
+export type TcgCardDetail = IPokemonCardDetail | IMagicCardDetail | IOnePieceCardDetail;
+type SearchResponse = IPokemonCardSearchResponse | IMagicCardSearchResponse | IOnePieceCardSearchResponse;
 
 type State = {
   game: TcgGame;
@@ -50,7 +54,7 @@ async function runSearch(scope: RequestScope, query: string, active: ActiveFlag,
     return;
   }
   setIfCurrent(active, guard, scope, setState, searching(scope.game, clean));
-  await applySearch(await searchCards(scope.game, clean), scope, active, guard, setState);
+  await applySearch(await searchCardsForGame(scope.game, clean), scope, active, guard, setState);
 }
 
 async function applySearch(result: ApiResult<SearchResponse>, scope: RequestScope, active: ActiveFlag, guard: RequestGuard, setState: Setter) {
@@ -71,13 +75,13 @@ async function selectFirst(cards: TcgCardSummary[], scope: RequestScope, active:
 
 async function runSelect(scope: RequestScope, id: string, active: ActiveFlag, guard: RequestGuard, setState: Setter) {
   setIfCurrent(active, guard, scope, setState, detailLoading());
-  const detail = await getCard(scope.game, id);
+  const detail = await getCardForGame(scope.game, id);
   if (!detail.ok) {
     setIfCurrent(active, guard, scope, setState, detailError(detail.message));
     return;
   }
   setIfCurrent(active, guard, scope, setState, detailSuccess(detail.data));
-  await loadHistory(id, scope, active, guard, setState);
+  await loadHistory(historySymbol(scope.game, detail.data, id), scope, active, guard, setState);
 }
 
 async function loadHistory(id: string, scope: RequestScope, active: ActiveFlag, guard: RequestGuard, setState: Setter) {
@@ -120,12 +124,19 @@ function setIfCurrent(active: ActiveFlag, guard: RequestGuard, scope: RequestSco
   }
 }
 
-function searchCards(game: TcgGame, query: string) {
-  return game === 'pokemon' ? searchPokemonCards(query) : searchMagicCards(query);
+export function searchCardsForGame(game: TcgGame, query: string) {
+  if (game === 'pokemon') return searchPokemonCards(query);
+  return game === 'magic' ? searchMagicCards(query) : searchOnePieceCards(query);
 }
 
-function getCard(game: TcgGame, id: string) {
-  return game === 'pokemon' ? getPokemonCard(id) : getMagicCard(id);
+export function getCardForGame(game: TcgGame, id: string) {
+  if (game === 'pokemon') return getPokemonCard(id);
+  return game === 'magic' ? getMagicCard(id) : getOnePieceCard(id);
+}
+
+export function historySymbol(game: TcgGame, card: TcgCardDetail, providerId: string) {
+  if (game !== 'one-piece' || !('code' in card)) return providerId;
+  return card.code?.trim() ? card.code : providerId;
 }
 
 function searching(game: TcgGame, query: string): State {
@@ -174,10 +185,6 @@ function historyError(message: string): SetStateAction<State> {
 
 function historyMessage(history: IPriceHistory) {
   return history.points.length ? null : 'No stored prices for this card yet.';
-}
-
-function gameLabel(game: TcgGame) {
-  return game === 'pokemon' ? 'Pokemon' : 'Magic';
 }
 
 const initialState = {

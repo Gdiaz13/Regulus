@@ -9,6 +9,7 @@ public sealed class AuthSession : INotifyPropertyChanged
     private readonly IRegulasApiClient _apiClient;
     private readonly IAuthTokenStore _tokens;
     private CurrentUser? _currentUser;
+    private int _generation;
 
     public AuthSession(IRegulasApiClient apiClient, IAuthTokenStore tokens)
     {
@@ -21,6 +22,8 @@ public sealed class AuthSession : INotifyPropertyChanged
     public CurrentUser? CurrentUser { get => _currentUser; private set => SetUser(value); }
 
     public bool IsAuthenticated => CurrentUser is not null;
+
+    public int Generation => _generation;
 
     public async Task RefreshAsync(CancellationToken cancellationToken)
     {
@@ -81,6 +84,7 @@ public sealed class AuthSession : INotifyPropertyChanged
         {
             return;
         }
+        _generation++;
         _currentUser = user;
         OnPropertyChanged(nameof(CurrentUser));
         OnPropertyChanged(nameof(IsAuthenticated));
