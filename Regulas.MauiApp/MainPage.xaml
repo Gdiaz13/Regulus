@@ -94,12 +94,20 @@
                                            Grid.Column="1"
                                            Text="{Binding Industry}"
                                            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
-                                    <Button Grid.Row="2"
-                                            Grid.ColumnSpan="2"
-                                            Text="Details"
-                                            HorizontalOptions="End"
-                                            Command="{Binding Source={x:Reference HomeRoot}, Path=BindingContext.OpenStockCommand}"
-                                            CommandParameter="{Binding .}" />
+                                    <HorizontalStackLayout Grid.Row="2"
+                                                           Grid.ColumnSpan="2"
+                                                           Spacing="8"
+                                                           HorizontalOptions="End">
+                                        <Button Text="Details"
+                                                Command="{Binding Source={x:Reference HomeRoot}, Path=BindingContext.OpenStockCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        <Button Text="Manage"
+                                                Command="{Binding Source={x:Reference HomeRoot}, Path=BindingContext.ManageStockCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        <Button Text="Remove"
+                                                Command="{Binding Source={x:Reference HomeRoot}, Path=BindingContext.RemoveStockCommand}"
+                                                CommandParameter="{Binding .}" />
+                                    </HorizontalStackLayout>
                                 </Grid>
                             </Border>
                         </DataTemplate>

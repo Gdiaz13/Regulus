@@ -401,6 +401,13 @@ public class TcgViewModelTests
         public Task<ApiClientResult<TradingAgentsHealth>> GetTradingAgentsHealthAsync(CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<TradingAgentsModelInfo>> GetTradingAgentsModelInfoAsync(CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<PortfolioStock>> GetPortfolioStockAsync(string symbol, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<PortfolioStock>> UpdatePortfolioStockAsync(int id, CreatePortfolioStockRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<bool>> DeletePortfolioStockAsync(int id, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<IReadOnlyList<StockComment>>> GetStockCommentsAsync(int stockId, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<StockComment>> AddStockCommentAsync(int stockId, CreateStockCommentRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<StockComment>> UpdateStockCommentAsync(int id, CreateStockCommentRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<bool>> DeleteStockCommentAsync(int id, CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ApiClientResult<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken) => throw new NotImplementedException();
         public Task<ApiClientResult<CurrentUser>> GetCurrentUserAsync(CancellationToken cancellationToken) => throw new NotImplementedException();

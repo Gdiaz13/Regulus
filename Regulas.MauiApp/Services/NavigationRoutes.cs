@@ -22,6 +22,14 @@ public static class NavigationRoutes
         return OpenAssetDetailAsync(symbol);
     }
 
+    public static Task OpenPortfolioStockAsync(string? symbol)
+    {
+        var cleanSymbol = CleanSymbol(symbol);
+        return string.IsNullOrWhiteSpace(cleanSymbol)
+            ? Task.CompletedTask
+            : Shell.Current.GoToAsync(PortfolioStockRoute(cleanSymbol));
+    }
+
     public static Task OpenPriceHistoryAsync(string? symbol)
     {
         var cleanSymbol = CleanSymbol(symbol);
@@ -44,6 +52,11 @@ public static class NavigationRoutes
     private static string AssetDetailRoute(string symbol)
     {
         return $"{nameof(AssetDetailPage)}?symbol={Uri.EscapeDataString(symbol)}";
+    }
+
+    private static string PortfolioStockRoute(string symbol)
+    {
+        return $"{nameof(PortfolioStockPage)}?symbol={Uri.EscapeDataString(symbol)}";
     }
 
     private static string PriceHistoryRoute(string symbol)

@@ -13,6 +13,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     private readonly AuthSession _authSession;
     private readonly Command _openAccountCommand;
     private readonly Command<PortfolioStock> _openStockCommand;
+    private readonly Command<PortfolioStock> _manageStockCommand;
+    private readonly Command<PortfolioStock> _removeStockCommand;
     private readonly Command _refreshCommand;
     private string _accountText = "Sign in to load your portfolio.";
     private string _databaseText = "Database not checked";
@@ -28,6 +30,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         _authSession = authSession;
         _openAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
         _openStockCommand = new Command<PortfolioStock>(async stock => await OpenStockAsync(stock));
+        _manageStockCommand = new Command<PortfolioStock>(async stock => await OpenManageAsync(stock));
+        _removeStockCommand = new Command<PortfolioStock>(async stock => await RemoveStockAsync(stock));
         _refreshCommand = new Command(async () => await LoadAsync(), () => CanRefresh);
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
@@ -41,6 +45,10 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     public ICommand OpenAccountCommand => _openAccountCommand;
 
     public ICommand OpenStockCommand => _openStockCommand;
+
+    public ICommand ManageStockCommand => _manageStockCommand;
+
+    public ICommand RemoveStockCommand => _removeStockCommand;
 
     public string StatusText { get => _statusText; private set => SetField(ref _statusText, value); }
 
@@ -71,13 +79,18 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         await RunLoadAsync();
     }
 
-    // Wraps the load so IsBusy is always reset, even when a request throws.
-    private async Task RunLoadAsync()
+    private Task RunLoadAsync()
+    {
+        return RunBusyAsync(RefreshCoreAsync);
+    }
+
+    // Wraps work so IsBusy is always reset, even when a request throws.
+    private async Task RunBusyAsync(Func<Task> action)
     {
         IsBusy = true;
         try
         {
-            await RefreshCoreAsync();
+            await action();
         }
         finally
         {
@@ -151,6 +164,36 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         {
             await NavigationRoutes.OpenStockDetailAsync(stock.Symbol);
         }
+    }
+
+    private static async Task OpenManageAsync(PortfolioStock? stock)
+    {
+        if (stock is not null)
+        {
+            await NavigationRoutes.OpenPortfolioStockAsync(stock.Symbol);
+        }
+    }
+
+    private async Task RemoveStockAsync(PortfolioStock? stock)
+    {
+        if (stock is null || IsBusy)
+        {
+            return;
+        }
+        await RunBusyAsync(() => RemoveStockCoreAsync(stock));
+    }
+
+    // Removing always re-reads the list so the screen shows stored truth.
+    private async Task RemoveStockCoreAsync(PortfolioStock stock)
+    {
+        var result = await _apiClient.DeletePortfolioStockAsync(stock.Id, CancellationToken.None);
+        if (!result.Ok)
+        {
+            ErrorText = result.Message;
+            return;
+        }
+        ErrorText = string.Empty;
+        await LoadStocksAsync();
     }
 
     private void SyncAuthState()

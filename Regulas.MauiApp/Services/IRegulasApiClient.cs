@@ -46,6 +46,20 @@ public interface IRegulasApiClient
 
     Task<ApiClientResult<PortfolioStock>> AddPortfolioStockAsync(CreatePortfolioStockRequest request, CancellationToken token);
 
+    Task<ApiClientResult<PortfolioStock>> GetPortfolioStockAsync(string symbol, CancellationToken token);
+
+    Task<ApiClientResult<PortfolioStock>> UpdatePortfolioStockAsync(int id, CreatePortfolioStockRequest request, CancellationToken token);
+
+    Task<ApiClientResult<bool>> DeletePortfolioStockAsync(int id, CancellationToken token);
+
+    Task<ApiClientResult<IReadOnlyList<StockComment>>> GetStockCommentsAsync(int stockId, CancellationToken token);
+
+    Task<ApiClientResult<StockComment>> AddStockCommentAsync(int stockId, CreateStockCommentRequest request, CancellationToken token);
+
+    Task<ApiClientResult<StockComment>> UpdateStockCommentAsync(int id, CreateStockCommentRequest request, CancellationToken token);
+
+    Task<ApiClientResult<bool>> DeleteStockCommentAsync(int id, CancellationToken token);
+
     Task<ApiClientResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken);
 
     Task<ApiClientResult<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken);
