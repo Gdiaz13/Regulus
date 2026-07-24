@@ -63,9 +63,20 @@ Every AI service exposes the same basic shape:
 - `POST /train`
 - `POST /explain`
 
-Training is still a mock placeholder. It is separate from prediction on purpose
-so real training can become a background job later without changing user
-requests.
+Training is separate from prediction on purpose, so it can run as a background
+job without ever touching a user request. `POST /train` takes an optional
+versioned `TrainRequest` (`contractVersion` 1.0): a list of `series` (each a
+`symbol` plus stored `closes`, oldest first) and a `horizonDays`.
+
+Baseline specialists (`use_baseline=True`) train for real from those closes.
+The walk-forward momentum trainer (`regulas_ai_core/trainer.py`) fits one honest
+number - the damping that maps a 10-close momentum window to the next move -
+using per-symbol chronological train/validation/test splits. Windows only look
+backward and nothing shuffles, so there is no look-ahead leakage. The chosen
+damping is scored on the untouched test segment against the untrained default,
+and both errors come back in `metrics` (`testMae` vs `baselineMae`, `improved`)
+so only measured improvements get promoted later. Every other service keeps the
+clearly-flagged mock placeholder.
 
 ## Setup
 

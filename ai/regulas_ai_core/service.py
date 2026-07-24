@@ -11,8 +11,9 @@ from dataclasses import dataclass
 from fastapi import FastAPI
 
 from .baseline import BASELINE_WARNING, build_baseline_prediction, can_use_baseline
-from .contract import HealthResponse, ModelInfo, PredictRequest, Prediction, TrainResponse
+from .contract import HealthResponse, ModelInfo, PredictRequest, Prediction, TrainRequest, TrainResponse
 from .mock import build_mock_prediction
+from .trainer import train_baseline
 from .training import train_response
 
 NO_HISTORY_WARNING = "No stored price history for the baseline model; mock fallback used."
@@ -85,7 +86,16 @@ def _build_prediction(config: SpecialistConfig, request: PredictRequest) -> Pred
     return prediction
 
 
+# Baseline specialists train for real from gateway-supplied closes; everyone
+# else keeps the clearly-flagged mock placeholder. Training never runs inside
+# predict - the backend calls /train from a background job.
 def _train(config: SpecialistConfig):
+    if config.use_baseline:
+        def train_real(request: TrainRequest) -> TrainResponse:
+            return train_baseline(request, config.model_name, config.model_version)
+
+        return train_real
+
     def train() -> TrainResponse:
         return train_response(config.model_name, config.model_version, config.is_mock)
 
