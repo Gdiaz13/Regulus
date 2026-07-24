@@ -140,6 +140,44 @@ public sealed class RegulasApiClient : IRegulasApiClient
         return PostAsync<PortfolioStock>("api/stocks", request, token);
     }
 
+    public Task<ApiClientResult<PortfolioStock>> GetPortfolioStockAsync(string symbol, CancellationToken token)
+    {
+        return GetAsync<PortfolioStock>($"api/stocks/{Esc(symbol.ToUpperInvariant())}", token);
+    }
+
+    public Task<ApiClientResult<PortfolioStock>> UpdatePortfolioStockAsync(int id, CreatePortfolioStockRequest request, CancellationToken token)
+    {
+        return PutAsync<PortfolioStock>($"api/stocks/{id}", request, token);
+    }
+
+    public Task<ApiClientResult<bool>> DeletePortfolioStockAsync(int id, CancellationToken token)
+    {
+        return SendNoContentAsync(HttpMethod.Delete, $"api/stocks/{id}", token);
+    }
+
+    public async Task<ApiClientResult<IReadOnlyList<StockComment>>> GetStockCommentsAsync(int stockId, CancellationToken token)
+    {
+        var result = await GetAsync<List<StockComment>>($"api/stocks/{stockId}/comments", token);
+        return result.Ok && result.Data is not null
+            ? ApiClientResult<IReadOnlyList<StockComment>>.Success(result.Data)
+            : ApiClientResult<IReadOnlyList<StockComment>>.Failure(result.Message);
+    }
+
+    public Task<ApiClientResult<StockComment>> AddStockCommentAsync(int stockId, CreateStockCommentRequest request, CancellationToken token)
+    {
+        return PostAsync<StockComment>($"api/stocks/{stockId}/comments", request, token);
+    }
+
+    public Task<ApiClientResult<StockComment>> UpdateStockCommentAsync(int id, CreateStockCommentRequest request, CancellationToken token)
+    {
+        return PutAsync<StockComment>($"api/comments/{id}", request, token);
+    }
+
+    public Task<ApiClientResult<bool>> DeleteStockCommentAsync(int id, CancellationToken token)
+    {
+        return SendNoContentAsync(HttpMethod.Delete, $"api/comments/{id}", token);
+    }
+
     public Task<ApiClientResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken token)
     {
         return PostAsync<AuthResponse>("api/v1/auth/login", request, token);
@@ -223,6 +261,11 @@ public sealed class RegulasApiClient : IRegulasApiClient
     private async Task<ApiClientResult<T>> PostAsync<T>(string path, object body, CancellationToken token)
     {
         return await SendAsync<T>(HttpMethod.Post, path, body, token);
+    }
+
+    private async Task<ApiClientResult<T>> PutAsync<T>(string path, object body, CancellationToken token)
+    {
+        return await SendAsync<T>(HttpMethod.Put, path, body, token);
     }
 
     private async Task<ApiClientResult<T>> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken token)

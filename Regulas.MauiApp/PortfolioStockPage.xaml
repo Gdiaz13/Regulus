@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Regulas.MauiApp.PortfolioStockPage"
+             x:Name="PortfolioStockRoot"
+             Title="{Binding TitleText}">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="16"
+                             MaximumWidthRequest="760"
+                             HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding TitleText}"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       TextColor="{AppThemeBinding Light={StaticResource MidnightBlue}, Dark={StaticResource White}}" />
+                <Label Text="Edit the saved position and keep research notes next to it."
+                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}" />
+
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Position"
+                           FontSize="20"
+                           FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10">
+                        <Entry Text="{Binding CompanyName}"
+                               Placeholder="Company name" />
+                        <Entry Grid.Column="1"
+                               Text="{Binding Industry}"
+                               Placeholder="Industry" />
+                        <Entry Grid.Row="1"
+                               Text="{Binding PurchasePrice}"
+                               Placeholder="Purchase price"
+                               Keyboard="Numeric" />
+                        <Entry Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding LastDividend}"
+                               Placeholder="Last dividend"
+                               Keyboard="Numeric" />
+                        <Entry Grid.Row="2"
+                               Text="{Binding MarketCap}"
+                               Placeholder="Market cap"
+                               Keyboard="Numeric" />
+                        <Button Grid.Row="2"
+                                Grid.Column="1"
+                                Text="Save changes"
+                                Command="{Binding SaveStockCommand}"
+                                IsEnabled="{Binding CanSaveStock}" />
+                    </Grid>
+                    <Label Text="{Binding MessageText}"
+                           IsVisible="{Binding ShowMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
+                    StrokeShape="RoundRectangle 8"
+                    Padding="14">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Notes"
+                           FontSize="20"
+                           FontAttributes="Bold" />
+                    <Entry Text="{Binding NoteTitle}"
+                           Placeholder="Note title" />
+                    <Editor Text="{Binding NoteContent}"
+                            Placeholder="What matters?"
+                            AutoSize="TextChanges" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="{Binding NoteFormLabel}"
+                                Command="{Binding SaveNoteCommand}"
+                                IsEnabled="{Binding CanSaveNote}" />
+                        <Button Text="Cancel"
+                                Command="{Binding CancelNoteCommand}"
+                                IsVisible="{Binding IsEditingNote}" />
+                    </HorizontalStackLayout>
+                    <Label Text="{Binding NotesMessageText}"
+                           IsVisible="{Binding ShowNotesMessage}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                    <CollectionView ItemsSource="{Binding Notes}"
+                                    SelectionMode="None"
+                                    IsVisible="{Binding HasNotes}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="10"
+                                        Margin="0,0,0,8">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Text="{Binding Title}"
+                                                   FontAttributes="Bold" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Created}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        </Grid>
+                                        <Label Text="{Binding Content}"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+                                        <HorizontalStackLayout Spacing="8">
+                                            <Button Text="Edit"
+                                                    Command="{Binding Source={x:Reference PortfolioStockRoot}, Path=BindingContext.EditNoteCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            <Button Text="Delete"
+                                                    Command="{Binding Source={x:Reference PortfolioStockRoot}, Path=BindingContext.DeleteNoteCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

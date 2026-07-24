@@ -124,6 +124,13 @@ public class PredictionsViewModelTests
         public Task<ApiClientResult<PriceCaptureResult>> CapturePriceHistoryAsync(string symbol, string assetType, CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<OnePieceCardSearchResponse>> SearchOnePieceCardsAsync(string query, int pageSize, CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<OnePieceCardDetail>> GetOnePieceCardAsync(string id, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<PortfolioStock>> GetPortfolioStockAsync(string symbol, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<PortfolioStock>> UpdatePortfolioStockAsync(int id, CreatePortfolioStockRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<bool>> DeletePortfolioStockAsync(int id, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<IReadOnlyList<StockComment>>> GetStockCommentsAsync(int stockId, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<StockComment>> AddStockCommentAsync(int stockId, CreateStockCommentRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<StockComment>> UpdateStockCommentAsync(int id, CreateStockCommentRequest request, CancellationToken token) => throw new NotImplementedException();
+        public Task<ApiClientResult<bool>> DeleteStockCommentAsync(int id, CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<PriceCaptureResult>> RecordManualPriceAsync(string symbol, ManualPriceRequest request, CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<PokemonCardSearchResponse>> SearchPokemonCardsAsync(string query, int pageSize, CancellationToken token) => throw new NotImplementedException();
         public Task<ApiClientResult<PokemonCardDetail>> GetPokemonCardAsync(string id, CancellationToken token) => throw new NotImplementedException();
