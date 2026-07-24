@@ -20,6 +20,11 @@ SEMI = SpecialistRef(os.getenv("STOCK_SEMI_AI_URL", "http://localhost:8102"), "S
 ENERGY = SpecialistRef(os.getenv("STOCK_ENERGY_AI_URL", "http://localhost:8103"), "StockEnergyAI")
 MEMORY = SpecialistRef(os.getenv("STOCK_MEMORY_AI_URL", "http://localhost:8104"), "StockMemoryAI")
 DIVIDEND = SpecialistRef(os.getenv("STOCK_DIVIDEND_AI_URL", "http://localhost:8105"), "StockDividendAI")
+FINANCIAL = SpecialistRef(os.getenv("STOCK_FINANCIAL_AI_URL", "http://localhost:8106"), "StockFinancialAI")
+HEALTHCARE = SpecialistRef(os.getenv("STOCK_HEALTHCARE_AI_URL", "http://localhost:8107"), "StockHealthcareAI")
+CONSUMER = SpecialistRef(os.getenv("STOCK_CONSUMER_AI_URL", "http://localhost:8108"), "StockConsumerAI")
+INDUSTRIAL = SpecialistRef(os.getenv("STOCK_INDUSTRIAL_AI_URL", "http://localhost:8109"), "StockIndustrialAI")
+UTILITY = SpecialistRef(os.getenv("STOCK_UTILITY_AI_URL", "http://localhost:8110"), "StockUtilityAI")
 
 CONFIG = CategoryConfig(
     model_name="StockAI",
@@ -40,6 +45,34 @@ CONFIG = CategoryConfig(
         "dividend": DIVIDEND,
         "dividendgrowth": DIVIDEND,
         "income": DIVIDEND,
+        "financial": FINANCIAL,
+        "financials": FINANCIAL,
+        "financialservices": FINANCIAL,
+        "bank": FINANCIAL,
+        "banks": FINANCIAL,
+        "banking": FINANCIAL,
+        "insurance": FINANCIAL,
+        "healthcare": HEALTHCARE,
+        "health": HEALTHCARE,
+        "biotechnology": HEALTHCARE,
+        "biotech": HEALTHCARE,
+        "pharmaceuticals": HEALTHCARE,
+        "pharma": HEALTHCARE,
+        "medical": HEALTHCARE,
+        "consumer": CONSUMER,
+        "consumerdiscretionary": CONSUMER,
+        "consumerstaples": CONSUMER,
+        "consumergoods": CONSUMER,
+        "retail": CONSUMER,
+        "industrial": INDUSTRIAL,
+        "industrials": INDUSTRIAL,
+        "manufacturing": INDUSTRIAL,
+        "aerospace&defense": INDUSTRIAL,
+        "transportation": INDUSTRIAL,
+        "utilities": UTILITY,
+        "utility": UTILITY,
+        "electricutilities": UTILITY,
+        "power": UTILITY,
     },
 )
 

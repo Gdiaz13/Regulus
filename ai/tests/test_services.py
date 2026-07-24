@@ -247,6 +247,12 @@ def test_stock_core_routes_common_sector_aliases():
         ("Oil & Gas", "StockEnergyAI"),
         ("Data Storage", "StockMemoryAI"),
         ("Dividend Growth", "StockDividendAI"),
+        ("Financial Services", "StockFinancialAI"),
+        ("Banks", "StockFinancialAI"),
+        ("Biotechnology", "StockHealthcareAI"),
+        ("Consumer Staples", "StockConsumerAI"),
+        ("Aerospace & Defense", "StockIndustrialAI"),
+        ("Utilities", "StockUtilityAI"),
     ]
     for category, expected in cases:
         request = {**STOCK_REQUEST, "category": category}
@@ -259,6 +265,11 @@ def test_new_stock_specialist_services_are_loadable():
         ("regulas.ai.stocks.energy", "StockEnergyAI"),
         ("regulas.ai.stocks.memory", "StockMemoryAI"),
         ("regulas.ai.stocks.dividend", "StockDividendAI"),
+        ("regulas.ai.stocks.financial", "StockFinancialAI"),
+        ("regulas.ai.stocks.healthcare", "StockHealthcareAI"),
+        ("regulas.ai.stocks.consumer", "StockConsumerAI"),
+        ("regulas.ai.stocks.industrial", "StockIndustrialAI"),
+        ("regulas.ai.stocks.utility", "StockUtilityAI"),
     ]
     for folder, name in cases:
         module = _load_service(folder)
