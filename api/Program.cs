@@ -30,6 +30,7 @@ builder.Services.AddSingleton<PredictionStore>();
 builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddSingleton<ModelAccuracyResultStore>();
+builder.Services.AddSingleton<PredictionRequestEnricher>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<MagicTcgClient>(ConfigureMagicTcgClient);
 builder.Services.AddHttpClient<PokemonTcgClient>(ConfigurePokemonTcgClient);

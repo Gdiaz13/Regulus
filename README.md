@@ -33,7 +33,7 @@ No frontend should call Python services, TradingAgents, PostgreSQL, or external 
 - Backend: ASP.NET Core on .NET 10
 - Database: PostgreSQL
 - Database access: Dapper with plain SQL migrations
-- AI services: Python FastAPI services, mock data for now
+- AI services: Python FastAPI services; StockTechAI runs a real momentum baseline, the rest are mock for now
 - TradingAgents: separate stock research service boundary
 
 ## Shared Design
@@ -197,7 +197,7 @@ Specialist AI -> Category AI -> Market AI -> RegulasCoreAI -> C# API -> frontend
 
 Current mock services include:
 
-- `StockTechAI`
+- `StockTechAI` (real momentum/volatility baseline from stored closes; mock fallback without history)
 - `StockSemiconductorAI`
 - `StockEnergyAI`
 - `StockMemoryAI`

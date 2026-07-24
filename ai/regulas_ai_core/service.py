@@ -10,9 +10,12 @@ from dataclasses import dataclass
 
 from fastapi import FastAPI
 
+from .baseline import BASELINE_WARNING, build_baseline_prediction, can_use_baseline
 from .contract import HealthResponse, ModelInfo, PredictRequest, Prediction, TrainResponse
 from .mock import build_mock_prediction
 from .training import train_response
+
+NO_HISTORY_WARNING = "No stored price history for the baseline model; mock fallback used."
 
 
 @dataclass(frozen=True)
@@ -25,6 +28,9 @@ class SpecialistConfig:
     category: str
     purpose: str
     is_mock: bool = True
+    # Real baseline model (momentum from gateway-supplied closes). Enabled one
+    # specialist at a time, exactly as the replace-mocks-last rule asks.
+    use_baseline: bool = False
 
 
 def create_specialist_app(config: SpecialistConfig) -> FastAPI:
@@ -65,9 +71,18 @@ def _model_info(config: SpecialistConfig):
 
 def _predict(config: SpecialistConfig):
     def predict(request: PredictRequest) -> Prediction:
-        return build_mock_prediction(request, config.model_name, config.model_version)
+        return _build_prediction(config, request)
 
     return predict
+
+
+def _build_prediction(config: SpecialistConfig, request: PredictRequest) -> Prediction:
+    if config.use_baseline and can_use_baseline(request):
+        return build_baseline_prediction(request, config.model_name, config.model_version)
+    prediction = build_mock_prediction(request, config.model_name, config.model_version)
+    if config.use_baseline:
+        prediction.warnings.append(NO_HISTORY_WARNING)
+    return prediction
 
 
 def _train(config: SpecialistConfig):

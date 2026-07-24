@@ -27,9 +27,15 @@ public class PredictionEndpointValidationTests
         var method = typeof(PredictionEndpoints).GetMethod("Predict", BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new MissingMethodException(nameof(PredictionEndpoints), "Predict");
         using var loggers = LoggerFactory.Create(builder => builder.AddDebug());
-        var task = (Task<IResult>?)method.Invoke(null, [request, new DefaultHttpContext(), Client(), Store(), loggers])
+        var task = (Task<IResult>?)method.Invoke(null, [request, new DefaultHttpContext(), Client(), Store(), Enricher(), loggers])
             ?? throw new InvalidOperationException("Predict did not return a result task.");
         return await task;
+    }
+
+    // Validation fails before enrichment runs, so a failing factory proves that.
+    private static PredictionRequestEnricher Enricher()
+    {
+        return new PredictionRequestEnricher(new PriceHistoryStore(new FailingConnectionFactory()));
     }
 
     private static RegulasAiClient Client()

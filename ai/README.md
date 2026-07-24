@@ -17,6 +17,11 @@ Specialist AI  ->  Category AI  ->  Market AI  ->  RegulasCoreAI  ->  C# gateway
   `StockSemiconductorAI` for stocks, plus `PokemonAI`, `MagicAI`, and
   `OnePieceAI` for TCG cards. They are the only ones that actually score an
   asset.
+- `StockTechAI` is the first specialist with a **real model**: a baseline that
+  computes momentum and volatility from stored closes the gateway attaches to
+  each request (`PredictRequest.recentCloses`). Assets with no stored history
+  fall back to the mock with a warning, so nothing breaks while data grows.
+  The scoring pipeline judges it like any other model.
 - **Category AIs** (`StockAI`, `TCGAI`) route each asset to the right specialist
   and summarize the group.
 - `StockAI` accepts common stock category aliases such as `Oil & Gas`,
@@ -107,7 +112,7 @@ pytest
 
 | Service          | Port | Status        |
 |------------------|------|---------------|
-| StockTechAI      | 8101 | mock          |
+| StockTechAI      | 8101 | baseline v0.2 |
 | StockSemiconductorAI | 8102 | mock      |
 | StockEnergyAI    | 8103 | mock          |
 | StockMemoryAI    | 8104 | mock          |

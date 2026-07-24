@@ -1,8 +1,8 @@
 """StockTechAI - specialist AI for technology stocks only.
 
-This is a MOCK placeholder. It returns structured predictions in the shared
-contract shape but the numbers are fake. Real model code replaces the mock
-generator later without changing this file.
+The first specialist with a REAL model: a baseline that computes momentum and
+volatility from stored closes the gateway supplies. When an asset has no
+stored history yet, it falls back to the clearly-marked mock with a warning.
 
 Run: uvicorn main:app --port 8101
 """
@@ -16,10 +16,12 @@ from regulas_ai_core.service import SpecialistConfig, create_specialist_app
 
 CONFIG = SpecialistConfig(
     model_name="StockTechAI",
-    model_version="0.1.0",
+    model_version="0.2.0",
     asset_type="Stock",
     category="Technology",
-    purpose="Mock price-movement, risk, and opportunity signals for technology stocks only.",
+    purpose="Baseline momentum and volatility signals for technology stocks, computed from stored prices.",
+    is_mock=False,
+    use_baseline=True,
 )
 
 app = create_specialist_app(CONFIG)

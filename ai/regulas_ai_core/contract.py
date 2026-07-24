@@ -15,7 +15,12 @@ def _utc_now() -> datetime:
 
 
 class PredictRequest(BaseModel):
-    """What the gateway sends when it wants a prediction for one asset."""
+    """What the gateway sends when it wants a prediction for one asset.
+
+    recentCloses are stored end-of-day closes (oldest first) that the gateway
+    reads from PostgreSQL, so real models have actual data to work with. An
+    empty list means no stored history yet; specialists fall back to the mock.
+    """
 
     assetId: str
     assetName: str = ""
@@ -23,6 +28,7 @@ class PredictRequest(BaseModel):
     category: str = ""
     currentPrice: float = 0.0
     timeHorizonDays: int = 90
+    recentCloses: list[float] = Field(default_factory=list)
 
 
 class Prediction(BaseModel):

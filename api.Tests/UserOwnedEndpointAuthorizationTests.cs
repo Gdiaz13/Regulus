@@ -48,6 +48,8 @@ public class UserOwnedEndpointAuthorizationTests
         services.AddSingleton<PredictionStore>();
         services.AddSingleton<PredictionAccuracyStore>();
         services.AddSingleton<ModelAccuracyResultStore>();
+        services.AddSingleton<PriceHistoryStore>();
+        services.AddSingleton<PredictionRequestEnricher>();
         services.AddSingleton(new RegulasAiClient(new HttpClient()));
     }
 
