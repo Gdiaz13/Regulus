@@ -98,11 +98,32 @@ class HealthResponse(BaseModel):
     isMock: bool
 
 
+class TrainSeries(BaseModel):
+    """One symbol's stored closes, oldest first, for training."""
+
+    symbol: str
+    closes: list[float] = Field(default_factory=list)
+
+
+class TrainRequest(BaseModel):
+    """Body for POST /train. Everything is optional so mock services and
+    body-less callers keep working while baseline specialists train for real."""
+
+    series: list[TrainSeries] = Field(default_factory=list)
+    horizonDays: int = 30
+
+
 class TrainResponse(BaseModel):
-    """Answer for POST /train while training is still a separate placeholder."""
+    """Answer for POST /train. Mock services return the placeholder shape;
+    baseline specialists also fill the versioned training fields."""
 
     status: str
     modelName: str
     modelVersion: str
     message: str
     isMock: bool
+    contractVersion: str = "1.0"
+    trained: bool = False
+    artifact: dict | None = None
+    metrics: dict | None = None
+    warnings: list[str] = Field(default_factory=list)
