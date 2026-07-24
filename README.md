@@ -202,6 +202,11 @@ Current mock services include:
 - `StockEnergyAI`
 - `StockMemoryAI`
 - `StockDividendAI`
+- `StockFinancialAI`
+- `StockHealthcareAI`
+- `StockConsumerAI`
+- `StockIndustrialAI`
+- `StockUtilityAI`
 - `PokemonAI`
 - `MagicAI`
 - `OnePieceAI`

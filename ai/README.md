@@ -13,10 +13,10 @@ Predictions flow one way only, from the bottom up:
 Specialist AI  ->  Category AI  ->  Market AI  ->  RegulasCoreAI  ->  C# gateway
 ```
 
-- **Specialists** each own one slice: `StockTechAI` and
-  `StockSemiconductorAI` for stocks, plus `PokemonAI`, `MagicAI`, and
-  `OnePieceAI` for TCG cards. They are the only ones that actually score an
-  asset.
+- **Specialists** each own one slice: ten stock sector specialists (tech,
+  semiconductors, energy, memory, dividend, financial, healthcare, consumer,
+  industrial, utilities), plus `PokemonAI`, `MagicAI`, and `OnePieceAI` for
+  TCG cards. They are the only ones that actually score an asset.
 - `StockTechAI` is the first specialist with a **real model**: a baseline that
   computes momentum and volatility from stored closes the gateway attaches to
   each request (`PredictRequest.recentCloses`). Assets with no stored history
@@ -87,6 +87,11 @@ uvicorn main:app --app-dir "regulas.ai.stocks.semiconductor" --port 8102   # Sto
 uvicorn main:app --app-dir "regulas.ai.stocks.energy"        --port 8103   # StockEnergyAI
 uvicorn main:app --app-dir "regulas.ai.stocks.memory"        --port 8104   # StockMemoryAI
 uvicorn main:app --app-dir "regulas.ai.stocks.dividend"      --port 8105   # StockDividendAI
+uvicorn main:app --app-dir "regulas.ai.stocks.financial"     --port 8106   # StockFinancialAI
+uvicorn main:app --app-dir "regulas.ai.stocks.healthcare"    --port 8107   # StockHealthcareAI
+uvicorn main:app --app-dir "regulas.ai.stocks.consumer"      --port 8108   # StockConsumerAI
+uvicorn main:app --app-dir "regulas.ai.stocks.industrial"    --port 8109   # StockIndustrialAI
+uvicorn main:app --app-dir "regulas.ai.stocks.utility"       --port 8110   # StockUtilityAI
 uvicorn main:app --app-dir "regulas.ai.tcg.pokemon"          --port 8111   # PokemonAI
 uvicorn main:app --app-dir "regulas.ai.tcg.magic"            --port 8112   # MagicAI
 uvicorn main:app --app-dir "regulas.ai.tcg.onepiece"         --port 8113   # OnePieceAI
@@ -117,6 +122,11 @@ pytest
 | StockEnergyAI    | 8103 | mock          |
 | StockMemoryAI    | 8104 | mock          |
 | StockDividendAI  | 8105 | mock          |
+| StockFinancialAI | 8106 | mock          |
+| StockHealthcareAI | 8107 | mock         |
+| StockConsumerAI  | 8108 | mock          |
+| StockIndustrialAI | 8109 | mock         |
+| StockUtilityAI   | 8110 | mock          |
 | PokemonAI        | 8111 | mock          |
 | MagicAI          | 8112 | mock          |
 | OnePieceAI       | 8113 | mock          |
