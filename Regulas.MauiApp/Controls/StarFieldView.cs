@@ -18,6 +18,11 @@ public sealed class StarFieldView : GraphicsView
     public static readonly BindableProperty EmptyTextProperty =
         BindableProperty.Create(nameof(EmptyText), typeof(string), typeof(StarFieldView), string.Empty, propertyChanged: OnEmptyTextChanged);
 
+    // Where the figure sits across the view; pages with centred content push it
+    // aside so Leo is not hidden behind them.
+    public static readonly BindableProperty FigureBiasProperty =
+        BindableProperty.Create(nameof(FigureBias), typeof(double), typeof(StarFieldView), (double)SkyLayout.DefaultBias, propertyChanged: OnFigureBiasChanged);
+
     private readonly StarFieldDrawable _sky = new();
     private IDispatcherTimer? _timer;
     private double _seconds;
@@ -49,10 +54,23 @@ public sealed class StarFieldView : GraphicsView
         set => SetValue(EmptyTextProperty, value);
     }
 
+    public double FigureBias
+    {
+        get => (double)GetValue(FigureBiasProperty);
+        set => SetValue(FigureBiasProperty, value);
+    }
+
     private static void OnEmptyTextChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var view = (StarFieldView)bindable;
         view.Select(view._selected);
+    }
+
+    private static void OnFigureBiasChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var view = (StarFieldView)bindable;
+        view._sky.FigureBias = (float)(double)newValue;
+        view.Invalidate();
     }
 
     private static void OnAnimatedChanged(BindableObject bindable, object oldValue, object newValue)
@@ -105,7 +123,7 @@ public sealed class StarFieldView : GraphicsView
         {
             return;
         }
-        var figure = SkyLayout.Figure(new RectF(0, 0, (float)Width, (float)Height));
+        var figure = SkyLayout.Figure(new RectF(0, 0, (float)Width, (float)Height), (float)FigureBias);
         var (x, y) = SkyLayout.Normalize(figure, touch.X, touch.Y);
         Select(LeoConstellation.NearestIndex(x, y, TapTolerance));
     }

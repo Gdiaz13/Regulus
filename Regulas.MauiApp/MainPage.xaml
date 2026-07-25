@@ -56,11 +56,6 @@
                                      MaximumWidthRequest="980"
                                      HorizontalOptions="Center">
 
-                    <Button Text="Sign in"
-                            HorizontalOptions="Start"
-                            Command="{Binding OpenAccountCommand}"
-                            IsVisible="{Binding IsAnonymous}" />
-
                     <Border Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
                             BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
                             StrokeShape="RoundRectangle 8"
@@ -97,8 +92,7 @@
                                TextColor="{StaticResource RegulasDanger}" />
                     </Border>
 
-                    <Grid ColumnDefinitions="*,Auto"
-                          IsVisible="{Binding IsAuthenticated}">
+                    <Grid ColumnDefinitions="*,Auto">
                         <Label Text="Portfolio"
                                FontSize="20"
                                FontAttributes="Bold" />
@@ -109,8 +103,7 @@
                     </Grid>
 
                     <CollectionView ItemsSource="{Binding Stocks}"
-                                    SelectionMode="None"
-                                    IsVisible="{Binding IsAuthenticated}">
+                                    SelectionMode="None">
                         <CollectionView.EmptyView>
                             <Label Text="No saved stocks yet. Add one from Search and it joins the sky."
                                    HorizontalTextAlignment="Center"

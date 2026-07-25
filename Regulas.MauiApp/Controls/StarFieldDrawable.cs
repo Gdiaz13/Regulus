@@ -10,6 +10,7 @@ public sealed class StarFieldDrawable : IDrawable
 
     public double Seconds { get; set; }
     public int? SelectedIndex { get; set; }
+    public float FigureBias { get; set; } = SkyLayout.DefaultBias;
     public Color SkyTop { get; set; } = Color.FromArgb("#05080F");
     public Color SkyBottom { get; set; } = Color.FromArgb("#0B111E");
     public Color StarColor { get; set; } = Color.FromArgb("#E1E7EF");
@@ -18,7 +19,7 @@ public sealed class StarFieldDrawable : IDrawable
 
     public void Draw(ICanvas canvas, RectF rect)
     {
-        var figure = SkyLayout.Figure(rect);
+        var figure = SkyLayout.Figure(rect, FigureBias);
         DrawSky(canvas, rect);
         DrawField(canvas, rect);
         DrawLinks(canvas, figure);
@@ -136,9 +137,11 @@ public sealed class StarFieldDrawable : IDrawable
         canvas.DrawCircle(X(rect, star), Y(rect, star), radius * 3.2f);
     }
 
+    // Capped: past a point bigger stars stop reading as stars and start
+    // reading as bubbles.
     private static float Scale(RectF rect)
     {
-        return Math.Max(1f, Math.Min(rect.Width, rect.Height) / 220f);
+        return Math.Clamp(Math.Min(rect.Width, rect.Height) / 220f, 1f, 2f);
     }
 
     private static float X(RectF rect, SkyStar star)

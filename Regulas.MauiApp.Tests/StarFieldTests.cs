@@ -78,12 +78,23 @@ public class StarFieldTests
         Assert.True(figure.X > 0 && figure.Right < 1900);
     }
 
+    [Fact]
+    public void Leo_stops_growing_so_it_never_swallows_the_page()
+    {
+        var wide = SkyLayout.Figure(new RectF(0, 0, 1920, 1023));
+
+        Assert.True(wide.Height <= 340);
+        Assert.Equal(1.7, wide.Width / wide.Height, 2);
+        Assert.True(wide.Height < 1023 * 0.9);
+    }
+
     // The bug this guards: the figure was drawn in an aspect-corrected box while
     // taps were still matched against the full view, so stars moved under the tap.
     [Theory]
     [InlineData(1900, 300)]
     [InlineData(480, 300)]
     [InlineData(900, 620)]
+    [InlineData(1920, 1023)]
     public void Every_star_can_be_tapped_where_it_is_drawn(float width, float height)
     {
         var figure = SkyLayout.Figure(new RectF(0, 0, width, height));
@@ -92,6 +103,27 @@ public class StarFieldTests
         {
             AssertTapHits(figure, index);
         }
+    }
+
+    [Fact]
+    public void Bias_moves_the_figure_clear_of_centred_content()
+    {
+        var rect = new RectF(0, 0, 1920, 1023);
+        var centred = SkyLayout.Figure(rect, SkyLayout.DefaultBias);
+        var pushed = SkyLayout.Figure(rect, 0.88f);
+
+        Assert.True(pushed.X > centred.X);
+        Assert.True(pushed.Right <= rect.Right);
+        Assert.Equal(centred.Width, pushed.Width, 2);
+    }
+
+    [Fact]
+    public void Taps_follow_the_figure_when_it_is_biased()
+    {
+        var figure = SkyLayout.Figure(new RectF(0, 0, 1920, 1023), 0.88f);
+
+        AssertTapHits(figure, LeoConstellation.RegulusIndex);
+        AssertTapHits(figure, 8);
     }
 
     private static void AssertTapHits(RectF figure, int index)

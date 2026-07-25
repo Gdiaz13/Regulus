@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Regulas.MauiApp.Controls"
+             x:Class="Regulas.MauiApp.SignInPage"
+             Shell.NavBarIsVisible="False"
+             Title="Sign in">
+    <!-- The front door. Everything else in the app sits behind it, so this is
+         the one screen every user sees and it carries the full sky. -->
+    <Grid>
+        <controls:StarFieldView EmptyText="Regulus, Alpha Leonis"
+                                FigureBias="0.88" />
+
+        <ScrollView>
+            <VerticalStackLayout x:Name="Card"
+                                 Padding="28"
+                                 Spacing="18"
+                                 Opacity="0"
+                                 WidthRequest="420"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Regulas"
+                           FontSize="40"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource White}" />
+                    <Label Text="{Binding ModeTitle}"
+                           FontSize="15"
+                           TextColor="{StaticResource Gray200}" />
+                </VerticalStackLayout>
+
+                <Border Stroke="{StaticResource RegulasDarkBorder}"
+                        BackgroundColor="{StaticResource RegulasDarkSurface}"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="20">
+                    <VerticalStackLayout Spacing="14">
+                        <VerticalStackLayout Spacing="6"
+                                             IsVisible="{Binding IsRegisterMode}">
+                            <Label Text="Display name"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Gray200}" />
+                            <Entry Text="{Binding DisplayName}"
+                                   Placeholder="How Regulas should greet you"
+                                   TextColor="{StaticResource White}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Email"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Gray200}" />
+                            <Entry Text="{Binding Email}"
+                                   Placeholder="you@example.com"
+                                   Keyboard="Email"
+                                   TextColor="{StaticResource White}" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Password"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Gray200}" />
+                            <Entry Text="{Binding Password}"
+                                   Placeholder="At least 8 characters"
+                                   IsPassword="True"
+                                   TextColor="{StaticResource White}" />
+                        </VerticalStackLayout>
+
+                        <Button Text="{Binding SubmitText}"
+                                Command="{Binding SubmitCommand}"
+                                IsEnabled="{Binding CanSubmit}" />
+
+                        <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}" />
+
+                        <Label Text="{Binding StatusText}"
+                               FontSize="13"
+                               TextColor="{StaticResource Gray200}" />
+
+                        <Button Text="{Binding SwitchText}"
+                                Command="{Binding SwitchModeCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="{StaticResource Primary}" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
