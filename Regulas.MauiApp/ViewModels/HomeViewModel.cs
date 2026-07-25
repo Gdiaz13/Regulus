@@ -12,9 +12,9 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     private readonly IRegulasApiClient _apiClient;
     private readonly AuthSession _authSession;
     private readonly Command _openAccountCommand;
-    private readonly Command<PortfolioStock> _openStockCommand;
-    private readonly Command<PortfolioStock> _manageStockCommand;
-    private readonly Command<PortfolioStock> _removeStockCommand;
+    private readonly Command<PortfolioStarRow> _openStockCommand;
+    private readonly Command<PortfolioStarRow> _manageStockCommand;
+    private readonly Command<PortfolioStarRow> _removeStockCommand;
     private readonly Command _refreshCommand;
     private string _accountText = "Sign in to load your portfolio.";
     private string _databaseText = "Database not checked";
@@ -29,16 +29,16 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         _apiClient = apiClient;
         _authSession = authSession;
         _openAccountCommand = new Command(async () => await NavigationRoutes.OpenAccountAsync());
-        _openStockCommand = new Command<PortfolioStock>(async stock => await OpenStockAsync(stock));
-        _manageStockCommand = new Command<PortfolioStock>(async stock => await OpenManageAsync(stock));
-        _removeStockCommand = new Command<PortfolioStock>(async stock => await RemoveStockAsync(stock));
+        _openStockCommand = new Command<PortfolioStarRow>(async row => await OpenStockAsync(row));
+        _manageStockCommand = new Command<PortfolioStarRow>(async row => await OpenManageAsync(row));
+        _removeStockCommand = new Command<PortfolioStarRow>(async row => await RemoveStockAsync(row));
         _refreshCommand = new Command(async () => await LoadAsync(), () => CanRefresh);
         _authSession.PropertyChanged += (_, _) => SyncAuthState();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public ObservableCollection<PortfolioStock> Stocks { get; } = [];
+    public ObservableCollection<PortfolioStarRow> Stocks { get; } = [];
 
     public ICommand RefreshCommand => _refreshCommand;
 
@@ -69,6 +69,8 @@ public sealed class HomeViewModel : INotifyPropertyChanged
     public bool IsAnonymous => !IsAuthenticated;
 
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorText);
+
+    public bool HasStocks => Stocks.Count > 0;
 
     public async Task LoadAsync()
     {
@@ -149,44 +151,46 @@ public sealed class HomeViewModel : INotifyPropertyChanged
         ErrorText = message;
     }
 
-    private void ReplaceStocks(IEnumerable<PortfolioStock> stocks)
+    // Holdings are ranked as they land so the list can be read as a sky.
+    private void ReplaceStocks(IReadOnlyList<PortfolioStock> stocks)
     {
         Stocks.Clear();
-        foreach (var stock in stocks)
+        foreach (var row in PortfolioSky.Rank(stocks))
         {
-            Stocks.Add(stock);
+            Stocks.Add(row);
+        }
+        OnPropertyChanged(nameof(HasStocks));
+    }
+
+    private static async Task OpenStockAsync(PortfolioStarRow? row)
+    {
+        if (row is not null)
+        {
+            await NavigationRoutes.OpenStockDetailAsync(row.Symbol);
         }
     }
 
-    private static async Task OpenStockAsync(PortfolioStock? stock)
+    private static async Task OpenManageAsync(PortfolioStarRow? row)
     {
-        if (stock is not null)
+        if (row is not null)
         {
-            await NavigationRoutes.OpenStockDetailAsync(stock.Symbol);
+            await NavigationRoutes.OpenPortfolioStockAsync(row.Symbol);
         }
     }
 
-    private static async Task OpenManageAsync(PortfolioStock? stock)
+    private async Task RemoveStockAsync(PortfolioStarRow? row)
     {
-        if (stock is not null)
-        {
-            await NavigationRoutes.OpenPortfolioStockAsync(stock.Symbol);
-        }
-    }
-
-    private async Task RemoveStockAsync(PortfolioStock? stock)
-    {
-        if (stock is null || IsBusy)
+        if (row is null || IsBusy)
         {
             return;
         }
-        await RunBusyAsync(() => RemoveStockCoreAsync(stock));
+        await RunBusyAsync(() => RemoveStockCoreAsync(row));
     }
 
     // Removing always re-reads the list so the screen shows stored truth.
-    private async Task RemoveStockCoreAsync(PortfolioStock stock)
+    private async Task RemoveStockCoreAsync(PortfolioStarRow row)
     {
-        var result = await _apiClient.DeletePortfolioStockAsync(stock.Id, CancellationToken.None);
+        var result = await _apiClient.DeletePortfolioStockAsync(row.Id, CancellationToken.None);
         if (!result.Ok)
         {
             ErrorText = result.Message;

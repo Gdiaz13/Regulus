@@ -20,10 +20,10 @@ public class HomeViewModelTests
         await InvokePrivateAsync(viewModel, "LoadStocksAsync");
         api.StocksResult = Stocks(Nvidia());
 
-        await InvokePrivateAsync(viewModel, "RemoveStockAsync", Apple());
+        await InvokePrivateAsync(viewModel, "RemoveStockAsync", viewModel.Stocks[0]);
 
-        var stock = Assert.Single(viewModel.Stocks);
-        Assert.Equal("NVDA", stock.Symbol);
+        var row = Assert.Single(viewModel.Stocks);
+        Assert.Equal("NVDA", row.Symbol);
         Assert.False(viewModel.HasError);
     }
 
@@ -38,10 +38,25 @@ public class HomeViewModelTests
         var viewModel = new HomeViewModel(api, new AuthSession(api, new MemoryTokenStore()));
         await InvokePrivateAsync(viewModel, "LoadStocksAsync");
 
-        await InvokePrivateAsync(viewModel, "RemoveStockAsync", Apple());
+        await InvokePrivateAsync(viewModel, "RemoveStockAsync", viewModel.Stocks[0]);
 
         Assert.Equal(2, viewModel.Stocks.Count);
         Assert.Equal("Stock with id 1 was not found.", viewModel.ErrorText);
+    }
+
+    [Fact]
+    public async Task Holdings_are_ranked_so_the_largest_company_burns_brightest()
+    {
+        var api = new FakeRegulasApiClient { StocksResult = Stocks(Apple(), Nvidia(), Corner()) };
+        var viewModel = new HomeViewModel(api, new AuthSession(api, new MemoryTokenStore()));
+
+        await InvokePrivateAsync(viewModel, "LoadStocksAsync");
+
+        var corner = viewModel.Stocks.Single(row => row.Symbol == "CRNR");
+        var nvidia = viewModel.Stocks.Single(row => row.Symbol == "NVDA");
+        Assert.Equal(1.0, nvidia.Magnitude, 3);
+        Assert.True(corner.Magnitude < nvidia.Magnitude);
+        Assert.True(corner.StarSize < nvidia.StarSize);
     }
 
     private static Task InvokePrivateAsync(HomeViewModel viewModel, string name, params object?[] args)
@@ -59,6 +74,11 @@ public class HomeViewModelTests
     private static PortfolioStock Nvidia()
     {
         return new PortfolioStock(2, "NVDA", "NVIDIA Corp.", 120m, 0.04m, "Semiconductors", 3_000_000_000_000);
+    }
+
+    private static PortfolioStock Corner()
+    {
+        return new PortfolioStock(3, "CRNR", "Cornerstone Brands", 14.2m, 0.11m, "Consumer", 480_000_000);
     }
 
     private static ApiClientResult<IReadOnlyList<PortfolioStock>> Stocks(params PortfolioStock[] stocks)
