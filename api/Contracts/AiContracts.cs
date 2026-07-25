@@ -29,6 +29,24 @@ public sealed record AiPredictRequest(
     List<decimal>? RecentCloses = null
 );
 
+// Stored closes sent to a real specialist trainer, oldest first.
+public sealed record AiTrainSeries(string Symbol, List<decimal> Closes);
+
+public sealed record AiTrainRequest(List<AiTrainSeries> Series, int HorizonDays = 30);
+
+public sealed record AiTrainResponse(
+    string Status,
+    string ModelName,
+    string ModelVersion,
+    string Message,
+    bool IsMock,
+    string ContractVersion,
+    bool Trained,
+    JsonElement? Artifact,
+    JsonElement? Metrics,
+    List<string> Warnings
+);
+
 // One specialist prediction coming back up the hierarchy.
 public sealed record AiPrediction(
     string AssetId,

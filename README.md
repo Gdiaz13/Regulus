@@ -146,6 +146,13 @@ cd ai
 .\.venv\Scripts\python.exe -m uvicorn main:app --app-dir "regulas.ai.core" --reload --port 8301
 ```
 
+Run the StockTechAI specialist when enabling the real model-training job:
+
+```powershell
+cd ai
+.\.venv\Scripts\python.exe -m uvicorn main:app --app-dir "regulas.ai.stocks.tech" --reload --port 8101
+```
+
 Run the mock StockTradingAgentsAI service:
 
 ```powershell
@@ -308,7 +315,7 @@ Done and real:
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 - Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
 - Background prediction-scoring and accuracy-recalculation jobs that persist and refresh `model_accuracy_results`, including the original confidence, risk, bullish/bearish, and horizon signals, so accuracy history improves as stored prices fill in. Tune them with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` and `BackgroundJobs:ModelAccuracyRecalculationEnabled` / `ModelAccuracyRecalculationIntervalMinutes` (daily by default).
-- Background model-training job slot is wired but disabled by default until real trainers exist. Enable it with `BackgroundJobs:ModelTrainingEnabled` and tune `ModelTrainingIntervalMinutes` when training is ready.
+- Opt-in background model training selects bounded stock series whose latest non-mock prediction is Technology and that have stored closes, calls the real StockTechAI walk-forward trainer, and records the result in `background_job_runs`. Enable it with `BackgroundJobs:ModelTrainingEnabled`, tune `ModelTrainingIntervalMinutes`, and override `RegulasAi:StockTechUrl` when the trainer is not on `http://localhost:8101`.
 
 Done but mock:
 
@@ -318,6 +325,6 @@ Done but mock:
 
 Still planned:
 
-- Connect the model-training job to real trainers when model training is ready.
+- Persist trained artifacts and promote only versions that beat the baseline.
 - Add more stock specialists and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.

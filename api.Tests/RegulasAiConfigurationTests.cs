@@ -40,4 +40,23 @@ public class RegulasAiConfigurationTests
         var url = RegulasAiConfiguration.CoreUrl(Config(new() { ["RegulasAi:CoreUrl"] = "http://ai:9000" }));
         Assert.EndsWith("/", url.ToString());
     }
+
+    [Fact]
+    public void StockTech_url_uses_backend_configuration()
+    {
+        var url = RegulasAiConfiguration.StockTechUrl(Config(new() { ["RegulasAi:StockTechUrl"] = "http://trainer:8101" }));
+        Assert.Equal("http://trainer:8101/", url.ToString());
+    }
+
+    [Fact]
+    public void StockTech_env_style_key_overrides_checked_in_default()
+    {
+        var configuration = Config(new()
+        {
+            ["RegulasAi:StockTechUrl"] = "http://localhost:8101",
+            ["STOCK_TECH_AI_URL"] = "http://trainer:9101",
+        });
+
+        Assert.Equal("http://trainer:9101/", RegulasAiConfiguration.StockTechUrl(configuration).ToString());
+    }
 }

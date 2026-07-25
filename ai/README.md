@@ -114,8 +114,10 @@ uvicorn main:app --app-dir "regulas.ai.tradingagents.stock" --port 8261   # Stoc
 uvicorn main:app --app-dir "regulas.ai.core"         --port 8301   # RegulasCoreAI
 ```
 
-The C# backend points at RegulasCoreAI on `http://localhost:8301` by default
-(see `RegulasAi:CoreUrl` in `api/appsettings.json`).
+The C# backend sends prediction traffic to RegulasCoreAI on
+`http://localhost:8301` by default. Its opt-in background training job sends
+bounded stored Technology series to StockTechAI on `http://localhost:8101`.
+See `RegulasAi:CoreUrl` and `RegulasAi:StockTechUrl` in `api/appsettings.json`.
 
 ## Tests
 
