@@ -50,6 +50,7 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             updated_at text null,
             last_login_at text null,
             is_active integer not null default 1,
+            is_admin integer not null default 0,
             email_confirmed integer not null default 0,
             failed_login_count integer not null default 0,
             lockout_until text null

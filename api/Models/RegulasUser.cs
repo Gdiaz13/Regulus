@@ -1,6 +1,6 @@
 namespace api.Models;
 
-public sealed class RegulasUser
+public sealed class RegulasUser : IAdminAware
 {
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
@@ -11,6 +11,7 @@ public sealed class RegulasUser
     public DateTime? UpdatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsAdmin { get; set; }
     public bool EmailConfirmed { get; set; }
     public int FailedLoginCount { get; set; }
     public DateTime? LockoutUntil { get; set; }

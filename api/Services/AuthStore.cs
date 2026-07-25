@@ -57,6 +57,14 @@ public sealed class AuthStore
         await connection.ExecuteAsync(Sql.MarkLogin, new { Id = userId, LastLoginAt = DateTime.UtcNow });
     }
 
+    // Promotion is deliberate and separate from registration, so admin rights
+    // can only ever be granted by something that already has them.
+    public async Task<bool> SetAdminAsync(Guid userId, bool isAdmin)
+    {
+        await using var connection = await _factory.OpenDatabaseConnectionAsync();
+        return await connection.ExecuteAsync(Sql.SetAdmin, new { Id = userId, IsAdmin = isAdmin }) > 0;
+    }
+
     public async Task UpdatePasswordHashAsync(Guid userId, string passwordHash)
     {
         await using var connection = await _factory.OpenDatabaseConnectionAsync();
@@ -71,6 +79,7 @@ public sealed class AuthStore
             display_name as "DisplayName", password_hash as "PasswordHash",
             created_at as "CreatedAt", updated_at as "UpdatedAt",
             last_login_at as "LastLoginAt", is_active as "IsActive",
+            is_admin as "IsAdmin",
             email_confirmed as "EmailConfirmed", failed_login_count as "FailedLoginCount",
             lockout_until as "LockoutUntil"
             """;
@@ -80,15 +89,18 @@ public sealed class AuthStore
             u.display_name as "DisplayName", u.password_hash as "PasswordHash",
             u.created_at as "CreatedAt", u.updated_at as "UpdatedAt",
             u.last_login_at as "LastLoginAt", u.is_active as "IsActive",
+            u.is_admin as "IsAdmin",
             u.email_confirmed as "EmailConfirmed", u.failed_login_count as "FailedLoginCount",
             u.lockout_until as "LockoutUntil"
             """;
 
+        // Admin rights are never taken from the registration request; new
+        // accounts are ordinary users and get promoted deliberately.
         public const string InsertUser = $"""
             insert into users
-                (id, email, normalized_email, display_name, password_hash, created_at, is_active)
+                (id, email, normalized_email, display_name, password_hash, created_at, is_active, is_admin)
             values
-                (@Id, @Email, @NormalizedEmail, @DisplayName, @PasswordHash, @CreatedAt, @IsActive)
+                (@Id, @Email, @NormalizedEmail, @DisplayName, @PasswordHash, @CreatedAt, @IsActive, false)
             returning {UserColumns};
             """;
 
@@ -130,6 +142,12 @@ public sealed class AuthStore
         public const string MarkLogin = """
             update users
             set last_login_at = @LastLoginAt
+            where id = @Id;
+            """;
+
+        public const string SetAdmin = """
+            update users
+            set is_admin = @IsAdmin
             where id = @Id;
             """;
 

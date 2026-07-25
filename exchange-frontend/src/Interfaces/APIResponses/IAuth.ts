@@ -1,4 +1,9 @@
-export type ICurrentUser = {
+/** Mirrors the backend IAdminAware: anything carrying a user's admin rights. */
+export type IAdminAware = {
+  isAdmin: boolean;
+};
+
+export type ICurrentUser = IAdminAware & {
   id: string;
   email: string;
   displayName: string;
