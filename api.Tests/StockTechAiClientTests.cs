@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -37,6 +38,49 @@ public class StockTechAiClientTests
         );
     }
 
+    [Fact]
+    public async Task Train_rejects_a_response_larger_than_the_contract_limit()
+    {
+        var padding = new string('x', (int)StockTechAiClient.MaxResponseBytes + 1);
+        var http = new HttpClient(StubHttpMessageHandler.Json($"{{\"padding\":\"{padding}\"}}"))
+        {
+            BaseAddress = new Uri("http://localhost:8101/"),
+        };
+
+        await Assert.ThrowsAsync<HttpRequestException>(() =>
+            new StockTechAiClient(http).TrainAsync(new AiTrainRequest([]), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Train_timeout_covers_a_stalled_response_body()
+    {
+        using var callerTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var http = new HttpClient(new StalledBodyHandler())
+        {
+            BaseAddress = new Uri("http://localhost:8101/"),
+            Timeout = TimeSpan.FromMilliseconds(50),
+        };
+        var stopwatch = Stopwatch.StartNew();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            new StockTechAiClient(http).TrainAsync(new AiTrainRequest([]), callerTimeout.Token));
+
+        Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(1));
+    }
+
+    [Theory]
+    [MemberData(nameof(OmittedResponseFields))]
+    public async Task Train_rejects_a_response_with_an_omitted_required_field(string json)
+    {
+        var http = new HttpClient(StubHttpMessageHandler.Json(json))
+        {
+            BaseAddress = new Uri("http://localhost:8101/"),
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new StockTechAiClient(http).TrainAsync(new AiTrainRequest([]), CancellationToken.None));
+    }
+
     private sealed class CaptureHandler(string json) : HttpMessageHandler
     {
         public HttpRequestMessage? Request { get; private set; }
@@ -53,7 +97,56 @@ public class StockTechAiClientTests
         }
     }
 
+    private sealed class StalledBodyHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken token)
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StalledContent(),
+            });
+        }
+    }
+
+    private sealed class StalledContent : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            return Task.Delay(Timeout.InfiniteTimeSpan);
+        }
+
+        protected override Task SerializeToStreamAsync(
+            Stream stream, TransportContext? context, CancellationToken token)
+        {
+            return Task.Delay(Timeout.InfiniteTimeSpan, token);
+        }
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+    }
+
     private const string TrainResponseJson = """
         {"status":"completed","modelName":"StockTechAI","modelVersion":"0.2.0","message":"trained","isMock":false,"contractVersion":"1.0","trained":true,"artifact":{"damping":0.5},"metrics":{"testMae":0.42,"baselineMae":0.5,"improved":true},"warnings":[]}
         """;
+
+    private const string InsufficientResponseJson = """
+        {"status":"insufficient-data","modelName":"StockTechAI","modelVersion":"0.2.0","message":"not enough data","isMock":false,"contractVersion":"1.0","trained":false,"artifact":null,"metrics":null,"warnings":[]}
+        """;
+
+    public static TheoryData<string> OmittedResponseFields => new()
+    {
+        TrainResponseJson.Replace("\"isMock\":false,", string.Empty),
+        TrainResponseJson.Replace("\"message\":\"trained\",", string.Empty),
+        TrainResponseJson.Replace(",\"warnings\":[]", string.Empty),
+        InsufficientResponseJson.Replace("\"isMock\":false,", string.Empty),
+        InsufficientResponseJson.Replace("\"trained\":false,", string.Empty),
+        InsufficientResponseJson.Replace("\"artifact\":null,", string.Empty),
+        InsufficientResponseJson.Replace("\"metrics\":null,", string.Empty),
+        InsufficientResponseJson.Replace("\"message\":\"not enough data\",", string.Empty),
+        InsufficientResponseJson.Replace(",\"warnings\":[]", string.Empty),
+    };
 }

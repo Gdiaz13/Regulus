@@ -13,7 +13,10 @@ public class ModelTrainingServiceTests
     public async Task Service_delegates_to_the_registered_training_runner()
     {
         using var factory = new SqliteDapperConnectionFactory();
-        var runner = new ModelTrainingRunner(new ModelTrainingDataStore(factory), UnusedClient());
+        var runner = new ModelTrainingRunner(
+            new ModelTrainingDataStore(factory),
+            UnusedClient(),
+            new TrainedModelVersionStore(factory));
         using var services = new ServiceCollection().AddSingleton(runner).BuildServiceProvider();
         var scopes = services.GetRequiredService<IServiceScopeFactory>();
         var configuration = new ConfigurationBuilder().Build();

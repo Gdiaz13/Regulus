@@ -74,9 +74,15 @@ number - the damping that maps a 10-close momentum window to the next move -
 using per-symbol chronological train/validation/test splits. Windows only look
 backward and nothing shuffles, so there is no look-ahead leakage. The chosen
 damping is scored on the untouched test segment against the untrained default,
-and both errors come back in `metrics` (`testMae` vs `baselineMae`, `improved`)
-so only measured improvements get promoted later. Every other service keeps the
-clearly-flagged mock placeholder.
+and both errors come back in `metrics` (`testMae` vs `baselineMae`, `improved`).
+The C# gateway requires every StockTechAI response field to be explicitly
+present, validates before branching, accepts only completed training or the
+exact insufficient-data outcome, and caps the full response at 512 KiB under
+the configured HTTP timeout. It persists bounded
+real artifacts and metrics, independently marks them promotion eligible only
+when finite holdout MAE beats baseline MAE, and serializably retains the latest
+100 versions per model/category. Runtime activation is still separate. Every
+other service keeps the clearly-flagged mock placeholder.
 
 ## Setup
 
@@ -116,8 +122,9 @@ uvicorn main:app --app-dir "regulas.ai.core"         --port 8301   # RegulasCore
 
 The C# backend sends prediction traffic to RegulasCoreAI on
 `http://localhost:8301` by default. Its opt-in background training job sends
-bounded stored Technology series to StockTechAI on `http://localhost:8101`.
-See `RegulasAi:CoreUrl` and `RegulasAi:StockTechUrl` in `api/appsettings.json`.
+bounded stored Technology series to StockTechAI on `http://localhost:8101` and
+persists validated, bounded artifacts plus metrics in PostgreSQL. See
+`RegulasAi:CoreUrl` and `RegulasAi:StockTechUrl` in `api/appsettings.json`.
 
 ## Tests
 

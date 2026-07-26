@@ -11,11 +11,16 @@ public sealed class ModelTrainingRunner
     private const int PointsPerSeries = 1000;
     private readonly ModelTrainingDataStore _data;
     private readonly StockTechAiClient _client;
+    private readonly TrainedModelVersionStore _versions;
 
-    public ModelTrainingRunner(ModelTrainingDataStore data, StockTechAiClient client)
+    public ModelTrainingRunner(
+        ModelTrainingDataStore data,
+        StockTechAiClient client,
+        TrainedModelVersionStore versions)
     {
         _data = data;
         _client = client;
+        _versions = versions;
     }
 
     public async Task<JobOutcome> RunAsync(CancellationToken token)
@@ -26,6 +31,10 @@ public sealed class ModelTrainingRunner
             return JobOutcome.Skipped("No stored Technology price series are ready for training.");
         }
         var response = await _client.TrainAsync(new AiTrainRequest(series), token);
+        if (response.Trained && !response.IsMock)
+        {
+            await _versions.SaveAsync(Category, series.Count, response, token);
+        }
         return Outcome(response, series.Count);
     }
 

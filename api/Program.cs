@@ -32,6 +32,7 @@ builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddSingleton<ModelAccuracyResultStore>();
 builder.Services.AddSingleton<PredictionRequestEnricher>();
 builder.Services.AddSingleton<ModelTrainingDataStore>();
+builder.Services.AddSingleton<TrainedModelVersionStore>();
 builder.Services.AddTransient<ModelTrainingRunner>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<MagicTcgClient>(ConfigureMagicTcgClient);

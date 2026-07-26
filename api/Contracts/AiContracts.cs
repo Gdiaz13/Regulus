@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace api.Contracts;
 
@@ -35,16 +36,16 @@ public sealed record AiTrainSeries(string Symbol, List<decimal> Closes);
 public sealed record AiTrainRequest(List<AiTrainSeries> Series, int HorizonDays = 30);
 
 public sealed record AiTrainResponse(
-    string Status,
-    string ModelName,
-    string ModelVersion,
-    string Message,
-    bool IsMock,
-    string ContractVersion,
-    bool Trained,
-    JsonElement? Artifact,
-    JsonElement? Metrics,
-    List<string> Warnings
+    [property: JsonRequired] string Status,
+    [property: JsonRequired] string ModelName,
+    [property: JsonRequired] string ModelVersion,
+    [property: JsonRequired] string Message,
+    [property: JsonRequired] bool IsMock,
+    [property: JsonRequired] string ContractVersion,
+    [property: JsonRequired] bool Trained,
+    [property: JsonRequired] JsonElement? Artifact,
+    [property: JsonRequired] JsonElement? Metrics,
+    [property: JsonRequired] List<string> Warnings
 );
 
 // One specialist prediction coming back up the hierarchy.
