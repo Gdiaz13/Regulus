@@ -119,10 +119,6 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Button Text="Sign in"
-                    Command="{Binding OpenAccountCommand}"
-                    IsVisible="{Binding IsAnonymous}" />
-
             <Border IsVisible="{Binding IsAuthenticated}"
                     Stroke="{AppThemeBinding Light={StaticResource RegulasLightBorder}, Dark={StaticResource RegulasDarkBorder}}"
                     BackgroundColor="{AppThemeBinding Light={StaticResource RegulasLightSurface}, Dark={StaticResource RegulasDarkSurface}}"
