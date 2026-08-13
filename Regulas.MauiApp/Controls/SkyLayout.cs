@@ -20,8 +20,8 @@ public static class SkyLayout
         var height = Math.Min(Math.Min(rect.Height * HeightShare, rect.Width / Aspect), MaxHeight);
         var width = height * Aspect;
         return new RectF(
-            rect.X + (rect.Width - width) * Math.Clamp(bias, 0f, 1f),
-            rect.Y + (rect.Height - height) * 0.5f,
+            rect.X + ((rect.Width - width) * Math.Clamp(bias, 0f, 1f)),
+            rect.Y + ((rect.Height - height) * 0.5f),
             width,
             height);
     }

@@ -9,6 +9,6 @@ public sealed record PortfolioStarRow(PortfolioStock Stock, double Magnitude)
     public string CompanyName => Stock.CompanyName;
     public decimal PurchasePrice => Stock.PurchasePrice;
     public string Industry => Stock.Industry;
-    public double StarSize => 10 + Magnitude * 16;
-    public double StarOpacity => 0.35 + Magnitude * 0.65;
+    public double StarSize => 10 + (Magnitude * 16);
+    public double StarOpacity => 0.35 + (Magnitude * 0.65);
 }

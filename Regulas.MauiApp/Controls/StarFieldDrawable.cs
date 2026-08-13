@@ -146,11 +146,11 @@ public sealed class StarFieldDrawable : IDrawable
 
     private static float X(RectF rect, SkyStar star)
     {
-        return rect.X + (float)star.X * rect.Width;
+        return rect.X + ((float)star.X * rect.Width);
     }
 
     private static float Y(RectF rect, SkyStar star)
     {
-        return rect.Y + (float)star.Y * rect.Height;
+        return rect.Y + ((float)star.Y * rect.Height);
     }
 }

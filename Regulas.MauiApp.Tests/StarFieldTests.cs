@@ -129,8 +129,8 @@ public class StarFieldTests
     private static void AssertTapHits(RectF figure, int index)
     {
         var star = LeoConstellation.Stars[index];
-        var drawnX = figure.X + star.X * figure.Width;
-        var drawnY = figure.Y + star.Y * figure.Height;
+        var drawnX = figure.X + (star.X * figure.Width);
+        var drawnY = figure.Y + (star.Y * figure.Height);
         var (x, y) = SkyLayout.Normalize(figure, drawnX, drawnY);
         Assert.Equal(index, LeoConstellation.NearestIndex(x, y, 0.07));
     }

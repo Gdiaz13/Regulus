@@ -18,13 +18,13 @@ public static class StarFieldMath
     // Stars never blink out; they breathe around their own brightness.
     public static double Twinkle(double brightness, double phase, double seconds)
     {
-        var wave = Math.Sin(phase + seconds * TwinkleSpeed);
-        return Clamp(brightness * (1 - TwinkleDepth + TwinkleDepth * wave), 0.0, 1.0);
+        var wave = Math.Sin(phase + (seconds * TwinkleSpeed));
+        return Clamp(brightness * (1 - TwinkleDepth + (TwinkleDepth * wave)), 0.0, 1.0);
     }
 
     public static double Radius(double brightness, double scale)
     {
-        return (0.6 + brightness * brightness * 2.6) * scale;
+        return (0.6 + (brightness * brightness * 2.6)) * scale;
     }
 
     // Deterministic field so the same sky redraws identically every frame.
@@ -43,13 +43,13 @@ public static class StarFieldMath
     {
         var x = Unit(ref state);
         var y = Unit(ref state);
-        var magnitude = 3.2 + Unit(ref state) * (FaintestMagnitude - 3.2);
+        var magnitude = 3.2 + (Unit(ref state) * (FaintestMagnitude - 3.2));
         return new SkyStar(x, y, magnitude, Unit(ref state) * Math.Tau);
     }
 
     private static double Unit(ref uint state)
     {
-        state = unchecked(state * 1664525u + 1013904223u);
+        state = unchecked((state * 1664525u) + 1013904223u);
         return state / (double)uint.MaxValue;
     }
 
