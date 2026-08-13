@@ -1,19 +1,59 @@
+using System.ComponentModel;
+using Regulas.MauiApp.Services;
+
 namespace Regulas.MauiApp;
 
 public partial class AppShell : Shell
 {
+    private readonly AuthSession _session;
+    private readonly ShellItem _gate;
+    private readonly TabBar _tabs;
+
     public AppShell(
+        SignInPage signInPage,
         MainPage mainPage,
         SearchPage searchPage,
         PredictionsPage predictionsPage,
         TradingAgentsPage tradingAgentsPage,
         TcgPage tcgPage,
         AuthPage authPage,
-        SettingsPage settingsPage)
+        SettingsPage settingsPage,
+        AuthSession session)
     {
         InitializeComponent();
         RegisterRoutes();
-        Items.Add(TabBar(mainPage, searchPage, predictionsPage, tradingAgentsPage, tcgPage, authPage, settingsPage));
+        _session = session;
+        _gate = Gate(signInPage);
+        _tabs = TabBar(mainPage, searchPage, predictionsPage, tradingAgentsPage, tcgPage, authPage, settingsPage);
+        Items.Add(_gate);
+        Items.Add(_tabs);
+        _session.PropertyChanged += OnSessionChanged;
+        ApplyAuthState();
+    }
+
+    // Signing in is the whole app's front door: the tabs do not exist until the
+    // session says who you are, so no screen has to carry an anonymous state.
+    private void ApplyAuthState()
+    {
+        var signedIn = _session.IsAuthenticated;
+        _gate.IsVisible = !signedIn;
+        _tabs.IsVisible = signedIn;
+        CurrentItem = signedIn ? _tabs : _gate;
+    }
+
+    private void OnSessionChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(AuthSession.IsAuthenticated))
+        {
+            MainThread.BeginInvokeOnMainThread(ApplyAuthState);
+        }
+    }
+
+    private static ShellItem Gate(Page page)
+    {
+        var item = new ShellItem { Route = "gate", FlyoutItemIsVisible = false };
+        item.Items.Add(ShellContent("Sign in", nameof(SignInPage), page));
+        return item;
     }
 
     private static TabBar TabBar(MainPage mainPage, SearchPage searchPage, PredictionsPage predictionsPage, TradingAgentsPage tradingAgentsPage, TcgPage tcgPage, AuthPage authPage, SettingsPage settingsPage)

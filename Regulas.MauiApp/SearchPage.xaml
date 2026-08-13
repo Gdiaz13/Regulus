@@ -34,9 +34,6 @@
                                 Command="{Binding SearchCommand}"
                                 IsEnabled="{Binding CanSearch}" />
                     </Grid>
-                    <Button Text="Sign in"
-                            Command="{Binding OpenAccountCommand}"
-                            IsVisible="{Binding IsAnonymous}" />
                     <ActivityIndicator IsRunning="{Binding IsBusy}"
                                        IsVisible="{Binding IsBusy}" />
                     <Label Text="{Binding MessageText}"

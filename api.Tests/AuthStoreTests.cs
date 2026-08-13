@@ -19,6 +19,60 @@ public class AuthStoreTests
     }
 
     [Fact]
+    public async Task New_accounts_are_ordinary_users()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new AuthStore(factory);
+
+        var user = await store.CreateUserAsync(User("plain@example.com"));
+
+        Assert.False(user.IsAdmin);
+        Assert.False((await store.FindByNormalizedEmailAsync("PLAIN@EXAMPLE.COM"))!.IsAdmin);
+    }
+
+    // Registration must not be able to hand itself admin rights, so the insert
+    // ignores the flag on the incoming user entirely.
+    [Fact]
+    public async Task Registering_cannot_grant_itself_admin_rights()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new AuthStore(factory);
+        var claimed = User("sneaky@example.com");
+        claimed.IsAdmin = true;
+
+        var created = await store.CreateUserAsync(claimed);
+
+        Assert.False(created.IsAdmin);
+    }
+
+    [Fact]
+    public async Task A_promoted_user_reads_back_as_an_admin()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new AuthStore(factory);
+        var user = await store.CreateUserAsync(User("boss@example.com"));
+
+        Assert.True(await store.SetAdminAsync(user.Id, true));
+
+        var found = await store.FindByIdAsync(user.Id);
+        Assert.True(found!.IsAdmin);
+        Assert.True(((IAdminAware)found).IsAdmin);
+    }
+
+    [Fact]
+    public async Task Admin_rights_can_be_taken_away_again()
+    {
+        using var factory = new SqliteDapperConnectionFactory();
+        var store = new AuthStore(factory);
+        var user = await store.CreateUserAsync(User("demoted@example.com"));
+        await store.SetAdminAsync(user.Id, true);
+
+        await store.SetAdminAsync(user.Id, false);
+
+        Assert.False((await store.FindByIdAsync(user.Id))!.IsAdmin);
+    }
+
+    [Fact]
     public async Task FindUserByTokenHashAsync_returns_active_unexpired_user()
     {
         using var factory = new SqliteDapperConnectionFactory();

@@ -2,18 +2,20 @@ using Regulas.MauiApp.ViewModels;
 
 namespace Regulas.MauiApp;
 
-public partial class MainPage : ContentPage
+public partial class SignInPage : ContentPage
 {
-    private readonly HomeViewModel _viewModel;
+    private readonly AuthViewModel _viewModel;
     private bool _revealed;
 
-    public MainPage(HomeViewModel viewModel)
+    public SignInPage(AuthViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;
         BindingContext = viewModel;
     }
 
+    // Refreshing on appear means a still-valid stored token signs you straight
+    // through: the gate shows itself only when it is actually needed.
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -21,8 +23,6 @@ public partial class MainPage : ContentPage
         await _viewModel.LoadAsync();
     }
 
-    // The sky fades up the first time the tab opens, so the page arrives rather
-    // than blinking in. Later visits skip it; a repeated fade would nag.
     private async Task RevealOnceAsync()
     {
         if (_revealed)
@@ -30,6 +30,6 @@ public partial class MainPage : ContentPage
             return;
         }
         _revealed = true;
-        await PageBody.FadeToAsync(1, 450, Easing.CubicOut);
+        await Card.FadeToAsync(1, 450, Easing.CubicOut);
     }
 }

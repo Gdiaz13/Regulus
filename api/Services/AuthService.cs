@@ -98,7 +98,7 @@ public sealed class AuthService
 
     private static CurrentUserResponse ToUserResponse(RegulasUser user)
     {
-        return new CurrentUserResponse(user.Id, user.Email, user.DisplayName, user.CreatedAt, user.LastLoginAt);
+        return new CurrentUserResponse(user.Id, user.Email, user.DisplayName, user.CreatedAt, user.LastLoginAt, user.IsAdmin);
     }
 }
 

@@ -1,3 +1,5 @@
+using api.Models;
+
 namespace api.Contracts;
 
 public sealed record RegisterRequest(string? Email, string? Password, string? DisplayName);
@@ -11,5 +13,6 @@ public sealed record CurrentUserResponse(
     string Email,
     string DisplayName,
     DateTime CreatedAt,
-    DateTime? LastLoginAt
-);
+    DateTime? LastLoginAt,
+    bool IsAdmin
+) : IAdminAware;

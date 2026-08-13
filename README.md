@@ -295,6 +295,9 @@ Done and real:
 - Web Pokemon, Magic, and One Piece TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
 - Backend One Piece gateway through APITCG, including server-side key handling and browsed-card market-price capture.
 - Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
+- MAUI signs in first: the app opens on a full-screen sign-in screen and the tab bar only appears once the session knows who you are, so no tab carries a signed-out empty state.
+- MAUI star identity: the home hero and the sign-in screen draw the real Leo constellation with real stellar magnitudes (Regulus is Alpha Leonis, the star the app is named after), stars twinkle, tapping one names it, and portfolio holdings are drawn as stars whose brightness follows market cap on a log scale.
+- Users carry an admin flag (`users.is_admin`, migration 008) behind an `IAdminAware` interface implemented by the stored row, the API response, and both frontends. Registration cannot grant it and nothing enforces it yet; administrative authorization is still to build.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI asset-detail screen for company profile data through the API market-data proxy.
@@ -326,5 +329,7 @@ Done but mock:
 Still planned:
 
 - Activate promotion-eligible model versions in prediction services with safe rollback.
+- Enforce the admin flag: admin-only routes and an operations screen for background-job runs.
+- Carry the star identity through the rest of the MAUI screens so the app looks like one product.
 - Add more stock specialists and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.

@@ -37,6 +37,13 @@ public static class MauiProgram
     private static void RegisterPages(IServiceCollection services)
     {
         services.AddSingleton<AppShell>();
+        services.AddSingleton<SignInPage>();
+        RegisterTabPages(services);
+        RegisterDetailPages(services);
+    }
+
+    private static void RegisterTabPages(IServiceCollection services)
+    {
         services.AddSingleton<MainPage>();
         services.AddSingleton<SearchPage>();
         services.AddSingleton<PredictionsPage>();
@@ -44,7 +51,11 @@ public static class MauiProgram
         services.AddSingleton<TcgPage>();
         services.AddSingleton<AuthPage>();
         services.AddSingleton<SettingsPage>();
-        // Detail pages are transient: each navigation carries its own symbol.
+    }
+
+    // Detail pages are transient: each navigation carries its own symbol.
+    private static void RegisterDetailPages(IServiceCollection services)
+    {
         services.AddTransient<AssetDetailPage>();
         services.AddTransient<PriceHistoryPage>();
         services.AddTransient<PortfolioStockPage>();

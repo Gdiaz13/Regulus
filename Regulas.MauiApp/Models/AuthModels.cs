@@ -5,8 +5,9 @@ public sealed record CurrentUser(
     string Email,
     string DisplayName,
     DateTime CreatedAt,
-    DateTime? LastLoginAt
-);
+    DateTime? LastLoginAt,
+    bool IsAdmin = false
+) : IAdminAware;
 
 public sealed record AuthResponse(string Token, DateTime ExpiresAt, CurrentUser User);
 
