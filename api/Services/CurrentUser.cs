@@ -14,4 +14,9 @@ public static class CurrentUser
     {
         return user.FindFirstValue(RegulasAuthDefaults.TokenHashClaim) ?? string.Empty;
     }
+
+    public static bool IsAdmin(ClaimsPrincipal user)
+    {
+        return user.HasClaim(RegulasAuthDefaults.AdminClaim, "true");
+    }
 }

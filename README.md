@@ -297,7 +297,8 @@ Done and real:
 - Web and MAUI manual TCG price entry can tag card prices as Pokemon, Magic, or One Piece while keeping source, price type, condition, grade, and currency metadata.
 - MAUI signs in first: the app opens on a full-screen sign-in screen and the tab bar only appears once the session knows who you are, so no tab carries a signed-out empty state.
 - MAUI star identity: the home hero and the sign-in screen draw the real Leo constellation with real stellar magnitudes (Regulus is Alpha Leonis, the star the app is named after), stars twinkle, tapping one names it, and portfolio holdings are drawn as stars whose brightness follows market cap on a log scale.
-- Users carry an admin flag (`users.is_admin`, migration 008) behind an `IAdminAware` interface implemented by the stored row, the API response, and both frontends. Registration cannot grant it and nothing enforces it yet; administrative authorization is still to build.
+- Users carry an admin flag (`users.is_admin`, migration 009) behind an `IAdminAware` interface implemented by the stored row, the API response, and both frontends. Registration cannot grant it: promotion is `PUT /api/v1/admin/users/{id}/admin`, itself admin-only, and an admin cannot change their own rights so the last admin can never lock everyone out.
+- Admin rights are enforced by the `RegulasAdmin` policy. Background job history (`GET /api/jobs/runs`) is admin-only rather than public, since it exposes which providers fail and how the schedule behaves. The admin claim is re-read from the user row on every request, so promoting or demoting somebody takes effect immediately instead of waiting for their token to expire.
 - Initial MAUI app shell with shared colors, API health, and portfolio list.
 - MAUI Search tab for authenticated company search and portfolio adds through `Regulas.Api`.
 - MAUI asset-detail screen for company profile data through the API market-data proxy.
@@ -329,7 +330,7 @@ Done but mock:
 Still planned:
 
 - Activate promotion-eligible model versions in prediction services with safe rollback.
-- Enforce the admin flag: admin-only routes and an operations screen for background-job runs.
+- An operations screen in the frontends for the admin-only background-job runs endpoint.
 - Carry the star identity through the rest of the MAUI screens so the app looks like one product.
 - Add more stock specialists and future crypto support.
 - Replace mock AI internals with real models once the data flow is solid.

@@ -45,13 +45,25 @@ public sealed class RegulasBearerAuthenticationHandler : AuthenticationHandler<A
 
     private static List<Claim> Claims(RegulasUser user, string tokenHash)
     {
-        return
-        [
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.DisplayName),
-            new Claim(RegulasAuthDefaults.TokenHashClaim, tokenHash),
-        ];
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.Name, user.DisplayName),
+            new(RegulasAuthDefaults.TokenHashClaim, tokenHash),
+        };
+        AddAdminClaim(claims, user);
+        return claims;
+    }
+
+    // Read fresh from the stored row each request, so a demotion applies at once
+    // instead of waiting for an old token to expire.
+    private static void AddAdminClaim(List<Claim> claims, IAdminAware user)
+    {
+        if (user.IsAdmin)
+        {
+            claims.Add(new Claim(RegulasAuthDefaults.AdminClaim, "true"));
+        }
     }
 
     private string? BearerToken()
