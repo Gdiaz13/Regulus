@@ -1,0 +1,37 @@
+name: MAUI
+
+# The Windows MAUI build lives apart from the fast CI workflow because
+# installing the maui-windows workload takes minutes. Keeping it separate means
+# a slow workload restore never holds up the backend, web, and AI checks.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: maui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows build and ViewModel tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Only the Windows target is installed. Android and Apple builds need
+      # their own SDKs and a Mac host, so they stay out of CI for now.
+      - name: Install the Windows MAUI workload
+        run: dotnet workload install maui-windows --skip-manifest-update
+
+      - name: Build the app
+        run: dotnet build Regulas.MauiApp/Regulas.MauiApp.csproj -f net10.0-windows10.0.19041.0 --nologo
+
+      - name: ViewModel tests
+        run: dotnet test Regulas.MauiApp.Tests/Regulas.MauiApp.Tests.csproj --nologo
