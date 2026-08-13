@@ -3,11 +3,13 @@ using api.Services;
 namespace api.Endpoints;
 
 // Read-only view of background job runs so the app can show what the jobs did.
+// Job history is operational detail - which providers failed, how often, what
+// the schedule is doing - so it is admin-only rather than open to any caller.
 public static class JobEndpoints
 {
     public static void MapJobEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/jobs/runs", GetRuns);
+        app.MapGet("/api/jobs/runs", GetRuns).RequireAuthorization(RegulasAuthDefaults.AdminPolicy);
     }
 
     private static Task<IResult> GetRuns(int? take, BackgroundJobRunStore store)

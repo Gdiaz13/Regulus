@@ -14,7 +14,9 @@ builder.Services.AddOpenApi();
 builder.Services
     .AddAuthentication(RegulasAuthDefaults.Scheme)
     .AddScheme<AuthenticationSchemeOptions, RegulasBearerAuthenticationHandler>(RegulasAuthDefaults.Scheme, null);
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options => options.AddPolicy(
+    RegulasAuthDefaults.AdminPolicy,
+    policy => policy.RequireAuthenticatedUser().RequireClaim(RegulasAuthDefaults.AdminClaim, "true")));
 builder.Services.AddSingleton<PostgresConnectionFactory>();
 builder.Services.AddSingleton<IDatabaseConnectionFactory>(provider => provider.GetRequiredService<PostgresConnectionFactory>());
 builder.Services.AddSingleton<PostgresMigrationRunner>();
@@ -70,6 +72,7 @@ app.MapAuthEndpoints();
 app.MapCommentEndpoints();
 app.MapHealthEndpoints();
 app.MapJobEndpoints();
+app.MapAdminEndpoints();
 app.MapMarketDataEndpoints();
 app.MapPriceHistoryEndpoints();
 app.MapPredictionEndpoints();
