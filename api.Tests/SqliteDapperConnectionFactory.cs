@@ -184,6 +184,19 @@ internal sealed class SqliteDapperConnectionFactory : IDatabaseConnectionFactory
             unique(prediction_id)
         );
 
+        create table trained_model_versions (
+            id integer primary key autoincrement,
+            model_name text not null,
+            model_version text not null,
+            category text not null,
+            contract_version text not null,
+            series_count integer not null,
+            artifact_json text not null,
+            metrics_json text not null,
+            promotion_eligible integer not null default 0,
+            created_at text not null
+        );
+
         create table background_job_runs (
             id integer primary key autoincrement,
             job_name text not null,

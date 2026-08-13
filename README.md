@@ -146,6 +146,13 @@ cd ai
 .\.venv\Scripts\python.exe -m uvicorn main:app --app-dir "regulas.ai.core" --reload --port 8301
 ```
 
+Run the StockTechAI specialist when enabling the real model-training job:
+
+```powershell
+cd ai
+.\.venv\Scripts\python.exe -m uvicorn main:app --app-dir "regulas.ai.stocks.tech" --reload --port 8101
+```
+
 Run the mock StockTradingAgentsAI service:
 
 ```powershell
@@ -311,7 +318,7 @@ Done and real:
 - Flexible assets, price-history capture/read, portfolio stocks, and stock notes now use PostgreSQL/Dapper behind the existing API contracts.
 - Background price-snapshot job (a hosted service) that records every run in `background_job_runs` and skips cleanly when no FMP key is set. Recent runs are at `/api/jobs/runs`; tune it with `BackgroundJobs:PriceSnapshotEnabled` / `PriceSnapshotIntervalMinutes` / `StartupDelaySeconds`.
 - Background prediction-scoring and accuracy-recalculation jobs that persist and refresh `model_accuracy_results`, including the original confidence, risk, bullish/bearish, and horizon signals, so accuracy history improves as stored prices fill in. Tune them with `BackgroundJobs:PredictionScoringEnabled` / `PredictionScoringIntervalMinutes` and `BackgroundJobs:ModelAccuracyRecalculationEnabled` / `ModelAccuracyRecalculationIntervalMinutes` (daily by default).
-- Background model-training job slot is wired but disabled by default until real trainers exist. Enable it with `BackgroundJobs:ModelTrainingEnabled` and tune `ModelTrainingIntervalMinutes` when training is ready.
+- Opt-in background model training selects bounded stock series whose latest non-mock prediction is Technology and that have stored closes, calls the real StockTechAI walk-forward trainer, requires every response field to be explicitly present, validates before branching, and accepts only completed training or the exact insufficient-data outcome. It records each bounded real artifact and its metrics in `trained_model_versions`, marks promotion eligibility only when finite holdout MAE beats the baseline, serializably retains the latest 100 versions per model/category, and records the run in `background_job_runs`. Full trainer responses are capped at 512 KiB under the configured HTTP timeout, with 256 KiB artifact and 64 KiB metrics limits. Enable it with `BackgroundJobs:ModelTrainingEnabled`, tune `ModelTrainingIntervalMinutes`, and override `RegulasAi:StockTechUrl` when the trainer is not on `http://localhost:8101`.
 
 Done but mock:
 
@@ -321,7 +328,7 @@ Done but mock:
 
 Still planned:
 
-- Connect the model-training job to real trainers when model training is ready.
+- Activate promotion-eligible model versions in prediction services with safe rollback.
 - Enforce the admin flag: admin-only routes and an operations screen for background-job runs.
 - Carry the star identity through the rest of the MAUI screens so the app looks like one product.
 - Add more stock specialists and future crypto support.

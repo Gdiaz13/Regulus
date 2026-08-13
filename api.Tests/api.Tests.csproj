@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\api\api.csproj" />
+    <None Include="..\docker-compose.yml" Link="docker-compose.yml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

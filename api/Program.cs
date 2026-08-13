@@ -31,11 +31,15 @@ builder.Services.AddSingleton<StockCommentStore>();
 builder.Services.AddSingleton<BackgroundJobRunStore>();
 builder.Services.AddSingleton<ModelAccuracyResultStore>();
 builder.Services.AddSingleton<PredictionRequestEnricher>();
+builder.Services.AddSingleton<ModelTrainingDataStore>();
+builder.Services.AddSingleton<TrainedModelVersionStore>();
+builder.Services.AddTransient<ModelTrainingRunner>();
 builder.Services.AddHttpClient<FinancialModelingPrepClient>(ConfigureFmpClient);
 builder.Services.AddHttpClient<MagicTcgClient>(ConfigureMagicTcgClient);
 builder.Services.AddHttpClient<PokemonTcgClient>(ConfigurePokemonTcgClient);
 builder.Services.AddHttpClient<OnePieceTcgClient>(ConfigureOnePieceTcgClient);
 builder.Services.AddHttpClient<RegulasAiClient>(ConfigureRegulasAiClient);
+builder.Services.AddHttpClient<StockTechAiClient>(ConfigureStockTechAiClient);
 builder.Services.AddHttpClient<TradingAgentsClient>(ConfigureTradingAgentsClient);
 builder.Services.AddHostedService<PriceSnapshotService>();
 builder.Services.AddHostedService<PredictionScoringService>();
@@ -86,6 +90,13 @@ static void ConfigureRegulasAiClient(IServiceProvider services, HttpClient clien
     var configuration = services.GetRequiredService<IConfiguration>();
     client.BaseAddress = RegulasAiConfiguration.CoreUrl(configuration);
     client.Timeout = TimeSpan.FromSeconds(15);
+}
+
+static void ConfigureStockTechAiClient(IServiceProvider services, HttpClient client)
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    client.BaseAddress = RegulasAiConfiguration.StockTechUrl(configuration);
+    client.Timeout = TimeSpan.FromSeconds(30);
 }
 
 static void ConfigurePokemonTcgClient(HttpClient client)

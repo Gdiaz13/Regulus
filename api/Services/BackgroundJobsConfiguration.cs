@@ -39,7 +39,7 @@ public static class BackgroundJobsConfiguration
         return configuration.GetValue("BackgroundJobs:ModelTrainingEnabled", false);
     }
 
-    // Disabled by default until real trainers exist; when enabled, run daily.
+    // Opt-in because StockTechAI must be running; when enabled, run daily.
     public static TimeSpan ModelTrainingInterval(IConfiguration configuration)
     {
         return TimeSpan.FromMinutes(PositiveMinutes(configuration, "BackgroundJobs:ModelTrainingIntervalMinutes", 1440));

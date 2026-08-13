@@ -1,7 +1,7 @@
 namespace api.Services;
 
-// Schedules model training separately from prediction requests. It is disabled
-// by default until a real trainer is wired in, but the job slot is ready.
+// Schedules real model training separately from prediction requests. It stays
+// disabled by default so local environments opt in after starting StockTechAI.
 public sealed class ModelTrainingService : RecurringJobService
 {
     private readonly IConfiguration _configuration;
@@ -26,6 +26,6 @@ public sealed class ModelTrainingService : RecurringJobService
 
     protected override Task<JobOutcome> RunAsync(IServiceProvider services, CancellationToken token)
     {
-        return Task.FromResult(JobOutcome.Skipped("Model training pipeline is not wired yet."));
+        return services.GetRequiredService<ModelTrainingRunner>().RunAsync(token);
     }
 }

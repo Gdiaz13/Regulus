@@ -9,7 +9,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
-      - regulas_postgres_data:/var/lib/postgresql/data
+      - regulas_postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-regulas} -d ${POSTGRES_DB:-regulas}"]
       interval: 10s

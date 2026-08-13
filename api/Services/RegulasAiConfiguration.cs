@@ -1,21 +1,34 @@
 namespace api.Services;
 
-// Where RegulasCoreAI lives. The gateway only ever talks to the commander; the
-// commander fans out to the category and specialist AIs on its own.
+// Prediction traffic uses RegulasCoreAI; the opt-in training job targets the
+// one specialist that currently has a real trainer.
 public static class RegulasAiConfiguration
 {
     private const string DefaultCoreUrl = "http://localhost:8301/";
+    private const string DefaultStockTechUrl = "http://localhost:8101/";
 
     public static Uri CoreUrl(IConfiguration configuration)
     {
-        return new Uri(EnsureTrailingSlash(ConfiguredUrl(configuration)));
+        return new Uri(EnsureTrailingSlash(ConfiguredCoreUrl(configuration)));
     }
 
-    private static string ConfiguredUrl(IConfiguration configuration)
+    public static Uri StockTechUrl(IConfiguration configuration)
+    {
+        return new Uri(EnsureTrailingSlash(ConfiguredStockTechUrl(configuration)));
+    }
+
+    private static string ConfiguredCoreUrl(IConfiguration configuration)
     {
         return BlankToNull(configuration["RegulasAi:CoreUrl"])
             ?? BlankToNull(configuration["REGULAS_CORE_AI_URL"])
             ?? DefaultCoreUrl;
+    }
+
+    private static string ConfiguredStockTechUrl(IConfiguration configuration)
+    {
+        return BlankToNull(configuration["STOCK_TECH_AI_URL"])
+            ?? BlankToNull(configuration["RegulasAi:StockTechUrl"])
+            ?? DefaultStockTechUrl;
     }
 
     private static string EnsureTrailingSlash(string url)
