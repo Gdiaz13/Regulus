@@ -290,7 +290,7 @@ cd .\ai
 
 Done and real:
 
-- GitHub Actions CI runs backend, web, and AI checks on every push and PR to main (`.github/workflows/ci.yml`); the Windows MAUI job is still planned.
+- GitHub Actions CI runs backend, web, and AI checks on every push and PR to main (`.github/workflows/ci.yml`), plus a separate Windows MAUI build and ViewModel test run (`.github/workflows/maui.yml`) kept apart so the slow workload install never holds up the fast checks. Android and Apple targets still need their own build hosts.
 - Web app screens for search, portfolio, prices, predictions with model-accuracy summaries, and TradingAgents research.
 - Web Pokemon, Magic, and One Piece TCG search/detail flow through `Regulas.Api`, including provider price variants and stored TCG price history reads.
 - Backend One Piece gateway through APITCG, including server-side key handling and browsed-card market-price capture.
